@@ -407,6 +407,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .doc-sheet .mono{font-family:'Courier New',monospace;font-size:11px;white-space:pre-wrap;color:#3c4043}
 .backup-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;flex-wrap:wrap}
 .backup-bar .meta{font-size:11px;opacity:.55;letter-spacing:.02em}
+.backup-bar .doclink{display:inline-block;margin-top:3px;color:#1a73e8;text-decoration:none;font-weight:600;opacity:1}
+.backup-bar .doclink:hover{text-decoration:underline}
 .btn{font-family:var(--disp);font-style:italic;font-weight:600;font-size:14px;letter-spacing:.06em;padding:9px 18px;border:1px solid var(--hair);transition:background .18s,color .18s}
 .btn:hover{background:var(--ink);color:var(--paper)}
 .btn.primary{background:var(--ink);color:var(--paper)}
@@ -496,6 +498,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 <div class="app" id="app">
@@ -503,7 +506,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
     <div class="noscript">
       <div class="ns-year">27</div>
       <div class="ns-sub">MONTHLY<br>PLANNER</div>
-      <p>이 프로토타입은 JavaScript로 움직입니다. 브라우저에서 JavaScript를 켜면 월간 달력 · 연간 보기 · 메모장 · 체크리스트가 나타납니다.</p>
+      <p>이 다이어리는 JavaScript로 움직입니다. 브라우저에서 JavaScript를 켜면 월간 달력 · 연간 보기 · 메모장 · 체크리스트가 나타납니다.</p>
     </div>
   </noscript>
 </div>
@@ -516,8 +519,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 
 <script>
 /* =========================================================
-   27 MONTHLY PLANNER — interactive prototype
-   Single file. No external requests. localStorage persistence.
+   27 MONTHLY PLANNER — single-file planner app
+   localStorage persistence · Google Identity Services OAuth ·
+   Google Calendar two-way sync · Google Docs backup/restore
    ========================================================= */
 const KEY = 'mp27.prototype.v3';
 const MON = ['Jan.','Feb.','Mar.','Apr.','May','Jun.','Jul.','Aug.','Sep.','Oct.','Nov.','Dec.'];
@@ -757,8 +761,8 @@ function initialState(){
     menuVisited:false,
     monthlyPanel:'check', monthlyPick:{check:null, note:null}, lastMonth:1,
     events:seedEvents(), goals:seedGoals(), memos:seedMemos(),
-    google:{connected:false, lastSync:null, holidays:true, account:null},
-    lastBackup:null, lastBackupData:null
+    google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
+    docId:null, lastBackup:null
   };
 }
 
@@ -771,7 +775,9 @@ function load(){
     const p = JSON.parse(raw);
     const base = initialState();
     const st = Object.assign(base, p);
-    st.google = Object.assign({connected:false,lastSync:null,holidays:true,account:null}, p.google||{});
+    st.google = Object.assign({connected:false,lastSync:null,holidays:true,account:null,holCache:{}}, p.google||{});
+    st.google.holCache = Object.assign({}, (p.google && p.google.holCache) || {});
+    st.docId = typeof p.docId === 'string' ? p.docId : null;
     st.memos = (p.memos||base.memos).map(migrateMemo);
     st.memoTab = p.memoTab === 'note' ? 'note' : 'check';
     st.weekStart = p.weekStart === 's' ? 's' : 'm';
@@ -824,7 +830,6 @@ function parseRoute(){
 let R = parseRoute();
 let openDay = null;      // iso date of open day modal
 let openBackup = false;
-let openAccount = false; // google sync account picker
 let syncBusy = false;
 
 function go(hash){
@@ -834,7 +839,7 @@ function go(hash){
   location.hash = hash;
 }
 function setRoute(){
-  R = parseRoute(); openDay = null; openBackup = false; openAccount = false;
+  R = parseRoute(); openDay = null; openBackup = false;
   if(R.view==='monthly'){ S.lastMonth = R.month; }
   if(R.view==='memo' && R.memoId){
     const m = S.memos.find(x=>x.id===R.memoId);
@@ -891,6 +896,502 @@ function toast(msg){
   clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), 2400);
 }
 const themeMeta = id => THEMES.find(t=>t.id===id) || THEMES[1];
+
+/* =========================================================
+   Google — Identity Services OAuth, Calendar, Docs
+   ========================================================= */
+const GOOGLE_CLIENT_ID = '298606966628-340se0j42car2becjbqks0csb17nlq2l.apps.googleusercontent.com';
+const GOOGLE_SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/documents',
+  'https://www.googleapis.com/auth/userinfo.email'
+].join(' ');
+const GOOGLE_TOKEN_KEY = 'mp27.google.token';            /* sessionStorage only */
+const GOOGLE_TZ = 'Asia/Seoul';
+const HOLIDAY_CAL = 'ko.south_korea%23holiday%40group.v.calendar.google.com';
+const BACKUP_DOC_NAME = '27 Monthly Planner 백업';
+const DOC_MIME = 'application/vnd.google-apps.document';
+const AUTH_FAIL_MSG = '오프라인 상태이거나 Google 인증을 불러올 수 없습니다.';
+
+let gToken = null;                                       /* {access_token, expires_at} */
+
+const gisReady = () => !!(window.google && google.accounts && google.accounts.oauth2);
+
+function gisWait(ms){
+  return new Promise(resolve=>{
+    if(gisReady()) return resolve(true);
+    const until = Date.now() + (ms || 6000);
+    const tick = ()=>{
+      if(gisReady()) return resolve(true);
+      if(Date.now() > until) return resolve(false);
+      setTimeout(tick, 120);
+    };
+    tick();
+  });
+}
+
+const tokenAlive = t => !!(t && t.access_token && t.expires_at && Date.now() < t.expires_at - 60000);
+function cachedToken(){
+  if(tokenAlive(gToken)) return gToken;
+  try{
+    const t = JSON.parse(sessionStorage.getItem(GOOGLE_TOKEN_KEY) || 'null');
+    if(tokenAlive(t)){ gToken = t; return t; }
+  }catch(e){}
+  return null;
+}
+/* background work only (delete / push) — never opens a consent window */
+const silentToken = () => { const t = cachedToken(); return t ? t.access_token : null; };
+function clearToken(){
+  gToken = null;
+  try{ sessionStorage.removeItem(GOOGLE_TOKEN_KEY); }catch(e){}
+}
+
+/* ensureGoogleToken({prompt, force}) → access token string */
+async function ensureGoogleToken(opts){
+  opts = opts || {};
+  if(!navigator.onLine){
+    toast(AUTH_FAIL_MSG);
+    const err = new Error('offline'); err.toasted = true; throw err;
+  }
+  if(!opts.force){
+    const t = cachedToken();
+    if(t) return t.access_token;
+  }
+  if(!(await gisWait())){
+    toast(AUTH_FAIL_MSG);
+    const err = new Error('gis_unavailable'); err.toasted = true; throw err;
+  }
+  const prompt = opts.prompt !== undefined ? opts.prompt : (S.google.connected ? '' : 'consent');
+  return new Promise((resolve, reject)=>{
+    let settled = false;
+    let timer = null;
+    const fail = (msg, toasted)=>{
+      if(settled) return; settled = true; clearTimeout(timer);
+      const err = new Error(msg); err.toasted = !!toasted; reject(err);
+    };
+    try{
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: GOOGLE_SCOPES,
+        callback: resp => {
+          if(settled) return;
+          if(!resp || resp.error || !resp.access_token){
+            const msg = (resp && (resp.error_description || resp.error)) || 'Google 인증에 실패했습니다';
+            toast(msg); return fail(msg, true);
+          }
+          settled = true; clearTimeout(timer);
+          gToken = {access_token: resp.access_token, expires_at: Date.now() + (Number(resp.expires_in) || 3600)*1000};
+          try{ sessionStorage.setItem(GOOGLE_TOKEN_KEY, JSON.stringify(gToken)); }catch(e){}
+          resolve(gToken.access_token);
+        },
+        error_callback: err => {
+          const type = (err && err.type) || 'gis_error';
+          const msg = /popup_closed|popup_failed_to_open/.test(type)
+            ? 'Google 로그인 창이 닫혔습니다.' : AUTH_FAIL_MSG;
+          toast(msg); fail(type, true);
+        }
+      });
+      timer = setTimeout(()=>fail('Google 인증 응답이 없습니다. 다시 시도해 주세요.', true), 120000);
+      client.requestAccessToken(prompt ? {prompt} : {});
+    }catch(e){ fail(e && e.message ? e.message : String(e)); }
+  });
+}
+
+async function googleFetch(url, token, init){
+  const opts = Object.assign({}, init || {});
+  opts.headers = Object.assign({'Authorization':'Bearer ' + token}, (init && init.headers) || {});
+  const res = await fetch(url, opts);
+  if(!res.ok){
+    let detail = '';
+    try{ const j = await res.json(); detail = (j.error && (j.error.message || j.error)) || j.error_description || ''; }catch(e){}
+    const err = new Error('HTTP ' + res.status + (detail ? ' · ' + detail : ''));
+    err.status = res.status;
+    throw err;
+  }
+  return res;
+}
+
+async function googleEmail(token){
+  const res = await googleFetch('https://www.googleapis.com/oauth2/v3/userinfo', token);
+  const j = await res.json();
+  return (j && j.email) || '';
+}
+
+/* connect / switch the real Google account and remember who it is */
+async function connectGoogleAccount(opts){
+  opts = opts || {};
+  const token = await ensureGoogleToken({
+    force: !!opts.switch,
+    prompt: opts.switch ? 'select_account' : (S.google.connected ? '' : 'consent')
+  });
+  let email = '';
+  try{ email = await googleEmail(token); }catch(e){}
+  if(email){
+    if(S.google.account && S.google.account !== email){
+      /* the stored google ids belong to the previous account's calendar */
+      S.events.forEach(e=>{ if(e.googleId) e.googleId = null; });
+      toast('Google 계정이 바뀌었습니다 · 새 계정 기준으로 다시 맞춥니다');
+    }
+    S.google.account = email;
+  }
+  S.google.connected = true;
+  persist(true);
+  return token;
+}
+
+async function googleSwitchAccount(){
+  try{
+    await connectGoogleAccount({switch:true});
+    render();
+    if(S.google.account) toast(`동기화 계정 · ${S.google.account}`);
+  }catch(err){ googleError(err); }
+}
+
+function googleError(err){
+  if(!err || err.toasted) return;
+  const msg = String(err.message || err);
+  if(err.status === 401){
+    clearToken();
+    toast('Google 인증이 만료되었습니다. 다시 연결해 주세요.');
+    return;
+  }
+  if(/Failed to fetch|NetworkError|Load failed/i.test(msg)){
+    toast('네트워크 문제로 Google에 연결하지 못했습니다.');
+    return;
+  }
+  toast('Google 연동 실패 · ' + msg);
+}
+
+/* ---------- Google Calendar: two-way ---------- */
+const CAL_EVENTS = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+function nextDay(ds){
+  const d = new Date(ds + 'T00:00:00');
+  d.setDate(d.getDate() + 1);
+  return iso(d.getFullYear(), d.getMonth()+1, d.getDate());
+}
+function yearRange(year){
+  return {
+    min: encodeURIComponent(`${year}-01-01T00:00:00+09:00`),
+    max: encodeURIComponent(`${year+1}-01-01T00:00:00+09:00`)
+  };
+}
+function googleEventBody(e){
+  const body = {summary: e.title || '(제목 없음)'};
+  if(e.time){
+    const [h, mi] = e.time.split(':').map(Number);
+    const end = new Date(`${e.date}T${pad(h)}:${pad(mi)}:00`);
+    end.setMinutes(end.getMinutes() + 60);
+    body.start = {dateTime: `${e.date}T${e.time}:00`, timeZone: GOOGLE_TZ};
+    body.end = {dateTime: `${end.getFullYear()}-${pad(end.getMonth()+1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}:00`, timeZone: GOOGLE_TZ};
+  }else{
+    body.start = {date: e.date};
+    body.end = {date: nextDay(e.date)};
+  }
+  return body;
+}
+async function pushEventToGoogle(ev){
+  const token = silentToken();
+  if(!token) return false;
+  const res = await googleFetch(CAL_EVENTS, token, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(googleEventBody(ev))
+  });
+  const j = await res.json();
+  if(j && j.id){ ev.googleId = j.id; ev.source = 'google'; return true; }
+  return false;
+}
+async function deleteEventEverywhere(ev){
+  if(!ev || !ev.googleId) return;
+  const token = silentToken();
+  if(!token) return;
+  try{
+    await googleFetch(`${CAL_EVENTS}/${encodeURIComponent(ev.googleId)}`, token, {method:'DELETE'});
+    toast('Google Calendar에서도 삭제했습니다');
+  }catch(err){
+    if(err.status === 401) clearToken();
+    else if(err.status !== 404 && err.status !== 410) googleError(err);
+  }
+}
+async function loadGoogleHolidays(token, year){
+  const r = yearRange(year);
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${HOLIDAY_CAL}/events?singleEvents=true&maxResults=250&timeMin=${r.min}&timeMax=${r.max}`;
+  const res = await googleFetch(url, token);
+  const j = await res.json();
+  const map = {};
+  (j.items || []).forEach(it=>{
+    if(it.status === 'cancelled') return;
+    const start = it.start && it.start.date;
+    if(!start) return;
+    const name = (it.summary || '공휴일').replace(/\s+/g, ' ').trim();
+    const stop = (it.end && it.end.date) || nextDay(start);
+    const d = new Date(start + 'T00:00:00');
+    const last = new Date(stop + 'T00:00:00');
+    for(let guard = 0; d < last && guard < 12; guard++){
+      const ds = iso(d.getFullYear(), d.getMonth()+1, d.getDate());
+      map[ds] = map[ds] ? (map[ds].split('·').includes(name) ? map[ds] : map[ds] + '·' + name) : name;
+      d.setDate(d.getDate() + 1);
+    }
+  });
+  S.google.holCache = Object.assign({}, S.google.holCache || {});
+  S.google.holCache[year] = map;
+  return Object.keys(map).length;
+}
+async function calendarSync(){
+  if(syncBusy) return;
+  if(!navigator.onLine){ toast(AUTH_FAIL_MSG); return; }
+  syncBusy = true; render();
+  let pushed = 0, pulled = 0, failed = 0, holCount = 0;
+  try{
+    const token = await connectGoogleAccount({});
+    /* 1 — local events that never reached Google */
+    for(const ev of S.events.filter(e=>!e.googleId)){
+      try{ if(await pushEventToGoogle(ev)) pushed++; }
+      catch(err){ failed++; if(err.status === 401) throw err; }
+    }
+    /* 2 — pull the active year and merge by Google event id */
+    const r = yearRange(S.year);
+    const url = `${CAL_EVENTS}?singleEvents=true&orderBy=startTime&maxResults=2500&timeMin=${r.min}&timeMax=${r.max}`;
+    const res = await googleFetch(url, token);
+    const j = await res.json();
+    (j.items || []).forEach(it=>{
+      if(!it.id || it.status === 'cancelled') return;
+      const start = it.start || {};
+      const date = start.date || (start.dateTime || '').slice(0, 10);
+      if(!date) return;
+      const time = start.dateTime ? start.dateTime.slice(11, 16) : '';
+      const title = (it.summary || '(제목 없음)').trim();
+      let ev = S.events.find(e=>e.googleId === it.id);
+      if(!ev){
+        /* an event restored from a Doc may be here already without the id */
+        ev = S.events.find(e=>!e.googleId && e.date === date && (e.time || '') === time && (e.title || '').trim() === title);
+      }
+      if(ev){
+        ev.googleId = it.id; ev.date = date; ev.time = time; ev.title = title; ev.source = 'google';
+      }else{
+        S.events.push({id:uid(), date, time, title, done:false, source:'google', googleId: it.id});
+      }
+      pulled++;
+    });
+    /* 3 — Korean holidays from Google's public 공휴일 calendar */
+    if(S.google.holidays !== false) holCount = await loadGoogleHolidays(token, S.year);
+    S.google.connected = true;
+    S.google.lastSync = Date.now();
+    persist(true);
+    toast(`동기화 완료 · 올림 ${pushed} · 받음 ${pulled}${failed ? ` · 실패 ${failed}` : ''}${holCount ? ` · 공휴일 ${holCount}일` : ''}`);
+  }catch(err){
+    googleError(err);
+  }finally{
+    syncBusy = false; persist(true); render();
+  }
+}
+
+/* ---------- Google Docs: backup & restore ---------- */
+const DOCS_API = 'https://docs.googleapis.com/v1/documents/';
+const DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
+
+/* the four sections written into the Doc */
+function backupDocText(){
+  const lines = [];
+  lines.push(`${S.year} MONTHLY PLANNER — 백업`);
+  lines.push(`생성 ${new Date().toLocaleString('ko-KR')}`);
+  lines.push('');
+  lines.push('1. 올해의 목표');
+  if(S.goals.length) S.goals.forEach(g=>lines.push(`${g.done ? '[x]' : '[ ]'} ${g.text}`));
+  else lines.push('(없음)');
+  lines.push('');
+  lines.push('2. 월별 일정');
+  let any = false;
+  for(let m=1; m<=12; m++){
+    const evs = monthEvents(S.year, m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.time||'').localeCompare(b.time||''));
+    if(!evs.length) continue;
+    any = true;
+    lines.push(`${MON[m-1].replace('.','')} ${S.year}`);
+    evs.forEach(e=>lines.push(`· ${+e.date.slice(8,10)}일 ${e.time ? e.time + ' ' : ''}${e.title}`));
+  }
+  if(!any) lines.push('(없음)');
+  lines.push('');
+  const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
+  const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
+  lines.push('3. memo');
+  if(notes.length) notes.forEach(m=>{
+    lines.push(`◆ ${m.title}`);
+    lines.push(m.text || '(비어 있음)');
+    lines.push('');
+  }); else lines.push('(없음)');
+  lines.push('4. check');
+  if(checks.length) checks.forEach(m=>{
+    const c = checkCounts(m);
+    lines.push(`◆ ${m.title} (${c.done}/${c.total})`);
+    (m.items || []).forEach(it=>lines.push(`${it.done ? '☑' : '☐'} ${it.text}`));
+    lines.push('');
+  }); else lines.push('(없음)');
+  return lines.join('\n').replace(/\n{3,}/g, '\n\n');
+}
+
+function parseBackupDoc(raw){
+  const out = {goals:[], events:[], memos:[]};
+  const lines = String(raw || '').replace(/\r/g, '').split('\n');
+  let sec = 0, month = 0, year = S.year, note = null, chk = null;
+  const flush = ()=>{
+    if(note){ out.memos.push({id:uid(), kind:'note', title:note.title, text:note.text.replace(/\s+$/,''), items:[], updated:Date.now()}); note = null; }
+    if(chk){ out.memos.push({id:uid(), kind:'check', title:chk.title, text:'', items:chk.items, updated:Date.now()}); chk = null; }
+  };
+  for(const rawLine of lines){
+    const line = rawLine.replace(/\s+$/, '');
+    const head = line.trim().replace(/^#+\s*/, '').trim();
+    if(/^1\.\s*올해의\s*목표/.test(head)){ flush(); sec = 1; continue; }
+    if(/^2\.\s*월별\s*일정/.test(head)){ flush(); sec = 2; month = 0; continue; }
+    if(/^3\.\s*memo/i.test(head)){ flush(); sec = 3; continue; }
+    if(/^4\.\s*check/i.test(head)){ flush(); sec = 4; continue; }
+    if(sec === 1){
+      const m = line.match(/^\s*\[(x|X| )?\]\s*(.+?)\s*$/);
+      if(m && m[2]) out.goals.push({id:uid(), text:m[2], done:/x/i.test(m[1] || '')});
+      continue;
+    }
+    if(sec === 2){
+      const mh = head.match(/^([A-Z][a-z]{2})\.?\s+(\d{4})$/);
+      if(mh){
+        year = Number(mh[2]);
+        const idx = MON.findIndex(n=>n.replace('.','').toLowerCase() === mh[1].toLowerCase());
+        if(idx >= 0) month = idx + 1;
+        continue;
+      }
+      const me = line.match(/^\s*[·•]\s*(\d{1,2})일\s*(?:(\d{1,2}:\d{2})\s*)?(.+?)\s*$/);
+      if(me && month){
+        const day = Number(me[1]);
+        if(day >= 1 && day <= 31) out.events.push({
+          id:uid(), date: iso(year, month, day), time: me[2] || '',
+          title: me[3].replace(/\s*\(Google\)$/, ''), done:false, source:'local', googleId:null
+        });
+      }
+      continue;
+    }
+    if(sec === 3){
+      const mt = head.match(/^◆\s*(.+)$/);
+      if(mt){ flush(); note = {title: mt[1].trim(), text:''}; continue; }
+      if(note) note.text += line + '\n';
+      continue;
+    }
+    if(sec === 4){
+      const mt = head.match(/^◆\s*(.+)$/);
+      if(mt){ flush(); chk = {title: mt[1].trim().replace(/\s*\(\d+\s*\/\s*\d+\)$/, ''), items:[]}; continue; }
+      const mi = line.match(/^\s*([☑☐])\s*(.+?)\s*$/);
+      if(mi && chk) chk.items.push({id:uid(), text:mi[2], done: mi[1] === '☑'});
+      continue;
+    }
+  }
+  flush();
+  return out;
+}
+
+async function findBackupDoc(token){
+  const q = `name='${BACKUP_DOC_NAME}' and mimeType='${DOC_MIME}' and trashed=false`;
+  const url = `${DRIVE_API}?q=${encodeURIComponent(q)}&fields=${encodeURIComponent('files(id,name,modifiedTime)')}&pageSize=10`;
+  const res = await googleFetch(url, token);
+  const j = await res.json();
+  return (j.files || [])[0] || null;
+}
+async function createBackupDoc(token){
+  const res = await googleFetch(DRIVE_API + '?fields=id,name', token, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name: BACKUP_DOC_NAME, mimeType: DOC_MIME})
+  });
+  return res.json();
+}
+/* the Doc id we kept, else the one Drive already holds, else a new empty Doc */
+async function resolveBackupDoc(token, create){
+  if(S.docId){
+    try{
+      const probe = await googleFetch(DOCS_API + encodeURIComponent(S.docId) + '?fields=documentId', token);
+      const j = await probe.json();
+      if(j && j.documentId) return j.documentId;
+    }catch(err){ if(err.status !== 404 && err.status !== 403) throw err; }
+  }
+  let f = null;
+  try{ f = await findBackupDoc(token); }catch(err){ if(err.status !== 403) throw err; }
+  if(!f){
+    if(!create) return null;
+    f = await createBackupDoc(token);
+  }
+  return (f && f.id) ? f.id : null;
+}
+async function writeDocBody(token, docId, text){
+  let endIndex = 2;
+  try{
+    const res = await googleFetch(DOCS_API + encodeURIComponent(docId) + '?fields=' + encodeURIComponent('body(content(endIndex))'), token);
+    const j = await res.json();
+    const content = (j.body && j.body.content) || [];
+    if(content.length) endIndex = content[content.length - 1].endIndex || 2;
+  }catch(e){ /* a brand new document has nothing to read yet */ }
+  const requests = [];
+  if(endIndex > 2) requests.push({deleteContentRange:{range:{startIndex:1, endIndex: endIndex - 1}}});
+  requests.push({insertText:{location:{index:1}, text}});
+  await googleFetch(DOCS_API + encodeURIComponent(docId) + ':batchUpdate', token, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({requests})
+  });
+}
+async function readDocText(token, docId){
+  const res = await googleFetch(DOCS_API + encodeURIComponent(docId), token);
+  const j = await res.json();
+  let out = '';
+  const walk = el =>{
+    if(!el) return;
+    if(el.textRun && el.textRun.content) out += el.textRun.content;
+    if(el.paragraph && el.paragraph.elements) el.paragraph.elements.forEach(walk);
+    if(el.table) (el.table.tableRows || []).forEach(row=>(row.tableCells || []).forEach(cell=>(cell.content || []).forEach(walk)));
+    if(el.content && !el.paragraph && !el.table) el.content.forEach(walk);
+  };
+  ((j.body && j.body.content) || []).forEach(walk);
+  return out;
+}
+
+async function docsBackup(){
+  const btn = document.getElementById('backup-btn');
+  const busy = on =>{ if(!btn) return; btn.disabled = on; btn.textContent = on ? '저장 중…' : 'Drive에 저장'; };
+  busy(true);
+  try{
+    const token = await connectGoogleAccount({});
+    const docId = await resolveBackupDoc(token, true);
+    if(!docId) throw new Error('백업 문서를 만들지 못했습니다');
+    await writeDocBody(token, docId, backupDocText());
+    S.docId = docId;
+    S.lastBackup = Date.now();
+    persist(true);
+    openBackup = true; renderModal(); render();
+    toast('Google Docs에 백업했습니다');
+  }catch(err){
+    googleError(err);
+    busy(false);
+  }
+}
+async function docsRestore(){
+  const btn = document.querySelector('[data-act="backup-restore"]');
+  const busy = on =>{ if(!btn) return; btn.disabled = on; btn.textContent = on ? '복원 중…' : 'Docs에서 복원'; };
+  busy(true);
+  try{
+    const token = await connectGoogleAccount({});
+    const docId = await resolveBackupDoc(token, false);
+    if(!docId) throw new Error('백업 문서를 찾지 못했습니다. 먼저 Drive에 저장해 주세요.');
+    const parsed = parseBackupDoc(await readDocText(token, docId));
+    if(!parsed.goals.length && !parsed.events.length && !parsed.memos.length){
+      toast('백업 문서에 복원할 내용이 없습니다');
+      busy(false);
+      return;
+    }
+    S.goals = parsed.goals;
+    S.events = parsed.events;
+    S.memos = parsed.memos;
+    S.docId = docId;
+    persist(true);
+    openBackup = false; renderModal(); render();
+    toast(`Docs에서 복원했습니다 · 목표 ${parsed.goals.length} · 일정 ${parsed.events.length} · 메모 ${parsed.memos.length}`);
+  }catch(err){
+    googleError(err);
+    busy(false);
+  }
+}
 
 /* ---------------- icons ---------------- */
 const ICO = {
@@ -975,7 +1476,8 @@ function swatchColor(id){
 const weekStartMode = () => (S.weekStart === 's' ? 's' : 'm');
 function holidayOn(ds){
   if(!S.google || S.google.holidays === false) return null;
-  return HOLIDAYS[ds] || null;
+  const live = (S.google.holCache || {})[ds.slice(0,4)];   /* from Google's 공휴일 calendar */
+  return (live && live[ds]) || HOLIDAYS[ds] || null;
 }
 /* narrow screens get a shorter holiday label */
 const HOL_SHORT = {'설날 연휴':'연휴','추석 연휴':'연휴','부처님오신날':'부처님','지방선거일':'선거일'};
@@ -1123,7 +1625,7 @@ function renderMemo(){
         <button class="backup" data-act="backup-open">${ICO.doc} Google Docs로 백업</button>
         <button class="acct" data-act="acct-open" aria-haspopup="dialog" aria-label="동기화 계정 선택">
           <span class="lab">동기화 계정</span>
-          <span class="mail ${acct?'':'none'}">${acct?esc(acct):'선택'}</span>
+          <span class="mail ${acct?'':'none'}">${acct?esc(acct):'Google 로그인'}</span>
         </button>
         <div class="syncbox">
           <div class="syncrow">
@@ -1289,54 +1791,12 @@ function renderModal(){
     </div>`;
   } else if(openBackup){
     root.innerHTML = renderBackupModal();
-  } else if(openAccount){
-    root.innerHTML = renderAccountModal();
   } else {
     root.innerHTML = '';
   }
 }
 
-function backupText(){
-  const lines = [];
-  lines.push(`# ${S.year} MONTHLY PLANNER — 백업`);
-  lines.push(`생성 ${new Date().toLocaleString('ko-KR')}`);
-  lines.push('');
-  lines.push('## 1. 올해의 목표');
-  S.goals.forEach(g=>lines.push(`${g.done?'[x]':'[ ]'} ${g.text}`));
-  lines.push('');
-  lines.push('## 2. 월별 일정');
-  for(let m=1;m<=12;m++){
-    const evs = monthEvents(S.year,m);
-    if(!evs.length) continue;
-    lines.push(`### ${MON[m-1]} ${S.year}`);
-    evs.sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')).forEach(e=>{
-      const d = +e.date.slice(8,10);
-      lines.push(`· ${pad(d)}일 ${e.time?e.time+' ':''}${e.title}${e.source==='google'?' (Google)':''}`);
-    });
-  }
-  lines.push('');
-  const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
-  const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
-  lines.push('## 3. memo');
-  notes.forEach(m=>{
-    lines.push(`### ◆ ${m.title}`);
-    lines.push(m.text || '(비어 있음)');
-    lines.push('');
-  });
-  if(!notes.length) lines.push('(없음)', '');
-  lines.push('## 4. check');
-  checks.forEach(m=>{
-    const {done, total} = checkCounts(m);
-    lines.push(`### ◆ ${m.title} (${done}/${total})`);
-    (m.items||[]).forEach(it=>lines.push(`${it.done?'☑':'☐'} ${it.text}`));
-    lines.push('');
-  });
-  if(!checks.length) lines.push('(없음)', '');
-  return lines.join('\n');
-}
-
 function renderBackupModal(){
-  const txt = backupText();
   const done = S.goals.filter(g=>g.done).length;
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
@@ -1346,7 +1806,7 @@ function renderBackupModal(){
         <div><span class="d">Docs</span><span class="dw">GOOGLE DRIVE BACKUP</span></div>
         <button class="x" data-act="close-backup">×</button>
       </div>
-      <div style="font-size:12px;opacity:.6;margin-bottom:14px">‘${S.year} Planner Backup’ 문서에 아래 내용이 저장됩니다. (미리보기)</div>
+      <div style="font-size:12px;opacity:.6;margin-bottom:14px">Google Drive의 ‘${BACKUP_DOC_NAME}’ 문서에 아래 내용이 저장됩니다.${S.google.account?' · '+esc(S.google.account):''}</div>
       <div class="doc-sheet">
         <h1>${S.year} MONTHLY PLANNER — 백업</h1>
         <div class="doc-sub">마지막 편집 ${new Date().toLocaleString('ko-KR')} · 목표 ${done}/${S.goals.length} · memo ${notes.length} · check ${checks.length}</div>
@@ -1364,10 +1824,10 @@ function renderBackupModal(){
         ${checks.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)} (${checkCounts(m).done}/${checkCounts(m).total})</h3><ul>${(m.items||[]).map(it=>`<li><span class="box" style="${it.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(it.text)}</li>`).join('')}</ul>`).join('') || '<div class="mono">(없음)</div>'}
       </div>
       <div class="backup-bar">
-        <div class="meta">${S.lastBackup? '마지막 백업 '+timeAgo(S.lastBackup) : '아직 백업한 적이 없습니다'}</div>
+        <div class="meta">${S.lastBackup? '마지막 백업 '+timeAgo(S.lastBackup) : '아직 백업한 적이 없습니다'}${S.docId?`<br><a class="doclink" href="https://docs.google.com/document/d/${encodeURIComponent(S.docId)}/edit" target="_blank" rel="noopener">Google Docs에서 열기 ↗</a>`:''}</div>
         <div class="toolbar">
           <button class="btn" data-act="close-backup">닫기</button>
-          <button class="btn" data-act="backup-restore" ${S.lastBackupData?'':'disabled'}>Docs에서 복원</button>
+          <button class="btn" data-act="backup-restore">Docs에서 복원</button>
           <button class="btn primary" data-act="backup-run" id="backup-btn">Drive에 저장</button>
         </div>
       </div>
@@ -1376,52 +1836,16 @@ function renderBackupModal(){
 }
 
 /* ---------------- interactions ---------------- */
-const GOOGLE_ACCOUNTS = ['mimi23@gmail.com','mimi.planner@gmail.com','mimi.diary@gmail.com'];
-function renderAccountModal(){
-  const cur = S.google.account || '';
-  const rows = GOOGLE_ACCOUNTS.slice();
-  if(cur && !rows.includes(cur)) rows.unshift(cur);
-  return `<div class="scrim" data-act="close-account">
-    <div class="modal" data-stop="1">
-      <div class="modal-h">
-        <div><span class="d">Google</span><span class="dw">SYNC ACCOUNT</span></div>
-        <button class="x" data-act="close-account">×</button>
-      </div>
-      <div style="font-size:12px;opacity:.6;margin-bottom:6px">Google Calendar·Docs를 동기화할 계정을 고르세요.</div>
-      <div class="acctlist">
-        ${rows.map(em=>`<button class="acctrow ${em===cur?'on':''}" data-act="acct-pick" data-val="${esc(em)}">
-          <span class="av">${esc((em[0]||'G').toUpperCase())}</span>
-          <span class="em">${esc(em)}</span>
-          ${em===cur?'<span class="cur">현재</span>':''}
-        </button>`).join('')}
-      </div>
-      <div class="addrow">
-        <input type="email" id="acct-email" placeholder="다른 계정 직접 입력" aria-label="Google 계정 이메일" value="${cur && !GOOGLE_ACCOUNTS.includes(cur)?esc(cur):''}">
-        <button data-act="acct-save">저장</button>
-      </div>
-      <div class="empty-note">계정은 이 브라우저(localStorage)에만 저장됩니다. 동기화는 프로토타입 시뮬레이션입니다.</div>
-    </div>
-  </div>`;
-}
-function saveAccount(email){
-  const em = String(email||'').trim();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ toast('이메일 주소를 확인해 주세요'); return false; }
-  S.google.account = em;
-  persist(true);
-  openAccount = false; renderModal(); render();
-  toast(`동기화 계정 · ${em}`);
-  return true;
-}
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-act]');
   if(!el) return;
   const act = el.dataset.act, val = el.dataset.val;
   /* Only the backdrop itself closes a modal — clicks on inputs or empty space
      inside the modal bubble up to the scrim and used to dismiss it. */
-  if((act==='close-modal'||act==='close-backup'||act==='close-account') && el.classList.contains('scrim') && e.target!==el) return;
+  if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='goal-new'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
   if(act==='mpanel-title'||act==='mpanel-text'||act==='mpanel-check-edit'||act==='mpanel-check-new'||act==='mpanel-pick') return;
-  if(act==='wkstart'||act==='holiday-toggle'||act==='acct-email') return;
+  if(act==='wkstart'||act==='holiday-toggle') return;
   switch(act){
     case 'theme':
       S.theme = val; persist(true); render(); break;
@@ -1450,37 +1874,36 @@ document.addEventListener('click', e=>{
       break;
     }
     case 'day-del': {
-      S.events = S.events.filter(x=>x.id!==val); persist(true); renderModal(); render(); break;
+      const gone = S.events.find(x=>x.id===val);
+      S.events = S.events.filter(x=>x.id!==val);
+      persist(true); renderModal(); render();
+      deleteEventEverywhere(gone);          /* also removes it from Google Calendar */
+      break;
     }
     case 'day-add': {
       const ti = document.getElementById('newtime');
       const tt = document.getElementById('newtitle');
       const title = (tt.value||'').trim();
       if(!title){ tt.focus(); return; }
-      S.events.push({id:uid(), date:openDay, time:ti.value||'', title, done:false, source:'local', googleId:null});
+      const ev = {id:uid(), date:openDay, time:ti.value||'', title, done:false, source:'local', googleId:null};
+      S.events.push(ev);
       persist(true); ti.value=''; tt.value=''; renderModal(); render();
-      toast(S.google.connected? 'Google Calendar에도 저장했습니다' : '일정을 추가했습니다');
+      if(S.google.connected && silentToken()){
+        pushEventToGoogle(ev)
+          .then(ok=>{
+            if(ok){ persist(true); renderModal(); render(); toast('일정을 추가하고 Google Calendar에 저장했습니다'); }
+            else toast('일정을 추가했습니다 · Google Calendar에는 다음 동기화 때 반영됩니다');
+          })
+          .catch(err=>{
+            if(err.status === 401) clearToken();
+            toast('일정을 추가했습니다 · Google Calendar에는 다음 동기화 때 반영됩니다');
+          });
+      }else{
+        toast('일정을 추가했습니다');
+      }
       break;
     }
-    case 'sync': {
-      if(syncBusy) return;
-      syncBusy = true; render();
-      setTimeout(()=>{
-        const holCount = Object.keys(HOLIDAYS).filter(d=>d.startsWith(S.year+'-')).length;
-        const holPart = (S.google.holidays!==false && holCount) ? ` · 공휴일 ${holCount}일` : '';
-        if(!S.google.connected){
-          S.google.connected = true;
-          const seeds = [7,12,21].map(d=>({id:uid(), date:iso(S.year,R.view==='monthly'?R.month:(S.lastMonth||1),d), time:d===12?'13:00':'', title:d===12?'점심 약속 (Google)':d===7?'주간 정리 (Google)':'온라인 세미나 (Google)', done:false, source:'google', googleId:uid()}));
-          S.events.push(...seeds);
-          toast(`Google Calendar 연결됨 · 일정 3개를 가져왔습니다${holPart}`);
-        } else {
-          toast(`동기화 완료 · Google Calendar와 같습니다${holPart}`);
-        }
-        S.google.lastSync = Date.now();
-        syncBusy = false; persist(true); render();
-      }, 850);
-      break;
-    }
+    case 'sync': calendarSync(); break;
     case 'goal-toggle': {
       const g = S.goals.find(x=>x.id===val); if(g){ g.done=!g.done; persist(true); render(); }
       break;
@@ -1587,37 +2010,9 @@ document.addEventListener('click', e=>{
     }
     case 'backup-open': openBackup = true; renderModal(); break;
     case 'close-backup': openBackup = false; renderModal(); break;
-    case 'acct-open': openAccount = true; renderModal(); break;
-    case 'close-account': openAccount = false; renderModal(); break;
-    case 'acct-pick': saveAccount(val); break;
-    case 'acct-save': {
-      const inp = document.getElementById('acct-email');
-      if(!inp){ openAccount = false; renderModal(); break; }
-      if(!saveAccount(inp.value)) inp.focus();
-      break;
-    }
-    case 'backup-run': {
-      const b = document.getElementById('backup-btn');
-      if(b){ b.disabled = true; b.textContent = '저장 중…'; }
-      setTimeout(()=>{
-        S.lastBackup = Date.now();
-        S.lastBackupData = JSON.parse(JSON.stringify({goals:S.goals, events:S.events, memos:S.memos}));
-        persist(true);
-        openBackup = false; renderModal(); render();
-        toast('Google Docs에 백업했습니다 · ‘'+S.year+' Planner Backup’');
-      }, 1100);
-      break;
-    }
-    case 'backup-restore': {
-      if(!S.lastBackupData) return;
-      S.goals = JSON.parse(JSON.stringify(S.lastBackupData.goals||[]));
-      S.events = JSON.parse(JSON.stringify(S.lastBackupData.events||[]));
-      S.memos = JSON.parse(JSON.stringify(S.lastBackupData.memos||[]));
-      persist(true);
-      openBackup = false; renderModal(); render();
-      toast('Docs 백업에서 복원했습니다');
-      break;
-    }
+    case 'acct-open': googleSwitchAccount(); break;
+    case 'backup-run': docsBackup(); break;
+    case 'backup-restore': docsRestore(); break;
   }
 });
 
@@ -1712,10 +2107,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='newtitle'){
     e.preventDefault(); document.querySelector('[data-act="day-add"]').click(); return;
   }
-  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='acct-email'){
-    e.preventDefault(); document.querySelector('[data-act="acct-save"]')?.click(); return;
-  }
-  if(e.key==='Escape'){ if(openDay){ openDay=null; renderModal(); } else if(openBackup){ openBackup=false; renderModal(); } else if(openAccount){ openAccount=false; renderModal(); } }
+  if(e.key==='Escape'){ if(openDay){ openDay=null; renderModal(); } else if(openBackup){ openBackup=false; renderModal(); } }
   if((e.key==='ArrowLeft'||e.key==='ArrowRight') && R.view==='monthly' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
     const d = e.key==='ArrowRight'?1:-1;
     let m = R.month + d;
