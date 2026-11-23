@@ -710,6 +710,9 @@ function seedEvents(){
     E(12,31,'22:00','한 해 정리')
   ];
 }
+/* The first builds shipped those sample events inside localStorage. New installs get
+   none — this signature list only lets an already-opened browser drop them once (load()). */
+const SEED_EVENT_KEYS = seedEvents().map(e => [e.date, e.time, e.title].join('|'));
 function seedGoals(){
   return [
     {id:uid(), text:'매일 30분씩 걷기', done:true},
@@ -773,7 +776,7 @@ function initialState(){
     menuLast:{check:null, note:null},  /* last item opened per tab */
     menuVisited:false,
     monthlyPanel:'check', monthlyPick:{check:null, note:null}, lastMonth:1,
-    events:seedEvents(), goals:seedGoals(), memos:seedMemos(),
+    events:[], goals:seedGoals(), memos:seedMemos(), clearedSeedEvents:false,
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
   };
@@ -797,6 +800,17 @@ function load(){
     st.menuTab = p.menuTab === 'note' ? 'note' : 'check';
     st.menuLast = Object.assign({check:null, note:null}, p.menuLast||{});
     st.menuVisited = !!p.menuVisited;
+    /* one-time cleanup: drop the sample events a previous build seeded into this
+       browser, keeping every event the user made or synced from Google */
+    if(!p.clearedSeedEvents){
+      const kept = (st.events||[]).filter(e => {
+        if(!e || e.googleId) return true;
+        return !SEED_EVENT_KEYS.includes([e.date, e.time, e.title].join('|'));
+      });
+      st.events = kept;
+      st.clearedSeedEvents = true;
+      try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+    }
     /* the monthly bottom panel opens on check unless the user switched it */
     st.monthlyPanel = p.monthlyPanel === 'note' ? 'note' : 'check';
     st.monthlyPick = Object.assign({check:null, note:null}, p.monthlyPick||{});
