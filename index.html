@@ -352,9 +352,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 
 /* ---------- cover ---------- */
 .cover{min-height:100dvh;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:48px 24px 40px;position:relative;cursor:pointer;transition:background-color .4s}
-.cover-inner{display:flex;flex-direction:column;align-items:flex-start;transform:translateY(-3vh);max-width:100%}
-.cover-word1{font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(52px,23vw,334px);line-height:.76;letter-spacing:-.015em;white-space:nowrap;padding-right:.07em}
-.cover-word2{font-family:var(--disp);font-style:italic;font-weight:300;font-size:clamp(19px,7.2vw,105px);line-height:1;letter-spacing:.12em;white-space:nowrap;align-self:flex-end;margin-top:clamp(7px,1.3vw,17px);padding-right:0;margin-right:-.055em}
+.cover-inner{display:flex;flex-direction:column;align-items:center;transform:translateY(-3vh);max-width:100%}
+.cover-word1,.cover-word2{font-family:var(--disp);font-style:italic;font-weight:300;font-size:clamp(24px,3.8vw,42px);line-height:1;letter-spacing:.12em;text-indent:.12em;white-space:nowrap}
+.cover-word2{margin-top:clamp(4px,.8vw,10px)}
 .cover-meta{position:absolute;top:calc(34px + env(safe-area-inset-top));left:0;right:0;text-align:center;font-family:var(--disp);font-style:italic;font-weight:400;font-size:11px;letter-spacing:.28em;opacity:.45;text-transform:uppercase}
 .cover-bottom{position:absolute;bottom:calc(34px + env(safe-area-inset-bottom));left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:16px}
 .swatches{display:flex;gap:12px;align-items:center}
@@ -432,6 +432,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .fab{position:fixed;right:20px;bottom:calc(72px + env(safe-area-inset-bottom));width:38px;height:38px;border-radius:50%;border:1px solid var(--dash);background:var(--paper);display:grid;place-items:center;z-index:45;opacity:.75;transition:opacity .2s,background .2s}
 .fab:hover{opacity:1;background:var(--soft)}
 .fab svg{width:18px;height:18px}
+/* ⌂ home — mirrors the ⊕ theme fab on the opposite side, back to the cover */
+.fab.homefab{left:20px;right:auto}
 .palette-pop{position:fixed;right:20px;bottom:calc(120px + env(safe-area-inset-bottom));z-index:46;background:var(--paper);border:1px solid var(--hair);padding:12px 14px;display:none;grid-template-columns:repeat(4,auto);gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
 .palette-pop.on{display:grid}
 .palette-pop .sw{width:18px;height:18px}
@@ -468,14 +470,13 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .doc-sheet{padding:24px 20px}
   .canvas{min-height:0}
   .mlist{max-height:none}
-  .cover-word1{font-size:25vw}
-  .cover-word2{font-size:7.9vw}
   .wd{width:4px;height:4px}
   .cell{padding:3px 3px 0}
   .evt{font-size:9.8px;line-height:1.05}
   .evt .bul{display:none}
   .sync .opt{display:none}
   .fab{width:34px;height:34px;right:14px;bottom:calc(64px + env(safe-area-inset-bottom));opacity:.55}
+  .fab.homefab{left:14px;right:auto}
   .memotabs{gap:18px;margin-top:12px}
   .mtab{font-size:15px}
   /* iOS Safari zooms the page in when a focused field's text is under 16px;
@@ -509,8 +510,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .dow span{font-size:10px;letter-spacing:.1em}
 }
 @media (max-height:560px){
-  .cover-word1{font-size:min(22vw,20vh)}
-  .cover-word2{font-size:min(7vw,6.4vh);margin-top:.08em}
+  .cover-word1,.cover-word2{font-size:min(8vw,6.4vh)}
   .cover-inner{transform:translateY(-4vh)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -531,6 +531,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab" aria-label="테마 변경" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+</button>
+<button class="fab homefab" id="homefab" aria-label="표지로 돌아가기" title="표지" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.8 11.4 12 4.2l8.2 7.2"/><path d="M6.4 10.1v9.1h11.2v-9.1"/></svg>
 </button>
 <div class="palette-pop" id="palette-pop"></div>
 
@@ -1457,6 +1460,7 @@ function render(){
   document.querySelector('meta[name=theme-color]').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--paper').trim());
   const fab = document.getElementById('fab');
   fab.hidden = R.view==='cover';
+  document.getElementById('homefab').hidden = R.view==='cover';
   if(R.view==='cover'){ app.innerHTML = renderCover(); }
   else { app.innerHTML = renderNav() + `<div class="page">${renderView()}</div>` + renderYearBar(); }
   renderModal();
@@ -2180,6 +2184,9 @@ fab.addEventListener('click', ()=>{
   pop.innerHTML = THEMES.map(t=>`<button class="sw ${S.theme===t.id?'on':''}" data-act="theme" data-val="${t.id}" title="${t.ko}" style="background:${swatchColor(t.id)}"></button>`).join('');
   pop.classList.toggle('on');
 });
+/* ⌂ home — back to the cover (iPhone standalone mode has no browser back) */
+document.getElementById('homefab').addEventListener('click', ()=>go('#/cover'));
+
 document.addEventListener('click', e=>{
   if(!e.target.closest('#fab') && !e.target.closest('#palette-pop')) document.getElementById('palette-pop').classList.remove('on');
   if(!e.target.closest('.mpdrop')){
