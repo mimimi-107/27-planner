@@ -768,6 +768,9 @@ p.121 종이 위의 여백은 비어 있는 것이 아니라 선택의 공간.
     ], text:'', updated:ago(20)}
   ];
 }
+/* Same for the five sample memos/checklists: a new install starts with none, and a browser
+   that already holds them drops the untouched ones once (load()). */
+const SEED_MEMO_SIGS = seedMemos().map(m => [m.id, m.kind, m.title].join('|'));
 function initialState(){
   return {
     theme:'cream', year:2027, visited:false, memoTab:'check',
@@ -776,7 +779,7 @@ function initialState(){
     menuLast:{check:null, note:null},  /* last item opened per tab */
     menuVisited:false,
     monthlyPanel:'check', monthlyPick:{check:null, note:null}, lastMonth:1,
-    events:[], goals:seedGoals(), memos:seedMemos(), clearedSeedEvents:false,
+    events:[], goals:seedGoals(), memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
   };
@@ -809,6 +812,13 @@ function load(){
       });
       st.events = kept;
       st.clearedSeedEvents = true;
+      try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+    }
+    /* one-time cleanup: drop the sample memos/checklists a previous build seeded,
+       keeping every memo the user made or renamed */
+    if(!p.clearedSeedMemos){
+      st.memos = (st.memos||[]).filter(m => !(m && SEED_MEMO_SIGS.includes([m.id, m.kind, m.title].join('|'))));
+      st.clearedSeedMemos = true;
       try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
     }
     /* the monthly bottom panel opens on check unless the user switched it */
@@ -1629,7 +1639,6 @@ function noteSearchText(m){
 }
 function renderMemo(){
   const tab = (S.memoTab==='note') ? 'note' : 'check';
-  const tabLabel = panelLabel(tab);
   const memo = currentMemo();
   const list = tabMemos(tab);
   const g = S.google || {};
@@ -1641,7 +1650,7 @@ function renderMemo(){
   <div class="memo ${memo?'open':''}">
     <aside class="side">
       <input class="search" placeholder="검색" data-act="search" aria-label="검색">
-      <button class="newmemo" data-act="memo-new" data-val="${tab}">＋ ${tabLabel}</button>
+      <button class="newmemo" data-act="memo-new" data-val="${tab}">＋ new</button>
       <div class="mlist">
         ${list.map(m=>`<div class="mrow ${memo&&memo.id===m.id?'on':''}" data-act="memo-open" data-val="${m.id}" data-q="${esc(noteSearchText(m))}">
           <div class="mt">${esc(m.title||'제목 없음')}</div>
@@ -1746,7 +1755,7 @@ function renderMonthlyPanel(){
         </div>
       </div>
       ${picker}
-      <button class="mnew" data-act="mpanel-new">＋ ${label}</button>
+      <button class="mnew" data-act="mpanel-new">＋ new</button>
     </div>
     ${memo
       ? (kind==='check' ? renderPanelCheck(memo) : renderPanelNote(memo))
@@ -1963,7 +1972,7 @@ document.addEventListener('click', e=>{
       const tab = val==='check' ? 'check' : 'note';
       const m = {
         id:uid(), kind:tab,
-        title: tab==='check' ? '새 check' : '새 memo',
+        title: 'new',
         text:'', items:[], updated:Date.now()
       };
       S.memoTab = tab; S.menuTab = tab; S.memos.push(m);
@@ -2006,12 +2015,12 @@ document.addEventListener('click', e=>{
     }
     case 'mpanel-new': {
       const kind = panelKind();
-      const m = {id:uid(), kind, title: kind==='check'?'새 check':'새 memo', text:'', items:[], updated:Date.now()};
+      const m = {id:uid(), kind, title:'new', text:'', items:[], updated:Date.now()};
       S.memos.push(m);
       S.monthlyPick = Object.assign({check:null, note:null}, S.monthlyPick||{});
       S.monthlyPick[kind] = m.id;
       persist(true); render();
-      toast(`새 ${panelLabel(kind)}를 추가했습니다`);
+      toast(`new ${panelLabel(kind)}를 추가했습니다`);
       document.querySelector('.mtitle')?.focus();
       break;
     }
