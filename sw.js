@@ -1,11 +1,11 @@
 /* =========================================================
-   27 Monthly Planner — offline service worker
+   MONTHLY PLANNER — offline service worker
    Cache-first with stale-while-revalidate, same-origin only:
    Google Identity / Calendar / Drive / Docs requests always go
    straight to the network.
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
-const CACHE = 'mp27-v5';
+const CACHE = 'mp27-v6';
 
 /* the whole app is these six files (the fonts live inside index.html) */
 const SHELL = [

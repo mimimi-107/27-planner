@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "27 Monthly Planner",
-  "short_name": "27 Planner",
-  "description": "2027 · 월요일 시작 · 아날로그 다이어리. 월간·연간 플래너, 체크리스트, 메모장, Google Docs 백업.",
+  "name": "Monthly Planner",
+  "short_name": "Monthly Planner",
+  "description": "만년형 · 월요일 시작 · 아날로그 다이어리. 월간·연간 플래너, 체크리스트, 메모장, Google Docs 백업.",
   "lang": "ko",
   "dir": "ltr",
   "start_url": "./",
