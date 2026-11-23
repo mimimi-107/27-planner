@@ -1144,12 +1144,9 @@ async function calendarSync(){
   let pushed = 0, pulled = 0, failed = 0, holCount = 0;
   try{
     const token = await connectGoogleAccount({});
-    /* 1 — local events that never reached Google */
-    for(const ev of S.events.filter(e=>!e.googleId)){
-      try{ if(await pushEventToGoogle(ev)) pushed++; }
-      catch(err){ failed++; if(err.status === 401) throw err; }
-    }
-    /* 2 — pull the active year and merge by Google event id */
+    /* 1 — pull the active year first, so an event that is already in Google
+           (restored from a Doc, or re-created) adopts its id instead of
+           being pushed a second time */
     const r = yearRange(S.year);
     const url = `${CAL_EVENTS}?singleEvents=true&orderBy=startTime&maxResults=2500&timeMin=${r.min}&timeMax=${r.max}`;
     const res = await googleFetch(url, token);
@@ -1163,7 +1160,6 @@ async function calendarSync(){
       const title = (it.summary || '(제목 없음)').trim();
       let ev = S.events.find(e=>e.googleId === it.id);
       if(!ev){
-        /* an event restored from a Doc may be here already without the id */
         ev = S.events.find(e=>!e.googleId && e.date === date && (e.time || '') === time && (e.title || '').trim() === title);
       }
       if(ev){
@@ -1173,6 +1169,11 @@ async function calendarSync(){
       }
       pulled++;
     });
+    /* 2 — local events that are still not in Google */
+    for(const ev of S.events.filter(e=>!e.googleId)){
+      try{ if(await pushEventToGoogle(ev)) pushed++; }
+      catch(err){ failed++; if(err.status === 401) throw err; }
+    }
     /* 3 — Korean holidays from Google's public 공휴일 calendar */
     if(S.google.holidays !== false) holCount = await loadGoogleHolidays(token, S.year);
     S.google.connected = true;
