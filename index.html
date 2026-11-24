@@ -133,6 +133,10 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .dow span{text-align:center;font-family:var(--disp);font-style:italic;font-weight:700;font-size:11.5px;letter-spacing:.16em}
 .dow span.sat{color:var(--sat-ink);opacity:.78}
 .dow span.sun{color:var(--sun-ink);opacity:.85}
+/* the month column: the motto hangs at the bottom of the calendar above the year bar */
+.mcol{display:flex;flex-direction:column;min-height:calc(100dvh - 186px)}
+.mquote{margin-top:auto;padding:26px var(--pad) 4px;text-align:center;font-family:var(--disp);font-style:italic;font-size:11.5px;line-height:1.5;letter-spacing:.1em;opacity:.62;color:var(--ink)}
+
 .cal{border-bottom:1px solid var(--hair)}
 .week{
   position:relative;display:grid;grid-template-columns:repeat(7,1fr);
@@ -219,7 +223,11 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .mtab:hover{opacity:.85}
 .mtab.on{opacity:1;font-weight:600;border-bottom-color:var(--ink)}
 .mtab .n{font-family:var(--ui);font-style:normal;font-weight:400;font-size:10px;letter-spacing:0;opacity:.55;margin-left:6px;font-variant-numeric:tabular-nums}
-.memo{display:grid;grid-template-columns:280px minmax(0,1fr);gap:34px;margin-top:20px;align-items:start}
+.memo{display:grid;grid-template-columns:280px minmax(0,1fr);grid-template-areas:"side editor" "foot editor";gap:0 34px;margin-top:20px;align-items:start}
+.side{grid-area:side}
+.editor{grid-area:editor}
+.foot{grid-area:foot;display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.foot .backup{margin-top:0}
 .side{border-right:1px solid var(--dash);padding-right:26px;display:flex;flex-direction:column;min-height:0}
 .search{width:100%;border-bottom:1px solid var(--dash);padding:5px 0 6px;font-size:12.5px;margin-bottom:10px}
 .newmemo{display:flex;align-items:center;gap:6px;width:100%;padding:9px 10px;border:1px solid var(--dash);font-size:12.5px;margin-bottom:12px;transition:border-color .2s,background .2s}
@@ -238,8 +246,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .backup:hover{border-color:var(--hair);background:var(--soft)}
 .side-note{font-size:10px;line-height:1.5;opacity:.42;margin-top:10px}
 /* ≡ menu footer: backup · account · google calendar sync */
-.side-foot{display:flex;flex-direction:column;gap:8px;margin-top:16px;flex:0 0 auto}
-.side-foot .backup{margin-top:0}
 .acct{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 10px;border:1px solid var(--dash);font-size:12px;text-align:left;transition:border-color .2s,background .2s}
 .acct:hover{border-color:var(--hair);background:var(--soft)}
 .acct .lab{font-size:10.5px;letter-spacing:.03em;opacity:.55;white-space:nowrap}
@@ -298,41 +304,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cadd button{font-family:var(--disp);font-style:italic;font-weight:600;font-size:17px;line-height:1;opacity:.6;padding:0 4px}
 .cadd button:hover{opacity:1}
 
-/* ---------- monthly bottom memo panel ---------- */
-.mpanel{margin-top:18px;border-top:1px solid var(--hair);padding-top:11px}
-.mpanel-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
-.mpdrop{position:relative}
-.mpbtn{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-style:italic;font-weight:600;font-size:16px;letter-spacing:.05em;padding:5px 10px;border:1px solid var(--hair);border-radius:2px;background:rgba(var(--paper-rgb),.45);transition:background .18s}
-.mpbtn:hover{background:var(--soft)}
-.mpbtn .n{font-family:var(--ui);font-style:normal;font-weight:400;font-size:10px;letter-spacing:0;opacity:.5;font-variant-numeric:tabular-nums}
-.mpbtn .car{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid currentColor;opacity:.55;transition:transform .18s}
-.mpbtn[aria-expanded="true"] .car{transform:rotate(180deg)}
-.mpop{position:absolute;left:0;top:calc(100% + 5px);z-index:36;min-width:170px;padding:4px;background:var(--paper);border:1px solid var(--hair);box-shadow:0 16px 34px rgba(0,0,0,.16);display:none}
-.mpop.on{display:block}
-.mpop button{display:flex;align-items:baseline;justify-content:space-between;gap:10px;width:100%;text-align:left;padding:8px 9px;font-size:12.5px;letter-spacing:.02em;opacity:.7}
-.mpop button:hover{background:var(--soft);opacity:1}
-.mpop button.on{opacity:1;font-weight:600}
-.mpop button .n{font-size:10px;opacity:.5;font-weight:400}
-.mpop button.on .n::after{content:' ✓';font-size:10.5px}
-.mpick{display:flex;align-items:center;gap:7px;flex:1 1 180px;max-width:300px;min-width:130px}
-.mpick .mlab{font-size:10px;letter-spacing:.06em;opacity:.42;white-space:nowrap}
-.msel{flex:1;min-width:0;font-size:12px;color:var(--ink);background:transparent;border:0;border-bottom:1px solid var(--dash);border-radius:0;padding:3px 0;font-family:var(--ui)}
-.msel:focus{outline:none;border-bottom-color:var(--ink)}
-.mnew{font-size:11px;letter-spacing:.03em;opacity:.62;padding:4px 0;border-bottom:1px solid var(--dash);white-space:nowrap;margin-left:auto}
-.mnew:hover{opacity:1}
-.mbody{padding-top:5px}
-.mrowt{display:flex;align-items:baseline;justify-content:space-between;gap:12px;max-width:660px}
-.mtitle{flex:1;min-width:0;font-family:var(--disp);font-style:italic;font-weight:600;font-size:19px;letter-spacing:.01em;padding:1px 0;border-bottom:1px solid transparent}
-.mtitle:focus{border-bottom-color:var(--dash)}
-.mprog{font-size:10.5px;letter-spacing:.04em;opacity:.55;font-variant-numeric:tabular-nums;white-space:nowrap}
-.mbar{height:2px;background:rgba(var(--ink-rgb),.12);margin:7px 0 0;max-width:660px;overflow:hidden}
-.mbar i{display:block;height:100%;background:var(--ink);transition:width .3s ease}
-.mlist2{margin-top:2px}
-.mhint{font-size:10px;line-height:1.6;opacity:.4;margin-top:10px;letter-spacing:.01em}
-.mnote-sheet{max-width:720px}
-.mnote-sheet .ruled{min-height:calc(var(--rh)*9)}
-.mnote-sheet .ruled textarea{min-height:calc(var(--rh)*9)}
-
 /* ---------- bottom year bar ---------- */
 .yearbar{
   position:fixed;left:0;right:0;bottom:0;z-index:44;
@@ -344,7 +315,22 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .yb-switch{display:flex;align-items:center;gap:1px}
 .yb-step{width:40px;height:34px;display:grid;place-items:center;font-size:20px;line-height:1;opacity:.68;border-radius:6px;transition:opacity .18s,background .18s}
 .yb-step:hover,.yb-step:focus-visible{opacity:1;background:var(--soft)}
-.yb-year{font-family:var(--disp);font-style:italic;font-weight:700;font-size:17px;letter-spacing:.12em;min-width:60px;text-align:center;font-variant-numeric:tabular-nums}
+.yb-year{font-family:var(--disp);font-style:italic;font-weight:700;font-size:17px;letter-spacing:.12em;min-width:60px;text-align:center;font-variant-numeric:tabular-nums;padding:4px 7px;border-radius:6px;-webkit-tap-highlight-color:transparent;transition:background .18s,opacity .18s}
+.yb-year:hover,.yb-year:focus-visible{background:var(--soft)}
+
+/* ---------- year wheel (vertical drag / scroll picker above the bottom bar) ---------- */
+.ypop{position:fixed;left:50%;transform:translateX(-50%);bottom:60px;z-index:47;width:112px;background:var(--paper);border:1px solid var(--hair);box-shadow:0 18px 40px rgba(0,0,0,.18);display:none;animation:rise .16s ease}
+.ypop.on{display:block}
+.ywheel{position:relative;height:114px;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;cursor:grab;outline:none}
+.ywheel::-webkit-scrollbar{display:none}
+.ywheel.grab{cursor:grabbing}
+.yitem{height:38px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-family:var(--disp);font-style:italic;font-weight:400;font-size:17px;letter-spacing:.1em;font-variant-numeric:tabular-nums;color:rgba(var(--ink-rgb),.34);transition:color .16s;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.yitem.on{color:var(--ink);font-weight:700}
+.ypad{height:38px}
+.yband{position:absolute;left:0;right:0;top:38px;height:38px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);pointer-events:none;z-index:1}
+.yfade{position:absolute;left:0;right:0;height:38px;pointer-events:none;z-index:2}
+.yfade-t{top:0;background:linear-gradient(to bottom,rgba(var(--paper-rgb),.96),rgba(var(--paper-rgb),0))}
+.yfade-b{bottom:0;background:linear-gradient(to top,rgba(var(--paper-rgb),.96),rgba(var(--paper-rgb),0))}
 .noscript{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px 24px;text-align:center}
 .noscript .ns-year{font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(56px,15vw,130px);line-height:.8;letter-spacing:-.015em}
 .noscript .ns-sub{font-family:var(--disp);font-style:italic;font-weight:300;font-size:clamp(15px,4.4vw,30px);letter-spacing:.12em;line-height:1.2}
@@ -366,6 +352,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cover-yearsw{display:flex;align-items:center;gap:14px;font-family:var(--disp);font-style:italic;font-size:13px;letter-spacing:.16em;opacity:.55}
 .cover-yearsw button{opacity:.7;font-size:16px;line-height:1;padding:2px 4px}
 .cover-yearsw button:hover{opacity:1}
+.cover-yearsw .ysw-year{font-family:var(--disp);font-style:italic;font-weight:400;font-size:13px;letter-spacing:.16em;opacity:.9;padding:2px 3px}
 .enter-hint{font-size:10px;letter-spacing:.3em;opacity:.4;text-transform:uppercase;font-family:var(--disp);font-style:italic}
 
 /* ---------- modal / sheet ---------- */
@@ -432,11 +419,11 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .toast{position:fixed;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--ink);color:var(--paper);padding:10px 16px;font-size:12px;border-radius:2px;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;letter-spacing:.01em;max-width:calc(100% - 32px)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 /* ⊕ theme button — a plain solid disc in the active theme's swatch colour */
-.fab{position:fixed;right:20px;bottom:calc(72px + env(safe-area-inset-bottom));width:38px;height:38px;border-radius:50%;border:1.5px solid transparent;background:var(--fab-bg,var(--paper));display:grid;place-items:center;z-index:45;transition:background .25s,border-color .25s,transform .18s}
+.fab{position:fixed;right:20px;bottom:calc(72px + env(safe-area-inset-bottom));width:38px;height:38px;border-radius:50%;border:1.5px solid var(--fab-bd,transparent);background:var(--fab-bg,var(--paper));display:grid;place-items:center;z-index:45;transition:background .25s,border-color .25s,transform .18s}
 .fab:hover{transform:scale(1.06)}
 .fab svg{width:18px;height:18px}
 /* ⌂ home — mirrors the ⊕ theme fab on the opposite side, back to the cover */
-.fab.homefab{left:20px;right:auto}
+.fab.homefab{left:20px;right:auto;background:var(--paper)}
 .palette-pop{position:fixed;right:20px;bottom:calc(120px + env(safe-area-inset-bottom));z-index:46;background:var(--paper);border:1px solid var(--hair);padding:12px 14px;display:none;grid-template-columns:repeat(4,auto);gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
 .palette-pop.on{display:grid}
 .palette-pop .sw{width:18px;height:18px}
@@ -462,11 +449,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .evt{font-size:11px;gap:4px}
   .evt .tm{display:none}
   .dnum{font-size:12px}
-  .memo{grid-template-columns:1fr;gap:0}
+  .memo{grid-template-columns:1fr;grid-template-areas:"side" "editor" "foot";gap:0}
   .side{border-right:0;padding-right:0}
-  .memo.open .side{display:none}
-  .memo:not(.open) .editor{display:none}
-  .eback{display:grid;place-items:center;width:30px;height:30px}
+  .editor{margin-top:18px;border-top:1px solid var(--dash);padding-top:14px;scroll-margin-top:calc(64px + env(safe-area-inset-top))}
+  .foot{margin-top:22px;border-top:1px solid var(--dash);padding-top:16px}
+  .memo.open .foot{margin-top:20px;border-top:0;padding-top:0}
+  .eback{display:none}
   .etitle{font-size:24px}
   .modal{padding:20px 18px;max-height:92dvh}
   .modal-h .d{font-size:28px}
@@ -487,17 +475,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
      display-sized ones (memo title 24px, check title 17px) keep their scale */
   .cadd input{font-size:16px}
   .ctext{font-size:16px}
-  .search,.goal-input,.gadd input,.msel,.addrow input[type=text],.addrow input[type=time]{font-size:16px}
+  .search,.goal-input,.gadd input,.addrow input[type=text],.addrow input[type=time]{font-size:16px}
   .time-wrap.is-empty::after{font-size:16px}
   .ruled textarea{font-size:16px}
-  .mpanel{margin-top:14px;padding-top:9px}
-  .mpanel-h{gap:8px}
-  .mpbtn{font-size:15px;padding:4px 8px}
-  .mpick{flex:1 1 100%;order:3;max-width:none;min-width:0}
-  .mnew{order:2}
-  .mtitle{font-size:17px}
-  .mlist2{margin-top:0}
-  .mnote-sheet .ruled,.mnote-sheet .ruled textarea{min-height:calc(var(--rh)*7)}
   .yb-step{width:36px;height:32px}
   .yb-year{font-size:16px;min-width:54px}
   .yearbar{padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
@@ -536,6 +516,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.8 11.4 12 4.2l8.2 7.2"/><path d="M6.4 10.1v9.1h11.2v-9.1"/></svg>
 </button>
 <div class="palette-pop" id="palette-pop"></div>
+<div class="ypop" id="ypop" role="dialog" aria-label="연도 선택">
+  <div class="ywheel" id="ywheel" role="listbox" aria-label="연도" tabindex="0"></div>
+  <div class="yband"></div>
+  <div class="yfade yfade-t"></div>
+  <div class="yfade yfade-b"></div>
+</div>
 
 <script>
 /* =========================================================
@@ -552,6 +538,37 @@ const MEMO_TABS = [
   {id:'check', label:'check'},
   {id:'note', label:'memo'}
 ];
+
+
+/* 100 short English mottos — one greets the cover, one closes the month */
+const QUOTES = [
+  "Less noise, more life.", "Begin before you feel ready.", "Small steps every single day.", "Make today count for something.",
+  "Stay curious and keep going.", "Slow down and breathe.", "One page at a time.", "Quiet work, steady progress.",
+  "Write it down, then begin.", "Done is better than perfect.", "Keep the promise you made.", "Show up, then keep showing.",
+  "Little by little, it grows.", "Choose depth over noise.", "A calm mind works better.", "Leave room for the unexpected.",
+  "Protect your quiet hours.", "Start where you are today.", "Finish what you started yesterday.", "Turn intention into action.",
+  "Rest is also the work.", "Read more, scroll less.", "Think slowly, act gently.", "Measure weeks, not moments.",
+  "Ask better questions today.", "Make space for what matters.", "Good days come from habits.", "Keep your desk nearly empty.",
+  "Listen longer than you speak.", "Do the next small thing.", "Breathe before you answer.", "Choose one thing, do it.",
+  "Progress hides in repetition.", "Build habits, not streaks.", "Say less, mean more.", "Write the first bad draft.",
+  "Go outside and look up.", "Plan lightly, live fully.", "Be patient with slow growth.", "Every morning is a beginning.",
+  "Keep your standards, drop perfection.", "Move more, think clearer.", "Simple days make strong years.", "Hold the long view.",
+  "Let the small things pass.", "Notice what you already have.", "Be kind to future you.", "Keep going, even slowly.",
+  "Choose the calmer path today.", "What matters gets your attention.", "Your attention is your life.", "Guard the first quiet hour.",
+  "Do less, but better.", "Sleep well, decide better.", "Start small, stay consistent.", "End the day gently.",
+  "Clean pages, clear mind.", "Write your own pace.", "Make room for slow thinking.", "Trust the steady rhythm.",
+  "Look back only to learn.", "Keep the important things visible.", "Aim for steady, not fast.", "Many small wins add up.",
+  "Let today be enough.", "Say yes to fewer things.", "Learn something useless and lovely.", "Take the long way home.",
+  "Drink water, then decide.", "Break the big thing down.", "Ten minutes beats zero.", "Keep your mornings unhurried.",
+  "Choose curiosity over certainty.", "Growth is quiet and slow.", "Be here, not everywhere.", "Keep the bar reachable.",
+  "Make the bed, begin again.", "Name the feeling, then move.", "Ask for help sooner.", "Walk before you panic.",
+  "Leave a little margin everywhere.", "Emails can wait an hour.", "Honour the plan you made.", "Small rituals hold big days.",
+  "Keep your word to yourself.", "Start the week gently.", "Read the room, then speak.", "Finish the day with gratitude.",
+  "Do the hard thing first.", "Tidy one corner today.", "Practise being unbusy sometimes.", "Listen to the quiet voice.",
+  "Write less, notice more.", "Find the joy in ordinary.", "Keep a little wonder close.", "Rest without earning it.",
+  "Let good enough be enough.", "Your pace is enough.", "Close the loop, then rest.", "Tomorrow begins tonight.",
+];
+const pickQuote = () => QUOTES[Math.floor(Math.random()*QUOTES.length)];
 /* ---------- Korean public holidays ----------
    「관공서의 공휴일에 관한 규정」(2026.4.30. 개정, 노동절·제헌절 추가) 제2조·제3조와
    한국천문연구원 음양력(설날·추석·부처님오신날)을 그대로 계산한 값.
@@ -884,7 +901,9 @@ function go(hash){
 }
 function setRoute(){
   R = parseRoute(); openDay = null; openBackup = false;
-  if(R.view==='monthly'){ S.lastMonth = R.month; }
+  if(ywheelOpen) closeYearWheel();
+  if(R.view==='cover') coverQuote = pickQuote();
+  if(R.view==='monthly'){ S.lastMonth = R.month; monthQuote = pickQuote(); }
   if(R.view==='memo' && R.memoId){
     const m = S.memos.find(x=>x.id===R.memoId);
     if(m){
@@ -896,6 +915,11 @@ function setRoute(){
     }
   }
   render();
+  /* on a phone the list stays put and the editor opens underneath it — bring it into view */
+  if(R.view==='memo' && R.memoId && window.innerWidth <= 760){
+    const ed = document.querySelector('.editor');
+    if(ed) requestAnimationFrame(()=>ed.scrollIntoView({behavior:'smooth', block:'start'}));
+  }
 }
 /* the ≡ menu opens where it was left: same tab, same item (first visit = check) */
 function openMenu(){
@@ -1454,6 +1478,10 @@ const ICO = {
 
 /* ---------------- render ---------------- */
 const app = document.getElementById('app');
+/* the cover eyebrow and the line under the calendar: a fresh motto per page load
+   and per view change, steady while the page is re-rendered for other reasons */
+let coverQuote = pickQuote();
+let monthQuote = pickQuote();
 
 function render(){
   document.documentElement.dataset.theme = S.theme;
@@ -1485,11 +1513,14 @@ function renderNav(){
 }
 
 function renderYearBar(){
-  return `<footer class="yearbar" role="group" aria-label="연도 선택">
+  const monthMode = R.view === 'monthly';
+  const prev = monthMode ? '이전 달' : '이전 연도';
+  const next = monthMode ? '다음 달' : '다음 연도';
+  return `<footer class="yearbar" role="group" aria-label="연도 · 월 이동">
     <div class="yb-switch">
-      <button class="yb-step" data-act="year" data-val="-1" aria-label="이전 연도" title="이전 연도">‹</button>
-      <span class="yb-year" aria-live="polite">${S.year}</span>
-      <button class="yb-step" data-act="year" data-val="1" aria-label="다음 연도" title="다음 연도">›</button>
+      <button class="yb-step" data-act="yb-prev" aria-label="${prev}" title="${prev}">‹</button>
+      <button class="yb-year" data-act="year-pick" role="button" aria-haspopup="dialog" aria-label="${S.year}년, 연도 선택">${S.year}</button>
+      <button class="yb-step" data-act="yb-next" aria-label="${next}" title="${next}">›</button>
     </div>
   </footer>`;
 }
@@ -1504,7 +1535,7 @@ function renderView(){
 /* ---------- cover ---------- */
 function renderCover(){
   return `<div class="cover" data-act="cover-enter">
-    <div class="cover-meta">MONTHLY PLANNER</div>
+    <div class="cover-meta">${esc(coverQuote)}</div>
     <div class="cover-mid">
       <div class="cover-inner">
         <div class="cover-word1">MONTHLY</div>
@@ -1514,9 +1545,9 @@ function renderCover(){
     <div class="cover-bottom">
       <div class="swatches">${THEMES.map(t=>`<button class="sw ${S.theme===t.id?'on':''}" data-act="theme" data-val="${t.id}" title="${t.name}" style="background:${swatchColor(t.id)}"></button>`).join('')}</div>
       <div class="cover-yearsw">
-        <button data-act="year" data-val="-1">‹</button>
-        <span>${S.year}</span>
-        <button data-act="year" data-val="1">›</button>
+        <button data-act="year" data-val="-1" aria-label="이전 연도">‹</button>
+        <button data-act="year-pick" class="ysw-year" aria-label="연도 선택" aria-haspopup="dialog">${S.year}</button>
+        <button data-act="year" data-val="1" aria-label="다음 연도">›</button>
       </div>
       <div class="enter-hint">tap to open</div>
     </div>
@@ -1525,19 +1556,23 @@ function renderCover(){
 function swatchColor(id){
   return {white:'#FFFFFF',cream:'#EDE4D2',olive:'#A3AD77',navy:'#48516C'}[id];
 }
-/* the disc takes the active theme's swatch colour: white and cream need a hairline edge to
-   read on the same-colour paper, olive and navy sit a shade deeper than the paper instead */
+/* the disc takes the active theme's swatch colour, and every theme gets a crisp
+   keyline so the button reads as a button on the paper it sits on (navy and olive
+   used to disappear into their background) */
 const FAB_INK = {
   white:{bg:'#FFFFFF', bd:'#C8C6C2'},
   cream:{bg:'#EDE4D2', bd:'#C7BDA8'},
-  olive:{bg:'#91A06F', bd:'transparent'},
-  navy:{bg:'#3E4E6E', bd:'transparent'}
+  olive:{bg:'#91A06F', bd:'rgba(42,46,24,.38)'},
+  navy:{bg:'#3E4E6E', bd:'rgba(242,240,234,.45)'}
 };
 function paintFab(){
-  const f = document.getElementById('fab'); if(!f) return;
   const c = FAB_INK[S.theme] || FAB_INK.cream;
-  f.style.background = c.bg;
-  f.style.borderColor = c.bd;
+  const f = document.getElementById('fab');
+  if(f){ f.style.background = c.bg; f.style.borderColor = c.bd; }
+  /* ⌂ keeps the opaque paper fill so checklist text scrolling underneath never
+     shows through the icon; it shares the same keyline as the theme disc */
+  const h = document.getElementById('homefab');
+  if(h){ h.style.background = 'var(--paper)'; h.style.borderColor = c.bd; }
 }
 
 /* ---------- monthly ---------- */
@@ -1585,6 +1620,7 @@ function renderMonthly(){
   const dowCols = ws==='m' ? [1,2,3,4,5,6,0] : [0,1,2,3,4,5,6];
   const head = dowCols.map(w=>`<span class="${w===0?'sun':w===6?'sat':''}">${DOW_FULL[w]}</span>`).join('');
   return `
+  <div class="mcol">
   <div class="mhead">
     <div class="mnum">${pad(m)}</div>
     <div class="wkstart" role="radiogroup" aria-label="주 시작 요일">
@@ -1594,7 +1630,8 @@ function renderMonthly(){
   </div>
   <div class="dow">${head}</div>
   <div class="cal">${weeks.join('')}</div>
-  ${renderMonthlyPanel()}`;
+  <div class="mquote">${esc(monthQuote)}</div>
+  </div>`;
 }
 
 /* ---------- yearly ---------- */
@@ -1688,7 +1725,9 @@ function renderMemo(){
           <button class="mx" data-act="memo-del" data-val="${m.id}" aria-label="삭제">×</button>
         </div>`).join('') || ''}
       </div>
-      <div class="side-foot">
+    </aside>
+    ${memo? (memoKind(memo)==='check'? renderChecklist(memo) : renderNote(memo)) : renderEditorEmpty(tab)}
+    <div class="foot">
         <button class="backup" data-act="backup-open">${ICO.doc} Google Docs로 백업</button>
         <button class="acct" data-act="acct-open" aria-haspopup="dialog" aria-label="동기화 계정 선택">
           <span class="lab">동기화 계정</span>
@@ -1703,9 +1742,7 @@ function renderMemo(){
           </div>
           <label class="holrow"><input type="checkbox" data-act="holiday-toggle" ${g.holidays!==false?'checked':''}><span>공휴일 함께 표시</span></label>
         </div>
-      </div>
-    </aside>
-    ${memo? (memoKind(memo)==='check'? renderChecklist(memo) : renderNote(memo)) : renderEditorEmpty(tab)}
+    </div>
   </div>`;
 }
 /* nothing selected: a single centered ＋ that creates an item right away */
@@ -1753,78 +1790,8 @@ function renderChecklist(memo){
   </div>`;
 }
 
-/* ---------- monthly bottom panel (check / memo) ---------- */
-const PANEL_KINDS = [{id:'check', label:'check'}, {id:'note', label:'memo'}];
-function panelKind(){ return S.monthlyPanel === 'note' ? 'note' : 'check'; }
+/* labels used by the ≡ menu's empty editor */
 function panelLabel(kind){ return kind === 'note' ? 'memo' : 'check'; }
-function panelMemo(){
-  const kind = panelKind();
-  const list = tabMemos(kind);
-  if(!list.length) return null;
-  const pick = (S.monthlyPick||{})[kind];
-  return list.find(m=>m.id===pick) || list[0];
-}
-function renderMonthlyPanel(){
-  const kind = panelKind();
-  const label = panelLabel(kind);
-  const list = tabMemos(kind);
-  const memo = panelMemo();
-  const picker = list.length ? `<div class="mpick">
-      <select class="msel" id="mpick" data-act="mpanel-pick" aria-label="${label} 선택">
-        ${list.map(m=>`<option value="${m.id}"${memo&&m.id===memo.id?' selected':''}>${esc(m.title||'제목 없음')}</option>`).join('')}
-      </select>
-    </div>` : '';
-  return `<section class="mpanel" aria-label="월간 ${label}">
-    <div class="mpanel-h">
-      <div class="mpdrop">
-        <button class="mpbtn" data-act="mpanel-menu" aria-haspopup="listbox" aria-expanded="false" aria-label="check / memo 선택">
-          <span>${label}</span><span class="n">${list.length}</span><i class="car"></i>
-        </button>
-        <div class="mpop" role="listbox" aria-label="check / memo">
-          ${PANEL_KINDS.map(k=>`<button role="option" aria-selected="${k.id===kind}" class="${k.id===kind?'on':''}" data-act="mpanel-set" data-val="${k.id}">${k.label}<span class="n">${tabMemos(k.id).length}</span></button>`).join('')}
-        </div>
-      </div>
-      ${picker}
-      <button class="mnew" data-act="mpanel-new">＋ new</button>
-    </div>
-    ${memo
-      ? (kind==='check' ? renderPanelCheck(memo) : renderPanelNote(memo))
-      : ''}
-  </section>`;
-}
-function renderPanelCheck(memo){
-  const items = memo.items || [];
-  const {done, total, pct} = checkCounts(memo);
-  return `<div class="mbody">
-    <div class="mrowt">
-      <input class="mtitle" data-act="mpanel-title" data-val="${memo.id}" value="${esc(memo.title)}" placeholder="제목" aria-label="check 제목">
-      <span class="mprog">${done} / ${total} · ${pct}%</span>
-    </div>
-    <div class="mbar"><i style="width:${pct}%"></i></div>
-    <div class="clist mlist2">
-      ${items.map(it=>`<div class="crow ${it.done?'done':''}">
-        <button class="cb ${it.done?'on':''}" data-act="mpanel-check-toggle" data-val="${it.id}" data-memo="${memo.id}" aria-label="${it.done?'완료 취소':'완료'}"><i></i></button>
-        <input class="ctext" data-act="mpanel-check-edit" data-val="${it.id}" data-memo="${memo.id}" value="${esc(it.text)}" aria-label="항목">
-        <button class="cdel" data-act="mpanel-check-del" data-val="${it.id}" data-memo="${memo.id}" aria-label="삭제">×</button>
-      </div>`).join('') || `<div class="empty">아래에 첫 항목을 적어보세요.</div>`}
-    </div>
-    <div class="cadd">
-      <input id="mnewitem" placeholder="할 일을 적고 Enter" data-act="mpanel-check-new" data-memo="${memo.id}" aria-label="새 항목">
-      <button data-act="mpanel-check-add" data-memo="${memo.id}" aria-label="항목 추가">＋</button>
-    </div>
-  </div>`;
-}
-function renderPanelNote(memo){
-  return `<div class="mbody">
-    <div class="mrowt">
-      <input class="mtitle" data-act="mpanel-title" data-val="${memo.id}" value="${esc(memo.title)}" placeholder="제목" aria-label="메모 제목">
-      <span class="mprog">${timeAgo(memo.updated)||'방금'}</span>
-    </div>
-    <div class="mnote-sheet">
-      <div class="ruled" style="--rh:30px"><textarea data-act="mpanel-text" data-memo="${memo.id}" spellcheck="false" placeholder="이 달의 기록…" aria-label="메모 본문">${esc(memo.text||'')}</textarea></div>
-    </div>
-  </div>`;
-}
 
 /* ---------- modal ---------- */
 function renderModal(){
@@ -1906,6 +1873,26 @@ function renderBackupModal(){
 }
 
 /* ---------------- interactions ---------------- */
+const YEAR_MIN = 2015, YEAR_MAX = 2040;
+/* bottom-bar arrows: a month at a time on the monthly grid (Jan. → Dec. of the
+   previous year, Dec. → Jan. of the next), a year at a time everywhere else */
+function stepMonth(dir){
+  if(R.view !== 'monthly'){ stepYear(dir); return; }
+  let m = (R.month || 1) + dir, y = S.year;
+  if(m < 1){ m = 12; y -= 1; }
+  if(m > 12){ m = 1; y += 1; }
+  if(y < YEAR_MIN || y > YEAR_MAX) return;
+  const wrapped = y !== S.year;
+  S.year = y; persist(true);
+  go('/monthly/' + m);
+  if(wrapped) toast(`${S.year}년`);
+}
+function stepYear(dir){
+  const next = Math.max(YEAR_MIN, Math.min(YEAR_MAX, S.year + dir));
+  if(next === S.year) return;
+  S.year = next; persist(true); render();
+  if(R.view !== 'cover') toast(`${S.year}년`);
+}
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-act]');
   if(!el) return;
@@ -1914,16 +1901,19 @@ document.addEventListener('click', e=>{
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='goal-new'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
-  if(act==='mpanel-title'||act==='mpanel-text'||act==='mpanel-check-edit'||act==='mpanel-check-new'||act==='mpanel-pick') return;
   if(act==='wkstart'||act==='holiday-toggle') return;
   switch(act){
     case 'theme':
       S.theme = val; persist(true); render(); break;
     case 'year': {
-      const next = Math.max(2020, Math.min(2035, S.year + Number(val)));
-      if(next === S.year) return;
-      S.year = next; persist(true); render();
-      if(R.view!=='cover') toast(`${S.year}년`);
+      stepYear(Number(val));
+      break;
+    }
+    case 'yb-prev': stepMonth(-1); break;
+    case 'yb-next': stepMonth(1); break;
+    case 'year-pick': {
+      if(ywheelOpen) closeYearWheel();
+      else openYearWheel(el.classList.contains('ysw-year') ? el.closest('.cover-yearsw') : el.closest('.yearbar'));
       break;
     }
     case 'cover-enter':
@@ -2030,49 +2020,6 @@ document.addEventListener('click', e=>{
       break;
     }
     case 'memo-open': go('/memo/'+val); break;
-    /* ---------- monthly bottom panel ---------- */
-    case 'mpanel-menu': {
-      const pop = document.querySelector('.mpop'), btn = document.querySelector('.mpbtn');
-      if(!pop) break;
-      const on = pop.classList.toggle('on');
-      if(btn) btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-      break;
-    }
-    case 'mpanel-set': {
-      S.monthlyPanel = val === 'note' ? 'note' : 'check';
-      persist(true); render();
-      break;
-    }
-    case 'mpanel-new': {
-      const kind = panelKind();
-      const m = {id:uid(), kind, title:'new', text:'', items:[], updated:Date.now()};
-      S.memos.push(m);
-      S.monthlyPick = Object.assign({check:null, note:null}, S.monthlyPick||{});
-      S.monthlyPick[kind] = m.id;
-      persist(true); render();
-      toast(`new ${panelLabel(kind)}를 추가했습니다`);
-      document.querySelector('.mtitle')?.focus();
-      break;
-    }
-    case 'mpanel-check-toggle': {
-      const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
-      const it = (m.items||[]).find(i=>i.id===val); if(!it) return;
-      it.done = !it.done; m.updated = Date.now(); persist(true); render(); break;
-    }
-    case 'mpanel-check-del': {
-      const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
-      m.items = (m.items||[]).filter(i=>i.id!==val); m.updated = Date.now(); persist(true); render(); break;
-    }
-    case 'mpanel-check-add': {
-      const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
-      const inp = document.getElementById('mnewitem');
-      const text = ((inp && inp.value)||'').trim();
-      if(!text){ if(inp) inp.focus(); return; }
-      m.items = (m.items||[]).concat([{id:uid(), text, done:false}]);
-      m.updated = Date.now(); persist(true); render();
-      const next = document.getElementById('mnewitem'); if(next) next.focus();
-      break;
-    }
     case 'memo-del': {
       S.memos = S.memos.filter(m=>m.id!==val); persist(true);
       if(R.memoId===val) go('/memo'); else render();
@@ -2119,24 +2066,9 @@ document.addEventListener('input', e=>{
     const it = (m.items||[]).find(i=>i.id===el.dataset.val); if(!it) return;
     it.text = el.value; m.updated = Date.now(); persist(); flashSaved();
   }
-  else if(act==='mpanel-title'){
-    const m = S.memos.find(x=>x.id===el.dataset.val); if(!m) return;
-    m.title = el.value; m.updated = Date.now(); persist();
-    const opt = document.querySelector(`#mpick option[value="${m.id}"]`);
-    if(opt) opt.textContent = el.value || '제목 없음';
-  }
-  else if(act==='mpanel-text'){
-    const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
-    m.text = el.value; m.updated = Date.now(); persist();
-  }
-  else if(act==='mpanel-check-edit'){
-    const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
-    const it = (m.items||[]).find(i=>i.id===el.dataset.val); if(!it) return;
-    it.text = el.value; m.updated = Date.now(); persist();
-  }
 });
 
-/* the monthly panel's memo picker is a <select>; week-start and holiday sync are checkable inputs */
+/* week-start and holiday sync are checkable inputs */
 document.addEventListener('change', e=>{
   const ws = e.target.closest('[data-act="wkstart"]');
   if(ws){
@@ -2148,12 +2080,6 @@ document.addEventListener('change', e=>{
     S.google.holidays = !!hol.checked;
     persist(true); render(); return;
   }
-  const el = e.target.closest('[data-act="mpanel-pick"]');
-  if(!el) return;
-  const kind = panelKind();
-  S.monthlyPick = Object.assign({check:null, note:null}, S.monthlyPick||{});
-  S.monthlyPick[kind] = el.value;
-  persist(true); render();
 });
 let savedTimer=null;
 function flashSaved(){
@@ -2171,18 +2097,12 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='cnew'){
     e.preventDefault(); document.querySelector('[data-act="check-add"]')?.click(); return;
   }
-  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='mnewitem'){
-    e.preventDefault(); document.querySelector('[data-act="mpanel-check-add"]')?.click(); return;
-  }
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='newtitle'){
     e.preventDefault(); document.querySelector('[data-act="day-add"]').click(); return;
   }
   if(e.key==='Escape'){ if(openDay){ openDay=null; renderModal(); } else if(openBackup){ openBackup=false; renderModal(); } }
   if((e.key==='ArrowLeft'||e.key==='ArrowRight') && R.view==='monthly' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
-    const d = e.key==='ArrowRight'?1:-1;
-    let m = R.month + d;
-    if(m<1) m=12; if(m>12) m=1;
-    go('/monthly/'+m);
+    stepMonth(e.key==='ArrowRight'?1:-1);
   }
 });
 
@@ -2204,8 +2124,102 @@ fab.addEventListener('click', ()=>{
 /* ⌂ home — back to the cover (iPhone standalone mode has no browser back) */
 document.getElementById('homefab').addEventListener('click', ()=>go('#/cover'));
 
+/* ---------------- year wheel ---------------- */
+/* a paper wheel just above the bottom bar: tap, drag (mouse/pen) or flick (touch)
+   through the years, the centred row applies straight away */
+const YROW = 38;
+const ypop = document.getElementById('ypop');
+const ywheel = document.getElementById('ywheel');
+let ywheelOpen = false, ywheelDrag = null, ywheelSuppress = false, ywheelTimer = null;
+
+function buildWheel(){
+  let html = '<div class="ypad"></div>';
+  for(let y = YEAR_MIN; y <= YEAR_MAX; y++){
+    html += `<div class="yitem${y===S.year?' on':''}" role="option" aria-selected="${y===S.year}" data-year="${y}">${y}</div>`;
+  }
+  ywheel.innerHTML = html + '<div class="ypad"></div>';
+}
+function wheelIndex(){
+  return Math.max(0, Math.min(YEAR_MAX-YEAR_MIN, Math.round(ywheel.scrollTop / YROW)));
+}
+function paintWheel(){
+  const i = wheelIndex();
+  ywheel.querySelectorAll('.yitem').forEach((el,n)=>{
+    el.classList.toggle('on', n===i);
+    el.setAttribute('aria-selected', n===i ? 'true' : 'false');
+  });
+}
+function openYearWheel(anchor){
+  buildWheel();
+  ywheelOpen = true;
+  ypop.classList.add('on');
+  const bar = anchor || document.querySelector('.yearbar') || document.querySelector('.cover-yearsw');
+  const r = bar ? bar.getBoundingClientRect() : {top: window.innerHeight - 60};
+  ypop.style.bottom = Math.max(10, Math.round(window.innerHeight - r.top + 8)) + 'px';
+  ywheel.scrollTop = (Math.max(YEAR_MIN, Math.min(YEAR_MAX, S.year)) - YEAR_MIN) * YROW;
+  paintWheel();
+  try{ ywheel.focus({preventScroll:true}); }catch(err){}
+}
+function closeYearWheel(){
+  ywheelOpen = false;
+  ypop.classList.remove('on');
+}
+function applyWheelYear(y){
+  if(y === S.year) return;
+  S.year = y; persist(true); render();
+}
+ywheel.addEventListener('scroll', ()=>{
+  paintWheel();
+  clearTimeout(ywheelTimer);
+  ywheelTimer = setTimeout(()=>{ if(ywheelOpen) applyWheelYear(YEAR_MIN + wheelIndex()); }, 130);
+}, {passive:true});
+ywheel.addEventListener('click', e=>{
+  const it = e.target.closest('.yitem');
+  if(!it || ywheelSuppress) return;
+  const y = Number(it.dataset.year);
+  closeYearWheel();
+  applyWheelYear(y);
+  if(y === S.year) render();
+});
+/* mouse and pen drag their way down the wheel; touch keeps the browser's own
+   momentum scrolling and snap */
+ywheel.addEventListener('pointerdown', e=>{
+  if(e.pointerType === 'touch') return;
+  ywheelDrag = {y:e.clientY, top:ywheel.scrollTop, moved:false};
+  try{ ywheel.setPointerCapture(e.pointerId); }catch(err){}
+  ywheel.classList.add('grab');
+});
+ywheel.addEventListener('pointermove', e=>{
+  if(!ywheelDrag) return;
+  const dy = e.clientY - ywheelDrag.y;
+  if(Math.abs(dy) > 3) ywheelDrag.moved = true;
+  if(ywheelDrag.moved){ e.preventDefault(); ywheel.scrollTop = ywheelDrag.top - dy; }
+});
+function endWheelDrag(){
+  if(!ywheelDrag) return;
+  const moved = ywheelDrag.moved;
+  ywheelDrag = null;
+  ywheel.classList.remove('grab');
+  if(moved){
+    ywheelSuppress = true;
+    ywheel.scrollTo({top: wheelIndex()*YROW, behavior:'smooth'});
+    setTimeout(()=>{ ywheelSuppress = false; }, 320);
+  }
+}
+ywheel.addEventListener('pointerup', endWheelDrag);
+ywheel.addEventListener('pointercancel', endWheelDrag);
+ywheel.addEventListener('keydown', e=>{
+  if(e.key==='Escape' || e.key==='Enter'){ e.preventDefault(); closeYearWheel(); return; }
+  if(e.key==='ArrowUp' || e.key==='ArrowDown'){
+    e.preventDefault();
+    const i = wheelIndex() + (e.key==='ArrowUp' ? -1 : 1);
+    ywheel.scrollTo({top: Math.max(0, Math.min(YEAR_MAX-YEAR_MIN, i))*YROW, behavior:'smooth'});
+  }
+});
+
 document.addEventListener('click', e=>{
   if(!e.target.closest('#fab') && !e.target.closest('#palette-pop')) document.getElementById('palette-pop').classList.remove('on');
+  if(ywheelOpen && !e.target.closest('#ypop') && !e.target.closest('[data-act="year-pick"]')) closeYearWheel();
   if(!e.target.closest('.mpdrop')){
     const pop = document.querySelector('.mpop');
     if(pop && pop.classList.contains('on')){
