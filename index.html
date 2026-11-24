@@ -805,7 +805,7 @@ function initialState(){
     menuTab:'check',          /* last tab used inside the ≡ menu */
     menuLast:{check:null, note:null},  /* last item opened per tab */
     menuVisited:false,
-    monthlyPanel:'check', monthlyPick:{check:null, note:null}, lastMonth:1,
+    lastMonth:1,
     events:[], goals:seedGoals(), memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
@@ -848,9 +848,6 @@ function load(){
       st.clearedSeedMemos = true;
       try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
     }
-    /* the monthly bottom panel opens on check unless the user switched it */
-    st.monthlyPanel = p.monthlyPanel === 'note' ? 'note' : 'check';
-    st.monthlyPick = Object.assign({check:null, note:null}, p.monthlyPick||{});
     /* only the four kept themes are valid — anything else falls back to cream */
     st.theme = THEMES.some(t=>t.id===p.theme) ? p.theme : 'cream';
     return st;
@@ -2225,13 +2222,6 @@ ywheel.addEventListener('keydown', e=>{
 document.addEventListener('click', e=>{
   if(!e.target.closest('#fab') && !e.target.closest('#palette-pop')) document.getElementById('palette-pop').classList.remove('on');
   if(ywheelOpen && !e.target.closest('#ypop') && !e.target.closest('[data-act="year-pick"]')) closeYearWheel();
-  if(!e.target.closest('.mpdrop')){
-    const pop = document.querySelector('.mpop');
-    if(pop && pop.classList.contains('on')){
-      pop.classList.remove('on');
-      document.querySelector('.mpbtn')?.setAttribute('aria-expanded','false');
-    }
-  }
 });
 
 window.addEventListener('hashchange', setRoute);
