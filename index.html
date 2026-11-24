@@ -163,7 +163,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cell.hol .dnum{color:var(--sun-ink);opacity:1}
 .dnum .hol{margin-left:6px;font-size:9.6px;font-weight:600;letter-spacing:-.005em;line-height:1;color:var(--sun-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .dnum .hol .s{display:none}
-.cell.today .dnum::after{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;margin-left:5px;margin-top:1px}
 .evts{display:flex;flex-direction:column}
 .evt{
   height:var(--rowh);display:flex;align-items:center;gap:5px;
@@ -555,6 +554,9 @@ html.grain[data-theme="olive"] #grain{opacity:0.16;mix-blend-mode:overlay}
 html.grain[data-theme="navy"] #grain{opacity:0.2;mix-blend-mode:overlay}
 /* a date that holds at least one event gets its day number circled by hand */
 .dnum-n{position:relative;display:inline-flex;align-items:center;justify-content:center;overflow:visible}
+/* today reads as bold instead of carrying a dot; the heavier weight still
+   stands out from the 500-weight dates through the pencil oval */
+.cell.today .dnum-n{font-weight:800}
 /* the loop is drawn in a 30x24 (5:4) box, so a single digit gets a slightly
    smaller oval and two digits a wider one; both stay centred on the number */
 .pen{position:absolute;left:50%;top:50%;width:27px;height:21.6px;transform:translate(-50%,-50%);overflow:visible;color:var(--pen);pointer-events:none}
@@ -1797,7 +1799,7 @@ function paintFab(){
    iOS paints the area behind the status bar from the root canvas and keeps the
    last <meta name=theme-color> until the tag is re-read, so a theme switch used
    to leave that strip on the previous paper. Setting <html>, <body> and the meta
-   together (and re-inserting the meta so Safari picks it up) fixes the strip. */
+   together, then repeating them a frame later, fixes the strip. */
 function paperColor(){
   const v = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
   return v || '#EDE4D2';
@@ -1806,12 +1808,18 @@ function syncPaper(){
   const c = paperColor();
   document.documentElement.style.backgroundColor = c;
   document.body.style.backgroundColor = c;
+  /* the tag is edited in place, never swapped out: WebKit keeps its own
+     observer on this exact node, and a replaced node stops updating the
+     status bar. Writing the value again on the next frame (with the canvas
+     colours beside it) makes iOS take the new paper in the same frame. */
   const meta = document.querySelector('meta[name=theme-color]');
-  if(meta && meta.getAttribute('content') !== c){
-    const fresh = meta.cloneNode(false);
-    fresh.setAttribute('content', c);
-    meta.parentNode.replaceChild(fresh, meta);
-  }
+  if(meta) meta.content = c;
+  requestAnimationFrame(() => {
+    document.documentElement.style.backgroundColor = c;
+    document.body.style.backgroundColor = c;
+    const m = document.querySelector('meta[name=theme-color]');
+    if(m) m.content = c;
+  });
 }
 
 /* ---------- monthly ---------- */
