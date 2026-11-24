@@ -41,10 +41,10 @@
   --numh:24px; --rowh:27px;
   --pad:28px;
 }
-[data-theme="white"]{--paper:#FFFFFF;--ink:#111111;--ink-rgb:17,17,17;--paper-rgb:255,255,255;--sat:#9BB7D4;--sun:#D3A29A;--sun-ink:#BE7469;--sat-ink:#5F7F9E}
-[data-theme="cream"]{--paper:#EDE4D2;--ink:#4B648C;--ink-rgb:75,100,140;--paper-rgb:237,228,210;--sat:#9BB0C8;--sun:#C08E80;--sun-ink:#A9716A;--sat-ink:#6C88A8}
-[data-theme="olive"]{--paper:#A3AD77;--ink:#2E331F;--ink-rgb:46,51,31;--paper-rgb:163,173,119;--sat:#7E9C9A;--sun:#A8735F;--sun-ink:#7C4F3F;--sat-ink:#3F6160}
-[data-theme="navy"]{--paper:#48516C;--ink:#C3B89B;--ink-rgb:195,184,155;--paper-rgb:72,81,108;--sat:#9DB3C9;--sun:#CFA096;--sun-ink:#D9AFA6;--sat-ink:#AEC5DA}
+[data-theme="white"]{--paper:#FFFFFF;--ink:#111111;--ink-rgb:17,17,17;--paper-rgb:255,255,255;--sat:#9BB7D4;--sun:#D3A29A;--sun-ink:#BE7469;--sat-ink:#5F7F9E;--pen:rgba(196,98,72,.52)}
+[data-theme="cream"]{--paper:#EDE4D2;--ink:#4B648C;--ink-rgb:75,100,140;--paper-rgb:237,228,210;--sat:#9BB0C8;--sun:#C08E80;--sun-ink:#A9716A;--sat-ink:#6C88A8;--pen:rgba(75,100,140,.52)}
+[data-theme="olive"]{--paper:#A3AD77;--ink:#2E331F;--ink-rgb:46,51,31;--paper-rgb:163,173,119;--sat:#7E9C9A;--sun:#A8735F;--sun-ink:#7C4F3F;--sat-ink:#3F6160;--pen:rgba(244,240,224,.62)}
+[data-theme="navy"]{--paper:#48516C;--ink:#C3B89B;--ink-rgb:195,184,155;--paper-rgb:72,81,108;--sat:#9DB3C9;--sun:#CFA096;--sun-ink:#D9AFA6;--sat-ink:#AEC5DA;--pen:rgba(232,217,178,.62)}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
@@ -519,6 +519,29 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .cover-word1,.cover-word2{font-size:min(8vw,6.4vh)}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ---------- 종이 질감 · 연필 동그라미 · option ---------- */
+#grain{
+  position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0;
+  transition:opacity .4s ease;background-repeat:repeat;background-size:200px 200px;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+html.grain #grain{opacity:.045}
+html.grain[data-theme="olive"] #grain{opacity:.06;mix-blend-mode:overlay}
+html.grain[data-theme="navy"] #grain{opacity:.11;mix-blend-mode:overlay}
+/* a date that holds at least one event gets its day number circled by hand */
+.dnum-n{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.pen{position:absolute;left:50%;top:50%;width:23px;height:22px;transform:translate(calc(-50% + 1px),-50%);overflow:visible;color:var(--pen);pointer-events:none}
+.pen path{fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+/* ---------- option tab ---------- */
+.opts{margin-top:26px;max-width:430px}
+.orow{display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%;padding:16px 0;border-bottom:1px solid var(--dash);font-family:var(--ui);font-size:13px;letter-spacing:.01em;color:var(--ink);text-align:left;transition:opacity .16s}
+.orow:hover{opacity:.72}
+.orow .obox{width:15px;height:15px;border:1.3px solid var(--hair);flex:0 0 auto;display:grid;place-items:center;transition:border-color .15s}
+.orow .obox::after{content:'';width:8px;height:4px;border-left:1.6px solid var(--ink);border-bottom:1.6px solid var(--ink);transform:rotate(-45deg);opacity:0;transition:opacity .12s}
+.orow[aria-checked="true"] .obox::after{opacity:1}
+@media (max-width:760px){.opts{margin-top:20px}.orow{padding:15px 0;font-size:12.5px}}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -533,6 +556,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   </noscript>
 </div>
 <div id="modal-root"></div>
+<div id="grain" aria-hidden="true"></div>
 <div class="toast" id="toast"></div>
 <button class="fab" id="fab" aria-label="테마 변경" hidden></button>
 <button class="fab homefab" id="homefab" aria-label="표지로 돌아가기" title="표지" hidden>
@@ -564,6 +588,8 @@ const MEMO_TABS = [
   {id:'check', label:'check'},
   {id:'note', label:'memo'}
 ];
+/* the ≡ menu carries one extra tab: the three switches */
+const MENU_TABS = MEMO_TABS.concat([{id:'option', label:'option'}]);
 
 
 /* 100 short English mottos — one greets the cover, one closes the month */
@@ -827,6 +853,7 @@ function initialState(){
     backupScopes:{schedule:true, memo:true, check:true},  /* what a Docs backup carries */
     lastMonth:todayMonth(),
     events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
+    prefs:{grain:true, sound:true, haptic:true},   /* 종이 질감 · 사운드 · 햅틱 */
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
   };
@@ -845,9 +872,9 @@ function load(){
     st.google.holCache = Object.assign({}, (p.google && p.google.holCache) || {});
     st.docId = typeof p.docId === 'string' ? p.docId : null;
     st.memos = (p.memos||base.memos).map(migrateMemo);
-    st.memoTab = p.memoTab === 'note' ? 'note' : 'check';
+    st.memoTab = (p.memoTab === 'note' || p.memoTab === 'option') ? p.memoTab : 'check';
     st.weekStart = p.weekStart === 's' ? 's' : 'm';
-    st.menuTab = p.menuTab === 'note' ? 'note' : 'check';
+    st.menuTab = (p.menuTab === 'note' || p.menuTab === 'option') ? p.menuTab : 'check';
     st.menuLast = Object.assign({check:null, note:null}, p.menuLast||{});
     st.menuVisited = !!p.menuVisited;
     st.inlineTab = p.inlineTab === 'note' ? 'note' : 'check';
@@ -879,6 +906,7 @@ function load(){
     }
     /* only the four kept themes are valid — anything else falls back to cream */
     st.theme = THEMES.some(t=>t.id===p.theme) ? p.theme : 'cream';
+    st.prefs = Object.assign({grain:true, sound:true, haptic:true}, p.prefs||{});
     return st;
   }catch(e){ return initialState(); }
 }
@@ -954,7 +982,7 @@ function setRoute(){
 function openMenu(){
   const first = !S.menuVisited;
   S.menuVisited = true;
-  const tab = first ? 'check' : (S.menuTab === 'note' ? 'note' : 'check');
+  const tab = first ? 'check' : (S.menuTab==='note'||S.menuTab==='option' ? S.menuTab : 'check');
   S.menuTab = tab; S.memoTab = tab;
   const lastId = (S.menuLast || {})[tab];
   let target = lastId ? S.memos.find(m=>m.id===lastId && memoKind(m)===tab) : null;
@@ -993,6 +1021,86 @@ function toast(msg){
   clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), 2400);
 }
 const themeMeta = id => THEMES.find(t=>t.id===id) || THEMES[1];
+/* =========================================================
+   종이 질감 · 소리 · 진동
+   ========================================================= */
+/* the grain is one fixed layer; the option tab just switches the class on <html> */
+function applyPrefs(){
+  const p = S.prefs || {};
+  document.documentElement.classList.toggle('grain', p.grain !== false);
+}
+const prefOn = id => ((S.prefs || {})[id] !== false);
+/* Every sound is synthesised here, so the app stays one offline file. Nothing is
+   created before the page has been touched: a fresh load stays silent. */
+let touched = false, AC = null;
+['pointerdown','keydown'].forEach(ev=>window.addEventListener(ev, ()=>{ touched = true; }, {once:true, capture:true, passive:true}));
+function audioCtx(){
+  if(AC !== null) return AC;
+  try{
+    const C = window.AudioContext || window.webkitAudioContext;
+    AC = C ? new C() : false;
+  }catch(e){ AC = false; }
+  return AC;
+}
+function noiseBuffer(ac, dur){
+  const len = Math.max(1, Math.floor(ac.sampleRate * dur));
+  const buf = ac.createBuffer(1, len, ac.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<len;i++){
+    const k = 1 - i/len;
+    d[i] = (Math.random()*2 - 1) * k * k;
+  }
+  return buf;
+}
+/* the tick of a pen on paper — check box, swatch, saved event */
+function penClick(){
+  if(!touched || !prefOn('sound')) return;
+  const ac = audioCtx(); if(!ac) return;
+  try{
+    if(ac.state === 'suspended') ac.resume();
+    const t = ac.currentTime;
+    const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, .028);
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 1.2;
+    const g = ac.createGain(); g.gain.value = .085;
+    src.connect(bp); bp.connect(g); g.connect(ac.destination);
+    src.start(t);
+  }catch(e){}
+}
+/* a whisper of a page being turned — month and view changes */
+function paperTurn(){
+  if(!touched || !prefOn('sound')) return;
+  const ac = audioCtx(); if(!ac) return;
+  try{
+    if(ac.state === 'suspended') ac.resume();
+    const t = ac.currentTime, dur = .075;
+    const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, dur);
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = .8;
+    bp.frequency.setValueAtTime(820, t);
+    bp.frequency.linearRampToValueAtTime(1900, t + dur);
+    const g = ac.createGain();
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(.05, t + .012);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    src.connect(bp); bp.connect(g); g.connect(ac.destination);
+    src.start(t);
+  }catch(e){}
+}
+/* iOS Safari has no navigator.vibrate — the call must never throw there */
+function buzz(ms){
+  if(!prefOn('haptic')) return;
+  try{ if(navigator.vibrate) navigator.vibrate(ms || 10); }catch(e){}
+}
+function uiClick(){ penClick(); buzz(10); }
+/* the page-turn whisper fires from render(), so every way of changing month, view
+   or year gets it and nothing else does */
+let viewKey = '';
+function routeFeedback(){
+  const key = `${R.view}|${R.month||''}|${S.year}`;
+  if(viewKey && key !== viewKey) paperTurn();
+  viewKey = key;
+}
+/* actions that get the pen tick + pulse */
+const CLICK_ACTS = new Set(['theme','check-toggle','check-del','check-add','day-toggle','day-add','memo-new','imemo-new']);
 
 /* =========================================================
    Google — Identity Services OAuth, Calendar, Docs
@@ -1541,6 +1649,7 @@ let monthQuote = pickQuote();
 
 function render(){
   document.documentElement.dataset.theme = S.theme;
+  applyPrefs();
   document.querySelector('meta[name=theme-color]').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--paper').trim());
   const fab = document.getElementById('fab');
   fab.hidden = R.view==='cover';
@@ -1555,6 +1664,7 @@ function render(){
     wrap.scrollLeft = act.offsetLeft - wrap.clientWidth/2 + act.offsetWidth/2;
   }
   document.getElementById('palette-pop').classList.toggle('on', false);
+  routeFeedback();
 }
 
 function renderNav(){
@@ -1648,6 +1758,22 @@ function holShort(hol){
   });
   return out.join('·');
 }
+/* ---------- hand-drawn pencil circles ---------- */
+/* six organic loops, each closed with a small overshoot so it reads as a quick
+   pen stroke; one is chosen from the date itself, so a re-render never reshuffles */
+const PEN_PATHS = [
+  'M21.2 13.6C20.5 14.3 18.9 17.1 17.2 18.0C15.6 19.0 13.2 19.5 11.3 19.3C9.4 19.2 7.3 18.1 5.9 17.0C4.5 15.8 3.4 13.9 3.0 12.2C2.6 10.5 2.6 8.0 3.5 6.5C4.4 4.9 6.7 3.4 8.5 2.8C10.4 2.3 12.8 2.8 14.6 3.3C16.5 3.9 18.4 4.9 19.6 6.3C20.8 7.7 21.9 10.0 21.8 11.7C21.7 13.5 20.5 15.8 19.1 17.1C17.6 18.4 14.3 19.2 13.3 19.7',
+  'M3.8 15.5C3.7 14.5 2.6 11.4 3.0 9.7C3.4 8.0 4.9 6.2 6.3 5.1C7.8 4.0 9.9 3.1 11.8 3.1C13.7 3.0 15.9 3.7 17.5 4.7C19.1 5.8 20.8 7.6 21.2 9.3C21.7 11.0 21.3 13.6 20.3 15.1C19.3 16.6 16.9 17.6 15.1 18.2C13.3 18.7 11.1 19.0 9.2 18.6C7.3 18.2 4.8 17.2 3.7 15.7C2.5 14.2 2.2 11.6 2.6 9.8C3.0 8.0 5.4 5.7 6.0 4.9',
+  'M17.3 3.4C17.9 4.1 20.5 6.3 21.0 8.0C21.5 9.7 21.2 11.9 20.5 13.6C19.9 15.2 18.7 16.9 17.1 18.0C15.6 19.0 13.4 19.7 11.5 19.7C9.6 19.6 7.3 18.8 5.8 17.7C4.3 16.5 2.9 14.5 2.5 12.8C2.2 11.0 2.7 8.7 3.6 7.2C4.6 5.7 6.3 4.4 8.0 3.6C9.8 2.7 12.0 2.1 13.9 2.3C15.8 2.5 18.4 3.5 19.6 4.9C20.9 6.2 21.2 9.6 21.5 10.5',
+  'M13.6 19.4C12.5 19.3 8.9 19.6 7.3 18.6C5.7 17.7 4.5 15.6 4.0 13.9C3.4 12.2 3.4 10.3 3.9 8.6C4.4 6.9 5.4 4.7 6.9 3.7C8.4 2.6 11.2 2.1 13.1 2.3C15.0 2.6 17.1 3.9 18.5 5.2C19.8 6.6 20.8 8.6 21.0 10.3C21.1 12.0 20.5 14.2 19.4 15.7C18.4 17.2 16.5 18.7 14.7 19.4C12.8 20.0 9.9 20.2 8.1 19.4C6.3 18.7 4.6 15.7 3.8 15.0',
+  'M4.2 7.5C4.9 7.0 6.9 5.1 8.5 4.4C10.1 3.7 12.1 3.0 13.9 3.1C15.6 3.3 18.0 4.3 19.2 5.6C20.3 6.8 21.0 9.0 21.0 10.7C21.0 12.4 20.3 14.4 19.2 15.7C18.0 17.0 16.1 18.1 14.4 18.5C12.6 18.9 10.5 18.8 8.8 18.3C7.0 17.8 4.7 16.8 3.7 15.4C2.6 14.0 2.1 11.5 2.5 9.8C2.9 8.1 4.6 6.5 6.0 5.4C7.5 4.3 10.2 3.4 11.1 3.0',
+  'M20.0 7.0C20.1 7.9 21.1 10.7 20.8 12.4C20.5 14.2 19.6 16.3 18.2 17.5C16.8 18.8 14.3 19.9 12.3 20.0C10.4 20.0 8.0 18.7 6.5 17.6C5.0 16.4 3.9 14.6 3.4 12.9C2.8 11.2 2.5 8.9 3.2 7.3C3.9 5.6 5.8 3.8 7.7 3.0C9.5 2.2 12.2 2.0 14.2 2.5C16.1 2.9 18.3 4.2 19.6 5.6C20.8 7.1 21.5 9.3 21.5 11.1C21.5 13.0 20.0 15.8 19.7 16.8'
+];
+function penPick(ds){
+  let h = 0;
+  for(let i=0;i<ds.length;i++) h = (h * 31 + ds.charCodeAt(i)) % 9973;
+  return h % PEN_PATHS.length;
+}
 function renderMonthly(){
   const y = S.year, m = R.month;
   const total = daysInMonth(y,m);
@@ -1666,7 +1792,8 @@ function renderMonthly(){
     const evs = eventsOn(ds);
     const lines = evs.slice(0,3).map(e=>`<div class="evt ${e.source==='google'?'g':''} ${e.done?'done':''}">
         <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`).join('');
-    cells.push(`<div class="${cls}" data-act="open-day" data-val="${ds}"${hol?` title="${esc(hol)}"`:''}><div class="dnum">${day}${hol?`<span class="hol"><span class="f">${esc(hol)}</span><span class="s">${esc(holShort(hol))}</span></span>`:''}</div><div class="evts">${lines}</div></div>`);
+    const pen = evs.length ? `<svg class="pen" viewBox="0 0 24 22" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
+    cells.push(`<div class="${cls}" data-act="open-day" data-val="${ds}"${hol?` title="${esc(hol)}"`:''}><div class="dnum"><span class="dnum-n">${day}${pen}</span>${hol?`<span class="hol"><span class="f">${esc(hol)}</span><span class="s">${esc(holShort(hol))}</span></span>`:''}</div><div class="evts">${lines}</div></div>`);
   }
   const weeks = [];
   for(let r=0;r<rows;r++){
@@ -1745,9 +1872,10 @@ function noteSearchText(m){
 }
 /* tabs, list rows and the side column, shared by the ≡ menu and the section
    under the calendar (they differ only in the actions they fire) */
-function memoTabsHTML(tab, act){
+function memoTabsHTML(tab, act, withOptions){
+  const tabs = withOptions ? MENU_TABS : MEMO_TABS;
   return `<div class="memotabs" role="tablist" aria-label="메모 종류">
-    ${MEMO_TABS.map(t=>`<button class="mtab ${t.id===tab?'on':''}" role="tab" aria-selected="${t.id===tab}" data-act="${act}" data-val="${t.id}">${t.label}<span class="n">${tabMemos(t.id).length}</span></button>`).join('')}
+    ${tabs.map(t=>`<button class="mtab ${t.id===tab?'on':''}" role="tab" aria-selected="${t.id===tab}" data-act="${act}" data-val="${t.id}">${t.label}${t.id==='option'?'':`<span class="n">${tabMemos(t.id).length}</span>`}</button>`).join('')}
   </div>`;
 }
 function memoRowsHTML(list, sel, openAct, delAct){
@@ -1764,13 +1892,25 @@ function memoSideHTML(tab, memo, acts){
       <div class="mlist">${memoRowsHTML(tabMemos(tab), memo, acts.open, acts.del)}</div>
     </aside>`;
 }
+/* ---------- option tab (inside ≡) : 종이 질감 · 사운드 · 햅틱 ---------- */
+const PREF_ROWS = [
+  {id:'grain',  label:'종이 질감'},
+  {id:'sound',  label:'사운드'},
+  {id:'haptic', label:'햅틱'}
+];
+function renderOptions(){
+  return `<div class="opts">
+    ${PREF_ROWS.map(p=>`<button class="orow" role="switch" aria-checked="${prefOn(p.id)}" data-act="pref" data-val="${p.id}"><span>${p.label}</span><span class="obox"></span></button>`).join('')}
+  </div>`;
+}
 function renderMemo(){
-  const tab = (S.memoTab==='note') ? 'note' : 'check';
+  const tab = (S.memoTab==='note'||S.memoTab==='option') ? S.memoTab : 'check';
+  if(tab==='option') return `${memoTabsHTML('option', 'memo-tab', true)}${renderOptions()}`;
   const memo = currentMemo();
   const g = S.google || {};
   const acct = g.account || '';
   return `
-  ${memoTabsHTML(tab, 'memo-tab')}
+  ${memoTabsHTML(tab, 'memo-tab', true)}
   <div class="memo ${memo?'open':''}">
     ${memoSideHTML(tab, memo, {new:'memo-new', open:'memo-open', del:'memo-del'})}
     ${memo? (memoKind(memo)==='check'? renderChecklist(memo) : renderNote(memo)) : renderEditorEmpty(tab)}
@@ -1978,6 +2118,7 @@ document.addEventListener('click', e=>{
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
   if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
+  if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
     case 'theme':
       S.theme = val; persist(true); render(); break;
@@ -2044,8 +2185,16 @@ document.addEventListener('click', e=>{
       break;
     }
     case 'sync': calendarSync(); break;
+    case 'pref': {
+      const p = Object.assign({grain:true, sound:true, haptic:true}, S.prefs||{});
+      p[val] = p[val] === false;          /* flip this one switch */
+      S.prefs = p; persist(true); applyPrefs(); render();
+      /* switching a feedback option on shows what it does right away */
+      if(p[val]){ if(val==='sound') penClick(); if(val==='haptic') buzz(14); }
+      break;
+    }
     case 'memo-tab': {
-      const tab = val==='check' ? 'check' : 'note';
+      const tab = val==='check' ? 'check' : (val==='option' ? 'option' : 'note');
       S.memoTab = tab; S.menuTab = tab; persist(true);
       const m = R.memoId ? S.memos.find(x=>x.id===R.memoId) : null;
       if(!m || memoKind(m)!==tab) go('/memo'); else render();

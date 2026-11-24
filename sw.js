@@ -5,7 +5,7 @@
    straight to the network.
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
-const CACHE = 'mp27-v13';
+const CACHE = 'mp27-v14';
 
 /* the whole app is these six files (the fonts live inside index.html) */
 const SHELL = [
