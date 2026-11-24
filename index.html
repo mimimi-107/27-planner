@@ -812,9 +812,12 @@ p.121 종이 위의 여백은 비어 있는 것이 아니라 선택의 공간.
 /* Same for the five sample memos/checklists: a new install starts with none, and a browser
    that already holds them drops the untouched ones once (load()). */
 const SEED_MEMO_SIGS = seedMemos().map(m => [m.id, m.kind, m.title].join('|'));
+/* today on this device, kept inside the range the year wheel can show */
+function todayYear(){ const y = new Date().getFullYear(); return Math.min(2040, Math.max(2015, y)); }
+function todayMonth(){ return new Date().getMonth() + 1; }
 function initialState(){
   return {
-    theme:'cream', year:2027, visited:false, memoTab:'check',
+    theme:'cream', year:todayYear(), visited:false, memoTab:'check',
     weekStart:'m',            /* 'm' = Monday-start (default), 's' = Sunday-start */
     menuTab:'check',          /* last tab used inside the ≡ menu */
     menuLast:{check:null, note:null},  /* last item opened per tab */
@@ -822,7 +825,7 @@ function initialState(){
     inlineTab:'check',        /* tab of the check · memo section under the calendar */
     inlineLast:{check:null, note:null},  /* item open in that section, per tab */
     backupScopes:{schedule:true, memo:true, check:true},  /* what a Docs backup carries */
-    lastMonth:1,
+    lastMonth:todayMonth(),
     events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
@@ -1991,7 +1994,11 @@ document.addEventListener('click', e=>{
     }
     case 'cover-enter':
       if(e.target.closest('.swatches')||e.target.closest('.cover-yearsw')) return;
-      S.visited = true; persist(true); go('/monthly/1'); break;
+      /* opening the planner from the cover always lands on today's month,
+         whatever year the cover was left on */
+      S.year = todayYear();
+      S.lastMonth = todayMonth();
+      S.visited = true; persist(true); go('/monthly/' + S.lastMonth); break;
     case 'month': {
       const m = Number(val);
       if(R.view==='cover'){ S.visited = true; persist(true); }
