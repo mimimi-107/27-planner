@@ -53,7 +53,9 @@ html,body{margin:0;padding:0;height:100%;-webkit-text-size-adjust:100%;text-size
    the paper colour sits on <html> itself: iOS paints the strip behind the status
    bar from the root canvas, and with the colour only on <body> that strip kept
    the previous theme (the body's 400ms fade also left it a frame behind). */
-html{scrollbar-gutter:stable;background-color:var(--paper)}
+html{scrollbar-gutter:stable;background-color:var(--paper);
+  /* scrollIntoView / focus land above the bottom bar instead of under it */
+  scroll-padding-bottom:calc(70px + env(safe-area-inset-bottom))}
 body{
   background:var(--paper);color:var(--ink);
   font-family:var(--ui);font-size:14px;line-height:1.45;
