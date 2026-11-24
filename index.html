@@ -909,7 +909,7 @@ function persist(now){
 function parseRoute(){
   const h = decodeURIComponent(location.hash.replace(/^#\/?/,''));
   const p = h.split('/').filter(Boolean);
-  if(!p.length) return S.visited ? {view:'monthly', month:(new Date().getFullYear()===S.year? new Date().getMonth()+1 : 1)} : {view:'cover'};
+  if(!p.length) return S.visited ? {view:'monthly', month:todayMonth()} : {view:'cover'};
   if(p[0]==='cover') return {view:'cover'};
   if(p[0]==='monthly') return {view:'monthly', month: p[1]? Math.min(12,Math.max(1,parseInt(p[1],10)||1)) : 1};
   if(p[0]==='yearly') return {view:'yearly'};
@@ -2338,9 +2338,15 @@ document.addEventListener('click', e=>{
 
 window.addEventListener('hashchange', setRoute);
 
-/* boot */
-if(!location.hash){
-  if(S.visited){ location.replace('#/monthly/'+(new Date().getFullYear()===S.year? new Date().getMonth()+1:1)); }
+/* boot: a fresh launch (no route hash, e.g. the Home Screen app) always
+   opens on today's year and month, whatever year was last looked at */
+if(!location.hash || location.hash === '#'){
+  if(S.visited){
+    S.year = todayYear();
+    S.lastMonth = todayMonth();
+    persist(true);
+    location.replace('#/monthly/' + S.lastMonth);
+  }
   else { location.replace('#/cover'); }
 }
 setRoute();
