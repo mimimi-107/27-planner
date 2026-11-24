@@ -111,7 +111,7 @@ input::placeholder,textarea::placeholder{color:rgba(var(--ink-rgb),.32)}
 .months button:last-child{padding-right:0}
 .months button:hover{opacity:.95}
 .months button.on{opacity:1;border-bottom-color:var(--ink)}
-.page{width:100%;max-width:1260px;margin:0 auto;padding:6px var(--pad) calc(118px + env(safe-area-inset-bottom));flex:1}
+.page{width:100%;max-width:1260px;margin:0 auto;padding:6px var(--pad) calc(150px + env(safe-area-inset-bottom));flex:1}
 
 /* ---------- monthly ---------- */
 .mhead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:18px 0 30px}
@@ -262,6 +262,24 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .mempty-editor{display:grid;place-items:center;min-height:min(56vh,440px)}
 .plusbtn{width:66px;height:66px;border:0;border-radius:0;background:none;display:grid;place-items:center;font-size:30px;line-height:1;font-weight:300;color:rgba(var(--ink-rgb),.55);transition:color .2s,opacity .2s}
 .plusbtn:hover{background:none;color:var(--ink)}
+/* ---------- backup category picker ---------- */
+.bscopes{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 14px;padding-bottom:11px;border-bottom:1px solid var(--dash)}
+.bscope{display:flex;align-items:center;gap:6px;font-size:11.5px;letter-spacing:.01em;color:rgba(var(--ink-rgb),.72);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bscope input{-webkit-appearance:none;appearance:none;width:12px;height:12px;margin:0;border:1.2px solid rgba(var(--ink-rgb),.45);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+.bscope input:checked{border-color:var(--ink)}
+.bscope input:checked::after{content:'';width:6px;height:3px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(-45deg) translate(0,-1px)}
+.btn[disabled]{opacity:.38;cursor:default}
+
+/* ---------- check · memo under the monthly calendar ---------- */
+.minline{margin-top:22px;border-bottom:1px solid var(--hair);padding-bottom:2px}
+.minline .memotabs{margin-top:0}
+.minline .memo{margin-top:14px}
+.minline .mlist{max-height:min(36vh,300px);border-bottom:1px solid var(--hair);padding-bottom:2px}
+.minline .editor{border-top:0;margin-top:16px;padding-top:0;scroll-margin-top:calc(64px + env(safe-area-inset-top))}
+.minline .mempty-editor{min-height:min(30vh,220px)}
+.minline .canvas{min-height:0}
+.minline .ruled textarea{min-height:calc(var(--rh)*10)}
+.minline .cbar{margin-top:10px}
 /* account picker modal */
 .acctlist{display:flex;flex-direction:column;margin:8px 0 4px;border-top:1px solid var(--dash)}
 .acctrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--dash);text-align:left;transition:background .15s}
@@ -321,8 +339,15 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* ---------- year wheel (vertical drag / scroll picker above the bottom bar) ---------- */
 .ypop-scrim{position:fixed;inset:0;z-index:46;background:rgba(var(--paper-rgb),.66);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);display:none}
 .ypop-scrim.on{display:block;animation:fade .16s ease}
-.ypop{position:fixed;left:50%;transform:translateX(-50%);bottom:60px;z-index:47;width:112px;background:var(--paper);border:1px solid var(--hair);box-shadow:0 18px 40px rgba(0,0,0,.18);display:none;animation:rise .16s ease}
-.ypop.on{display:block}
+/* the wheel sits in a full-width flex layer: the layer's justify-content alone
+   decides its x. The old left:50%/translateX(-50%) put the box at left:50% and
+   relied on a transform for the other half — the open animation (rise ends with
+   transform:none) and iOS Safari's own timing dropped that transform, so the box
+   hung half its width to the right of the year button. A flex layer plus an
+   opacity-only open cannot shift it. */
+.ypop-layer{position:fixed;left:0;right:0;bottom:0;z-index:47;display:none;justify-content:center;align-items:flex-end;pointer-events:none;padding-bottom:60px}
+.ypop-layer.on{display:flex}
+.ypop{position:relative;flex:0 0 auto;width:112px;pointer-events:auto;background:var(--paper);border:1px solid var(--hair);box-shadow:0 18px 40px rgba(0,0,0,.18);animation:fade .16s ease}
 .ywheel{position:relative;height:114px;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;cursor:grab;outline:none}
 .ywheel::-webkit-scrollbar{display:none}
 .ywheel.grab{cursor:grabbing}
@@ -410,12 +435,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .backup-bar .meta{font-size:11px;opacity:.55;letter-spacing:.02em}
 .backup-bar .doclink{display:inline-block;margin-top:3px;color:#1a73e8;text-decoration:none;font-weight:600;opacity:1}
 .backup-bar .doclink:hover{text-decoration:underline}
-.btn{font-family:var(--disp);font-style:italic;font-weight:600;font-size:14px;letter-spacing:.06em;padding:9px 18px;border:1px solid var(--hair);transition:background .18s,color .18s}
+.btn{font-family:var(--disp);font-style:italic;font-weight:600;font-size:14px;letter-spacing:.06em;padding:9px 18px;border:1px solid var(--hair);white-space:nowrap;transition:background .18s,color .18s}
 .btn:hover{background:var(--ink);color:var(--paper)}
 .btn.primary{background:var(--ink);color:var(--paper)}
 .btn.primary:hover{opacity:.86}
 .btn:disabled{opacity:.45;cursor:default}
-.toolbar{display:flex;gap:8px;align-items:center}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 
 /* toast */
 .toast{position:fixed;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--ink);color:var(--paper);padding:10px 16px;font-size:12px;border-radius:2px;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;letter-spacing:.01em;max-width:calc(100% - 32px)}
@@ -519,11 +544,13 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 </button>
 <div class="palette-pop" id="palette-pop"></div>
 <div class="ypop-scrim" id="ypop-scrim"></div>
-<div class="ypop" id="ypop" role="dialog" aria-label="연도 선택">
-  <div class="ywheel" id="ywheel" role="listbox" aria-label="연도" tabindex="0"></div>
-  <div class="yband"></div>
-  <div class="yfade yfade-t"></div>
-  <div class="yfade yfade-b"></div>
+<div class="ypop-layer" id="ypop-layer">
+  <div class="ypop" id="ypop" role="dialog" aria-label="연도 선택">
+    <div class="ywheel" id="ywheel" role="listbox" aria-label="연도" tabindex="0"></div>
+    <div class="yband"></div>
+    <div class="yfade yfade-t"></div>
+    <div class="yfade yfade-b"></div>
+  </div>
 </div>
 
 <script>
@@ -805,6 +832,9 @@ function initialState(){
     menuTab:'check',          /* last tab used inside the ≡ menu */
     menuLast:{check:null, note:null},  /* last item opened per tab */
     menuVisited:false,
+    inlineTab:'check',        /* tab of the check · memo section under the calendar */
+    inlineLast:{check:null, note:null},  /* item open in that section, per tab */
+    backupScopes:{goals:true, schedule:true, memo:true, check:true},  /* what a Docs backup carries */
     lastMonth:1,
     events:[], goals:seedGoals(), memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
@@ -830,6 +860,9 @@ function load(){
     st.menuTab = p.menuTab === 'note' ? 'note' : 'check';
     st.menuLast = Object.assign({check:null, note:null}, p.menuLast||{});
     st.menuVisited = !!p.menuVisited;
+    st.inlineTab = p.inlineTab === 'note' ? 'note' : 'check';
+    st.inlineLast = Object.assign({check:null, note:null}, p.inlineLast||{});
+    st.backupScopes = Object.assign({goals:true, schedule:true, memo:true, check:true}, p.backupScopes||{});
     /* one-time cleanup: drop the sample events a previous build seeded into this
        browser, keeping every event the user made or synced from Google */
     if(!p.clearedSeedEvents){
@@ -1260,42 +1293,64 @@ async function calendarSync(){
 const DOCS_API = 'https://docs.googleapis.com/v1/documents/';
 const DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
 
-/* the four sections written into the Doc */
+/* the four sections written into the Doc — each one can be left out */
+const BACKUP_SCOPES = [
+  {id:'schedule', label:'월별 일정'},
+  {id:'memo', label:'memo'},
+  {id:'check', label:'check'},
+  {id:'goals', label:'올해의 목표'}
+];
+function backupScopeState(){
+  return Object.assign({goals:true, schedule:true, memo:true, check:true}, S.backupScopes||{});
+}
+function backupScopeAny(){
+  const sc = backupScopeState();
+  return BACKUP_SCOPES.some(x=>sc[x.id]);
+}
 function backupDocText(){
+  const sc = backupScopeState();
   const lines = [];
   lines.push(`${S.year} MONTHLY PLANNER — 백업`);
   lines.push(`생성 ${new Date().toLocaleString('ko-KR')}`);
   lines.push('');
-  lines.push('1. 올해의 목표');
-  if(S.goals.length) S.goals.forEach(g=>lines.push(`${g.done ? '[x]' : '[ ]'} ${g.text}`));
-  else lines.push('(없음)');
-  lines.push('');
-  lines.push('2. 월별 일정');
-  let any = false;
-  for(let m=1; m<=12; m++){
-    const evs = monthEvents(S.year, m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.time||'').localeCompare(b.time||''));
-    if(!evs.length) continue;
-    any = true;
-    lines.push(`${MON[m-1].replace('.','')} ${S.year}`);
-    evs.forEach(e=>lines.push(`· ${+e.date.slice(8,10)}일 ${e.time ? e.time + ' ' : ''}${e.title}`));
+  if(sc.goals){
+    lines.push('1. 올해의 목표');
+    if(S.goals.length) S.goals.forEach(g=>lines.push(`${g.done ? '[x]' : '[ ]'} ${g.text}`));
+    else lines.push('(없음)');
+    lines.push('');
   }
-  if(!any) lines.push('(없음)');
-  lines.push('');
+  if(sc.schedule){
+    lines.push('2. 월별 일정');
+    let any = false;
+    for(let m=1; m<=12; m++){
+      const evs = monthEvents(S.year, m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.time||'').localeCompare(b.time||''));
+      if(!evs.length) continue;
+      any = true;
+      lines.push(`${MON[m-1].replace('.','')} ${S.year}`);
+      evs.forEach(e=>lines.push(`· ${+e.date.slice(8,10)}일 ${e.time ? e.time + ' ' : ''}${e.title}`));
+    }
+    if(!any) lines.push('(없음)');
+    lines.push('');
+  }
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
-  lines.push('3. memo');
-  if(notes.length) notes.forEach(m=>{
-    lines.push(`◆ ${m.title}`);
-    lines.push(m.text || '(비어 있음)');
-    lines.push('');
-  }); else lines.push('(없음)');
-  lines.push('4. check');
-  if(checks.length) checks.forEach(m=>{
-    const c = checkCounts(m);
-    lines.push(`◆ ${m.title} (${c.done}/${c.total})`);
-    (m.items || []).forEach(it=>lines.push(`${it.done ? '☑' : '☐'} ${it.text}`));
-    lines.push('');
-  }); else lines.push('(없음)');
+  if(sc.memo){
+    lines.push('3. memo');
+    if(notes.length) notes.forEach(m=>{
+      lines.push(`◆ ${m.title}`);
+      lines.push(m.text || '(비어 있음)');
+      lines.push('');
+    }); else lines.push('(없음)');
+  }
+  if(sc.check){
+    lines.push('4. check');
+    if(checks.length) checks.forEach(m=>{
+      const c = checkCounts(m);
+      lines.push(`◆ ${m.title} (${c.done}/${c.total})`);
+      (m.items || []).forEach(it=>lines.push(`${it.done ? '☑' : '☐'} ${it.text}`));
+      lines.push('');
+    }); else lines.push('(없음)');
+  }
   return lines.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
@@ -1423,6 +1478,7 @@ async function readDocText(token, docId){
 }
 
 async function docsBackup(){
+  if(!backupScopeAny()){ toast('백업할 카테고리를 하나 이상 선택하세요'); return; }
   const btn = document.getElementById('backup-btn');
   const busy = on =>{ if(!btn) return; btn.disabled = on; btn.textContent = on ? '저장 중…' : 'Drive에 저장'; };
   busy(true);
@@ -1442,6 +1498,7 @@ async function docsBackup(){
   }
 }
 async function docsRestore(){
+  if(!backupScopeAny()){ toast('복원할 카테고리를 하나 이상 선택하세요'); return; }
   const btn = document.querySelector('[data-act="backup-restore"]');
   const busy = on =>{ if(!btn) return; btn.disabled = on; btn.textContent = on ? '복원 중…' : 'Docs에서 복원'; };
   busy(true);
@@ -1450,18 +1507,33 @@ async function docsRestore(){
     const docId = await resolveBackupDoc(token, false);
     if(!docId) throw new Error('백업 문서를 찾지 못했습니다. 먼저 Drive에 저장해 주세요.');
     const parsed = parseBackupDoc(await readDocText(token, docId));
+    const sc = backupScopeState();
+    const incomingMemos = parsed.memos.filter(m=> memoKind(m)==='note' ? sc.memo : sc.check);
+    const keepGoals = sc.goals ? parsed.goals : null;
+    const keepEvents = sc.schedule ? parsed.events : null;
     if(!parsed.goals.length && !parsed.events.length && !parsed.memos.length){
       toast('백업 문서에 복원할 내용이 없습니다');
       busy(false);
       return;
     }
-    S.goals = parsed.goals;
-    S.events = parsed.events;
-    S.memos = parsed.memos;
+    if(keepGoals) S.goals = keepGoals;
+    if(keepEvents) S.events = keepEvents;
+    if(sc.memo || sc.check){
+      /* memos of the categories she left out stay exactly as they are */
+      const rest = S.memos.filter(m=>{
+        const k = memoKind(m);
+        return !((k==='note' && sc.memo) || (k==='check' && sc.check));
+      });
+      S.memos = rest.concat(incomingMemos);
+    }
     S.docId = docId;
     persist(true);
     openBackup = false; renderModal(); render();
-    toast(`Docs에서 복원했습니다 · 목표 ${parsed.goals.length} · 일정 ${parsed.events.length} · 메모 ${parsed.memos.length}`);
+    const parts = [];
+    if(keepGoals) parts.push(`목표 ${keepGoals.length}`);
+    if(keepEvents) parts.push(`일정 ${keepEvents.length}`);
+    if(sc.memo || sc.check) parts.push(`메모 ${incomingMemos.length}`);
+    toast(`Docs에서 복원했습니다 · ${parts.join(' · ')}`);
   }catch(err){
     googleError(err);
     busy(false);
@@ -1630,6 +1702,7 @@ function renderMonthly(){
   </div>
   <div class="dow">${head}</div>
   <div class="cal">${weeks.join('')}</div>
+  ${renderInlineMemo()}
   <div class="mquote">${esc(monthQuote)}</div>
   </div>`;
 }
@@ -1704,28 +1777,36 @@ function checkCounts(m){
 function noteSearchText(m){
   return [m.title||'', m.text||'', (m.items||[]).map(i=>i.text).join(' ')].join(' ').toLowerCase();
 }
+/* tabs, list rows and the side column, shared by the ≡ menu and the section
+   under the calendar (they differ only in the actions they fire) */
+function memoTabsHTML(tab, act){
+  return `<div class="memotabs" role="tablist" aria-label="메모 종류">
+    ${MEMO_TABS.map(t=>`<button class="mtab ${t.id===tab?'on':''}" role="tab" aria-selected="${t.id===tab}" data-act="${act}" data-val="${t.id}">${t.label}<span class="n">${tabMemos(t.id).length}</span></button>`).join('')}
+  </div>`;
+}
+function memoRowsHTML(list, sel, openAct, delAct){
+  return list.map(m=>`<div class="mrow ${sel&&sel.id===m.id?'on':''}" data-act="${openAct}" data-val="${m.id}" data-q="${esc(noteSearchText(m))}">
+          <div class="mt">${esc(m.title||'제목 없음')}</div>
+          <div class="mm">${memoKind(m)==='check'?`<span class="tpl">${checkCounts(m).done}/${checkCounts(m).total}</span><span>·</span>`:''}<span>${fmtDateTime(m.updated)}</span></div>
+          <button class="mx" data-act="${delAct}" data-val="${m.id}" aria-label="삭제">×</button>
+        </div>`).join('');
+}
+function memoSideHTML(tab, memo, acts){
+  return `<aside class="side">
+      <input class="search" placeholder="검색" data-act="search" aria-label="검색">
+      <button class="newmemo" data-act="${acts.new}" data-val="${tab}">＋ new</button>
+      <div class="mlist">${memoRowsHTML(tabMemos(tab), memo, acts.open, acts.del)}</div>
+    </aside>`;
+}
 function renderMemo(){
   const tab = (S.memoTab==='note') ? 'note' : 'check';
   const memo = currentMemo();
-  const list = tabMemos(tab);
   const g = S.google || {};
   const acct = g.account || '';
   return `
-  <div class="memotabs" role="tablist" aria-label="메모 종류">
-    ${MEMO_TABS.map(t=>`<button class="mtab ${t.id===tab?'on':''}" role="tab" aria-selected="${t.id===tab}" data-act="memo-tab" data-val="${t.id}">${t.label}<span class="n">${tabMemos(t.id).length}</span></button>`).join('')}
-  </div>
+  ${memoTabsHTML(tab, 'memo-tab')}
   <div class="memo ${memo?'open':''}">
-    <aside class="side">
-      <input class="search" placeholder="검색" data-act="search" aria-label="검색">
-      <button class="newmemo" data-act="memo-new" data-val="${tab}">＋ new</button>
-      <div class="mlist">
-        ${list.map(m=>`<div class="mrow ${memo&&memo.id===m.id?'on':''}" data-act="memo-open" data-val="${m.id}" data-q="${esc(noteSearchText(m))}">
-          <div class="mt">${esc(m.title||'제목 없음')}</div>
-          <div class="mm">${memoKind(m)==='check'?`<span class="tpl">${checkCounts(m).done}/${checkCounts(m).total}</span><span>·</span>`:''}<span>${fmtDateTime(m.updated)}</span></div>
-          <button class="mx" data-act="memo-del" data-val="${m.id}" aria-label="삭제">×</button>
-        </div>`).join('') || ''}
-      </div>
-    </aside>
+    ${memoSideHTML(tab, memo, {new:'memo-new', open:'memo-open', del:'memo-del'})}
     ${memo? (memoKind(memo)==='check'? renderChecklist(memo) : renderNote(memo)) : renderEditorEmpty(tab)}
     <div class="foot">
         <button class="backup" data-act="backup-open">${ICO.doc} Google Docs로 백업</button>
@@ -1746,18 +1827,18 @@ function renderMemo(){
   </div>`;
 }
 /* nothing selected: a single centered ＋ that creates an item right away */
-function renderEditorEmpty(tab){
+function renderEditorEmpty(tab, act){
   const label = panelLabel(tab);
   return `<div class="editor">
     <div class="canvas mempty-editor">
-      <button class="plusbtn" data-act="memo-new" data-val="${tab}" aria-label="새 ${label} 만들기" title="새 ${label}">＋</button>
+      <button class="plusbtn" data-act="${act||'memo-new'}" data-val="${tab}" aria-label="새 ${label} 만들기" title="새 ${label}">＋</button>
     </div>
   </div>`;
 }
-function renderNote(memo){
+function renderNote(memo, backAct){
   return `<div class="editor">
     <div class="ehead">
-      <button class="eback" data-act="memo-list" aria-label="목록">${ICO.back}</button>
+      <button class="eback" data-act="${backAct||'memo-list'}" aria-label="목록">${ICO.back}</button>
       <input class="etitle" data-act="memo-title" data-val="${memo.id}" value="${esc(memo.title)}" placeholder="제목">
       <span class="saved" id="saved">저장됨</span>
     </div>
@@ -1766,12 +1847,12 @@ function renderNote(memo){
     </div>
   </div>`;
 }
-function renderChecklist(memo){
+function renderChecklist(memo, backAct){
   const items = memo.items || [];
   const {done, total, pct} = checkCounts(memo);
   return `<div class="editor">
     <div class="ehead">
-      <button class="eback" data-act="memo-list" aria-label="목록">${ICO.back}</button>
+      <button class="eback" data-act="${backAct||'memo-list'}" aria-label="목록">${ICO.back}</button>
       <input class="etitle" data-act="memo-title" data-val="${memo.id}" value="${esc(memo.title)}" placeholder="제목">
       <span class="prog">${done} / ${total} · ${pct}%</span>
     </div>
@@ -1788,6 +1869,30 @@ function renderChecklist(memo){
       <button data-act="check-add" data-memo="${memo.id}" aria-label="항목 추가">＋</button>
     </div>
   </div>`;
+}
+
+/* ---------- check · memo directly under the monthly calendar ---------- */
+/* same list + editor as the ≡ menu, with its own tab and selection so the two
+   never move each other */
+const inlineTabNow = () => (S.inlineTab === 'note' ? 'note' : 'check');
+function inlineMemo(){
+  const tab = inlineTabNow();
+  const id = (S.inlineLast || {})[tab];
+  if(!id) return null;
+  const m = S.memos.find(x=>x.id===id);
+  return (m && memoKind(m)===tab) ? m : null;
+}
+function renderInlineMemo(){
+  const tab = inlineTabNow();
+  const memo = inlineMemo();
+  return `
+  <section class="minline" aria-label="check · memo">
+    ${memoTabsHTML(tab, 'imemo-tab')}
+    <div class="memo ${memo?'open':''}">
+      ${memoSideHTML(tab, memo, {new:'imemo-new', open:'imemo-open', del:'imemo-del'})}
+      ${memo? (memoKind(memo)==='check'? renderChecklist(memo, 'imemo-back') : renderNote(memo, 'imemo-back')) : renderEditorEmpty(tab, 'imemo-new')}
+    </div>
+  </section>`;
 }
 
 /* labels used by the ≡ menu's empty editor */
@@ -1834,38 +1939,48 @@ function renderModal(){
 }
 
 function renderBackupModal(){
+  const sc = backupScopeState();
+  const anyScope = backupScopeAny();
   const done = S.goals.filter(g=>g.done).length;
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
+  const sectionGoals = () => `
+        <h2>1. 올해의 목표</h2>
+        <ul>${S.goals.map(g=>`<li><span class="box" style="${g.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(g.text)}</li>`).join('')||'<li>—</li>'}</ul>`;
+  const sectionSchedule = () => `
+        <h2>2. 월별 일정</h2>
+        ${[1,2,3,11,12].map(m=>{
+          const evs = monthEvents(S.year,m);
+          if(!evs.length) return '';
+          return `<h3>${MON[m-1]} ${S.year}</h3><ul>${evs.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<li>${+e.date.slice(8,10)}일 ${e.time?'· '+e.time+' ':''}${esc(e.title)}</li>`).join('')}</ul>`;
+        }).join('')}`;
   return `<div class="scrim" data-act="close-backup">
     <div class="modal wide" data-stop="1">
       <div class="modal-h">
         <div><span class="d">Docs</span><span class="dw">GOOGLE DRIVE BACKUP</span></div>
         <button class="x" data-act="close-backup">×</button>
       </div>
-      <div style="font-size:12px;opacity:.6;margin-bottom:14px">Google Drive의 ‘${BACKUP_DOC_NAME}’ 문서에 아래 내용이 저장됩니다.${S.google.account?' · '+esc(S.google.account):''}</div>
+      <div style="font-size:12px;opacity:.6;margin-bottom:12px">Google Drive의 ‘${BACKUP_DOC_NAME}’ 문서에 아래 내용이 저장됩니다.${S.google.account?' · '+esc(S.google.account):''}</div>
+      <div class="bscopes" role="group" aria-label="백업할 카테고리">
+        ${BACKUP_SCOPES.map(s=>`<label class="bscope"><input type="checkbox" data-act="scope-toggle" data-val="${s.id}" ${sc[s.id]?'checked':''}><span>${s.label}</span></label>`).join('')}
+      </div>
       <div class="doc-sheet">
         <h1>MONTHLY PLANNER — 백업</h1>
         <div class="doc-sub">마지막 편집 ${new Date().toLocaleString('ko-KR')} · 목표 ${done}/${S.goals.length} · memo ${notes.length} · check ${checks.length}</div>
-        <h2>1. 올해의 목표</h2>
-        <ul>${S.goals.map(g=>`<li><span class="box" style="${g.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(g.text)}</li>`).join('')||'<li>—</li>'}</ul>
-        <h2>2. 월별 일정</h2>
-        ${[1,2,3,11,12].map(m=>{
-          const evs = monthEvents(S.year,m);
-          if(!evs.length) return '';
-          return `<h3>${MON[m-1]} ${S.year}</h3><ul>${evs.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<li>${+e.date.slice(8,10)}일 ${e.time?'· '+e.time+' ':''}${esc(e.title)}</li>`).join('')}</ul>`;
-        }).join('')}
-        <h2>3. memo</h2>
-        ${notes.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)}</h3><div class="mono">${esc((m.text||'(비어 있음)').slice(0,220))}</div>`).join('') || '<div class="mono">(없음)</div>'}
-        <h2>4. check</h2>
-        ${checks.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)} (${checkCounts(m).done}/${checkCounts(m).total})</h3><ul>${(m.items||[]).map(it=>`<li><span class="box" style="${it.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(it.text)}</li>`).join('')}</ul>`).join('') || '<div class="mono">(없음)</div>'}
+        ${sc.goals ? sectionGoals() : ''}
+        ${sc.schedule ? sectionSchedule() : ''}
+        ${sc.memo ? `<h2>3. memo</h2>
+        ${notes.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)}</h3><div class="mono">${esc((m.text||'(비어 있음)').slice(0,220))}</div>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
+        ${sc.check ? `<h2>4. check</h2>
+        ${checks.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)} (${checkCounts(m).done}/${checkCounts(m).total})</h3><ul>${(m.items||[]).map(it=>`<li><span class="box" style="${it.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(it.text)}</li>`).join('')}</ul>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
+        ${anyScope ? '' : `<div class="mono" style="opacity:.6">저장할 카테고리를 하나 이상 선택하세요.</div>`}
       </div>
       <div class="backup-bar">
         <div class="meta">${S.lastBackup? '마지막 백업 '+timeAgo(S.lastBackup) : '아직 백업한 적이 없습니다'}${S.docId?`<br><a class="doclink" href="https://docs.google.com/document/d/${encodeURIComponent(S.docId)}/edit" target="_blank" rel="noopener">Google Docs에서 열기 ↗</a>`:''}</div>
         <div class="toolbar">
           <button class="btn" data-act="close-backup">닫기</button>
-          <button class="btn" data-act="backup-restore">Docs에서 복원</button>
-          <button class="btn primary" data-act="backup-run" id="backup-btn">Drive에 저장</button>
+          <button class="btn" data-act="backup-restore"${anyScope?'':' disabled'}>Docs에서 복원</button>
+          <button class="btn primary" data-act="backup-run" id="backup-btn"${anyScope?'':' disabled'}>Drive에 저장</button>
         </div>
       </div>
     </div>
@@ -1901,7 +2016,7 @@ document.addEventListener('click', e=>{
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='goal-new'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
-  if(act==='wkstart'||act==='holiday-toggle') return;
+  if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   switch(act){
     case 'theme':
       S.theme = val; persist(true); render(); break;
@@ -2021,9 +2136,53 @@ document.addEventListener('click', e=>{
     }
     case 'memo-open': go('/memo/'+val); break;
     case 'memo-del': {
-      S.memos = S.memos.filter(m=>m.id!==val); persist(true);
+      S.memos = S.memos.filter(m=>m.id!==val);
+      S.inlineLast = Object.assign({check:null, note:null}, S.inlineLast||{});
+      ['check','note'].forEach(k=>{ if(S.inlineLast[k]===val) S.inlineLast[k] = null; });
+      persist(true);
       if(R.memoId===val) go('/memo'); else render();
       break;
+    }
+    /* --- check · memo under the calendar --- */
+    case 'imemo-tab': {
+      const tab = val==='check' ? 'check' : 'note';
+      S.inlineTab = S.memoTab = S.menuTab = tab;
+      persist(true); render(); break;
+    }
+    case 'imemo-new': {
+      const tab = val==='check' ? 'check' : 'note';
+      const m = {id:uid(), kind:tab, title:'new', text:'', items:[], updated:Date.now()};
+      S.inlineTab = S.memoTab = S.menuTab = tab;
+      S.memos.push(m);
+      S.inlineLast = Object.assign({check:null, note:null}, S.inlineLast||{});
+      S.inlineLast[tab] = m.id;
+      persist(true); render();
+      revealInlineEditor();
+      break;
+    }
+    case 'imemo-open': {
+      const m = S.memos.find(x=>x.id===val);
+      if(m){
+        const tab = memoKind(m);
+        S.inlineTab = S.memoTab = S.menuTab = tab;
+        S.inlineLast = Object.assign({check:null, note:null}, S.inlineLast||{});
+        S.inlineLast[tab] = m.id;
+        persist(true);
+      }
+      render();
+      if(window.innerWidth <= 760) revealInlineEditor();
+      break;
+    }
+    case 'imemo-back': {
+      S.inlineLast = Object.assign({check:null, note:null}, S.inlineLast||{});
+      S.inlineLast[inlineTabNow()] = null;
+      persist(true); render(); break;
+    }
+    case 'imemo-del': {
+      S.memos = S.memos.filter(m=>m.id!==val);
+      S.inlineLast = Object.assign({check:null, note:null}, S.inlineLast||{});
+      ['check','note'].forEach(k=>{ if(S.inlineLast[k]===val) S.inlineLast[k] = null; });
+      persist(true); render(); break;
     }
     case 'backup-open': openBackup = true; renderModal(); break;
     case 'close-backup': openBackup = false; renderModal(); break;
@@ -2080,6 +2239,15 @@ document.addEventListener('change', e=>{
     S.google.holidays = !!hol.checked;
     persist(true); render(); return;
   }
+  const scope = e.target.closest('[data-act="scope-toggle"]');
+  if(scope){
+    S.backupScopes = backupScopeState();
+    S.backupScopes[scope.dataset.val] = !!scope.checked;
+    persist(true);
+    renderModal();
+    if(!backupScopeAny()) toast('백업할 카테고리를 하나 이상 선택하세요');
+    return;
+  }
 });
 let savedTimer=null;
 function flashSaved(){
@@ -2129,6 +2297,7 @@ document.getElementById('homefab').addEventListener('click', ()=>go('#/cover'));
    through the years, the centred row applies straight away */
 const YROW = 38;
 const ypop = document.getElementById('ypop');
+const ypopLayer = document.getElementById('ypop-layer');
 const ywheel = document.getElementById('ywheel');
 let ywheelOpen = false, ywheelDrag = null, ywheelSuppress = false, ywheelTimer = null;
 
@@ -2152,19 +2321,24 @@ function paintWheel(){
 function openYearWheel(anchor){
   buildWheel();
   ywheelOpen = true;
-  ypop.classList.add('on');
+  ypopLayer.classList.add('on');
   document.getElementById('ypop-scrim').classList.add('on');
   const bar = anchor || document.querySelector('.yearbar') || document.querySelector('.cover-yearsw');
   const r = bar ? bar.getBoundingClientRect() : {top: window.innerHeight - 60};
-  ypop.style.bottom = Math.max(10, Math.round(window.innerHeight - r.top + 8)) + 'px';
+  ypopLayer.style.paddingBottom = Math.max(10, Math.round(window.innerHeight - r.top + 8)) + 'px';
   ywheel.scrollTop = (Math.max(YEAR_MIN, Math.min(YEAR_MAX, S.year)) - YEAR_MIN) * YROW;
   paintWheel();
   try{ ywheel.focus({preventScroll:true}); }catch(err){}
 }
 function closeYearWheel(){
   ywheelOpen = false;
-  ypop.classList.remove('on');
+  ypopLayer.classList.remove('on');
   document.getElementById('ypop-scrim').classList.remove('on');
+}
+/* bring the inline editor into view after picking or creating an item on a phone */
+function revealInlineEditor(){
+  const ed = document.querySelector('.minline .editor');
+  if(ed) requestAnimationFrame(()=>{ try{ ed.scrollIntoView({behavior:'smooth', block:'nearest'}); }catch(err){ ed.scrollIntoView(); } });
 }
 function applyWheelYear(y){
   if(y === S.year) return;
