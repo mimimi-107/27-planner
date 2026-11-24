@@ -172,7 +172,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .yhead-row .legend{margin-top:0}
 .ytitle{font-family:var(--disp);font-style:italic;font-weight:700;font-size:clamp(32px,4.4vw,46px);line-height:1;letter-spacing:.005em}
 .ytitle small{font-family:var(--disp);font-style:italic;font-weight:300;font-size:clamp(15px,1.7vw,22px);letter-spacing:.06em;margin-left:12px;opacity:.75}
-.ywrap{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:34px;align-items:start}
+.ywrap{display:grid;grid-template-columns:minmax(0,1fr);gap:34px;align-items:start}
 .ygrid{border-bottom:1px solid var(--hair)}
 .ymat{border-bottom:1px solid var(--hair);margin-bottom:-1px}
 .yscroll{overflow-x:auto;scrollbar-width:thin}
@@ -192,28 +192,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .wd.sun{background:var(--sun)}
 .emk{position:absolute;left:50%;transform:translateX(-50%);bottom:3px;width:11px;height:1.5px;background:rgba(var(--ink-rgb),.45);border-radius:1px}
 
-/* goals panel */
-.panel{border:1px solid var(--hair);padding:18px 18px 16px;border-radius:2px;background:rgba(var(--paper-rgb),.35)}
-.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:2px}
-.panel-h h2{font-family:var(--disp);font-style:italic;font-weight:700;font-size:20px;letter-spacing:.02em;margin:0}
-.panel-h .pct{font-size:11px;letter-spacing:.04em;opacity:.6;font-variant-numeric:tabular-nums}
-.bar{height:2px;background:rgba(var(--ink-rgb),.14);margin:9px 0 4px;overflow:hidden}
-.bar i{display:block;height:100%;background:var(--ink);transition:width .35s ease}
-.goals{display:flex;flex-direction:column}
-.goal{display:flex;align-items:flex-start;gap:9px;padding:10px 0 9px;border-bottom:1px dotted var(--dash)}
-.goal:last-of-type{border-bottom:0}
+/* check box and × — the checklist rows and the day modal use these */
 .cb{width:15px;height:15px;border:1.3px solid var(--hair);flex:0 0 auto;margin-top:3px;display:grid;place-items:center;transition:background .15s}
-.cb:hover{background:var(--soft)}
 .cb i{width:8px;height:4px;border-left:1.6px solid var(--ink);border-bottom:1.6px solid var(--ink);transform:rotate(-45deg);opacity:0}
-.goal.on .cb i,.cb.on i{opacity:1}
-.goal-input{flex:1;min-width:0;font-size:13.5px;line-height:1.5;padding:1px 0}
-.goal.on .goal-input{opacity:.42;text-decoration:line-through}
-.del{width:20px;height:20px;flex:0 0 auto;display:grid;place-items:center;opacity:0;transition:opacity .15s;font-size:15px;color:rgba(var(--ink-rgb),.55)}
-.goal:hover .del,.del:focus{opacity:1}
-.gadd{display:flex;gap:8px;align-items:center;margin-top:12px;border-bottom:1px solid var(--dash);padding-bottom:5px}
-.gadd input{flex:1;font-size:13px}
-.gadd button{font-family:var(--disp);font-style:italic;font-weight:600;font-size:17px;line-height:1;opacity:.6;padding:0 3px}
-.gadd button:hover{opacity:1}
+.cb.on i{opacity:1}
+.del{width:20px;height:20px;flex:0 0 auto;display:grid;place-items:center;opacity:.3;transition:opacity .15s;font-size:15px;color:rgba(var(--ink-rgb),.55)}
+.del:focus{opacity:1}
 .legend{display:flex;gap:14px;align-items:center;margin-top:14px;font-size:10.5px;color:rgba(var(--ink-rgb),.55)}
 .legend span{display:flex;align-items:center;gap:5px}
 
@@ -233,15 +217,22 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .newmemo{display:flex;align-items:center;gap:6px;width:100%;padding:9px 10px;border:1px solid var(--dash);font-size:12.5px;margin-bottom:12px;transition:border-color .2s,background .2s}
 .newmemo:hover{border-color:var(--hair);background:var(--soft)}
 .mlist{display:flex;flex-direction:column;gap:1px;max-height:calc(100dvh - 452px);overflow-y:auto}
-.mrow{position:relative;padding:9px 22px 9px 10px;cursor:pointer;border-left:2px solid transparent;transition:background .15s,border-color .15s}
-.mrow:hover{background:var(--soft)}
+.mrow{position:relative;padding:9px 22px 9px 10px;cursor:pointer;border-left:2px solid transparent;transition:background .15s,border-color .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .mrow.on{border-left-color:var(--ink);background:var(--soft)}
 .mrow .mt{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mrow .mm{display:flex;gap:6px;align-items:center;font-size:10px;letter-spacing:.04em;opacity:.5;margin-top:3px}
 .mrow .mm .tpl{font-family:var(--disp);font-style:italic;font-size:11px;letter-spacing:.04em}
-.mrow .mx{position:absolute;right:2px;top:8px;width:18px;height:18px;display:grid;place-items:center;opacity:0;font-size:14px}
-.mrow:hover .mx{opacity:.5}
-.mrow .mx:hover{opacity:1}
+/* iOS Safari gives the first tap to :hover when a hover rule changes what
+   sits under the finger (here a × that only appeared on hover), which is
+   why a list row used to need two taps. Hover styling now exists only on
+   devices with a real pointer; on touch the × is always there, lightly. */
+.mrow .mx{position:absolute;right:2px;top:8px;width:18px;height:18px;display:grid;place-items:center;opacity:.45;font-size:14px;touch-action:manipulation}
+@media (hover:hover){
+  .mrow:hover{background:var(--soft)}
+  .mrow .mx{opacity:0}
+  .mrow:hover .mx{opacity:.5}
+  .mrow .mx:hover{opacity:1}
+}
 .backup{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:16px;padding:9px;border:1px solid var(--dash);font-size:12px}
 .backup:hover{border-color:var(--hair);background:var(--soft)}
 .side-note{font-size:10px;line-height:1.5;opacity:.42;margin-top:10px}
@@ -311,12 +302,17 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cbar{height:2px;background:rgba(var(--ink-rgb),.14);margin:12px 0 2px;max-width:660px;overflow:hidden}
 .cbar i{display:block;height:100%;background:var(--ink);transition:width .3s ease}
 .clist{max-width:660px;margin-top:4px}
-.crow{display:flex;align-items:flex-start;gap:10px;padding:11px 0 10px;border-bottom:1px dotted var(--dash)}
+.crow{display:flex;align-items:flex-start;gap:10px;padding:11px 0 10px;border-bottom:1px dotted var(--dash);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .crow .cb{margin-top:1px}
 .ctext{flex:1;min-width:0;font-size:14px;line-height:1.55;padding:1px 0}
 .crow.done .ctext{opacity:.4;text-decoration:line-through}
-.cdel{width:22px;height:22px;flex:0 0 auto;display:grid;place-items:center;font-size:15px;color:rgba(var(--ink-rgb),.5);opacity:0;transition:opacity .15s}
-.crow:hover .cdel,.cdel:focus{opacity:1}
+.cdel{width:22px;height:22px;flex:0 0 auto;display:grid;place-items:center;font-size:15px;color:rgba(var(--ink-rgb),.5);opacity:.45;transition:opacity .15s;touch-action:manipulation}
+.cdel:focus{opacity:1}
+@media (hover:hover){
+  .cb:hover{background:var(--soft)}
+  .cdel{opacity:0}
+  .crow:hover .cdel{opacity:1}
+}
 .cadd{display:flex;gap:8px;align-items:center;max-width:660px;margin-top:14px;border-bottom:1px solid var(--dash);padding-bottom:6px}
 .cadd input{flex:1;font-size:13.5px;min-width:0}
 .cadd button{font-family:var(--disp);font-style:italic;font-weight:600;font-size:17px;line-height:1;opacity:.6;padding:0 4px}
@@ -395,13 +391,13 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .x{font-size:20px;line-height:1;opacity:.45;padding:2px 4px}
 .x:hover{opacity:1}
 .dlist{margin:16px 0 0}
-.ditem{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dotted var(--dash)}
+.ditem{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dotted var(--dash);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ditem .time{font-family:var(--disp);font-style:italic;font-size:12px;letter-spacing:.05em;opacity:.6;min-width:44px;padding-top:2px;font-variant-numeric:tabular-nums}
 .ditem .body{flex:1;min-width:0;font-size:13.5px;line-height:1.4}
 .ditem.done .body{opacity:.4;text-decoration:line-through}
 .ditem .src{font-size:9px;letter-spacing:.08em;opacity:.4;font-family:var(--disp);font-style:italic;border:1px solid var(--dash);border-radius:2px;padding:0 3px;margin-left:6px;vertical-align:1px}
-.ditem .del{opacity:.25}
-.ditem:hover .del{opacity:.6}
+.ditem .del{opacity:.3}
+@media (hover:hover){.ditem:hover .del{opacity:.6}}
 /* one baseline for the whole row: the clock cell and the title share the same
    36px height and bottom rule, and the 추가 button sits on that same line */
 .addrow{display:flex;gap:8px;margin-top:16px;align-items:flex-end}
@@ -502,7 +498,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
      display-sized ones (memo title 24px, check title 17px) keep their scale */
   .cadd input{font-size:16px}
   .ctext{font-size:16px}
-  .search,.goal-input,.gadd input,.addrow input[type=text],.addrow input[type=time]{font-size:16px}
+  .search,.addrow input[type=text],.addrow input[type=time]{font-size:16px}
   .time-wrap.is-empty::after{font-size:16px}
   .ruled textarea{font-size:16px}
   .yb-step{width:36px;height:32px}
@@ -767,15 +763,6 @@ function seedEvents(){
 /* The first builds shipped those sample events inside localStorage. New installs get
    none — this signature list only lets an already-opened browser drop them once (load()). */
 const SEED_EVENT_KEYS = seedEvents().map(e => [e.date, e.time, e.title].join('|'));
-function seedGoals(){
-  return [
-    {id:uid(), text:'매일 30분씩 걷기', done:true},
-    {id:uid(), text:'책 24권 읽기', done:false},
-    {id:uid(), text:'비상금 300만원 모으기', done:false},
-    {id:uid(), text:'새 언어 기초 떼기', done:true},
-    {id:uid(), text:'달마다 회고 한 편 쓰기', done:false}
-  ];
-}
 function seedMemos(){
   const ago = h => Date.now() - h*3600000;
   return [
@@ -834,9 +821,9 @@ function initialState(){
     menuVisited:false,
     inlineTab:'check',        /* tab of the check · memo section under the calendar */
     inlineLast:{check:null, note:null},  /* item open in that section, per tab */
-    backupScopes:{goals:true, schedule:true, memo:true, check:true},  /* what a Docs backup carries */
+    backupScopes:{schedule:true, memo:true, check:true},  /* what a Docs backup carries */
     lastMonth:1,
-    events:[], goals:seedGoals(), memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
+    events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
   };
@@ -862,7 +849,13 @@ function load(){
     st.menuVisited = !!p.menuVisited;
     st.inlineTab = p.inlineTab === 'note' ? 'note' : 'check';
     st.inlineLast = Object.assign({check:null, note:null}, p.inlineLast||{});
-    st.backupScopes = Object.assign({goals:true, schedule:true, memo:true, check:true}, p.backupScopes||{});
+    /* only the three categories that still exist; a stored goals flag from
+       before the renumbering is not carried over */
+    const bs = p.backupScopes || {};
+    st.backupScopes = {schedule: bs.schedule !== false, memo: bs.memo !== false, check: bs.check !== false};
+    /* older builds kept a goal list in here; a browser that still has one
+       drops it, since nothing in the app can show or edit goals */
+    st.goals = [];
     /* one-time cleanup: drop the sample events a previous build seeded into this
        browser, keeping every event the user made or synced from Google */
     if(!p.clearedSeedEvents){
@@ -1293,15 +1286,14 @@ async function calendarSync(){
 const DOCS_API = 'https://docs.googleapis.com/v1/documents/';
 const DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
 
-/* the four sections written into the Doc — each one can be left out */
+/* the three sections written into the Doc — each one can be left out */
 const BACKUP_SCOPES = [
   {id:'schedule', label:'월별 일정'},
   {id:'memo', label:'memo'},
-  {id:'check', label:'check'},
-  {id:'goals', label:'올해의 목표'}
+  {id:'check', label:'check'}
 ];
 function backupScopeState(){
-  return Object.assign({goals:true, schedule:true, memo:true, check:true}, S.backupScopes||{});
+  return Object.assign({schedule:true, memo:true, check:true}, S.backupScopes||{});
 }
 function backupScopeAny(){
   const sc = backupScopeState();
@@ -1313,14 +1305,8 @@ function backupDocText(){
   lines.push(`${S.year} MONTHLY PLANNER — 백업`);
   lines.push(`생성 ${new Date().toLocaleString('ko-KR')}`);
   lines.push('');
-  if(sc.goals){
-    lines.push('1. 올해의 목표');
-    if(S.goals.length) S.goals.forEach(g=>lines.push(`${g.done ? '[x]' : '[ ]'} ${g.text}`));
-    else lines.push('(없음)');
-    lines.push('');
-  }
   if(sc.schedule){
-    lines.push('2. 월별 일정');
+    lines.push('1. 월별 일정');
     let any = false;
     for(let m=1; m<=12; m++){
       const evs = monthEvents(S.year, m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.time||'').localeCompare(b.time||''));
@@ -1335,7 +1321,7 @@ function backupDocText(){
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
   if(sc.memo){
-    lines.push('3. memo');
+    lines.push('2. memo');
     if(notes.length) notes.forEach(m=>{
       lines.push(`◆ ${m.title}`);
       lines.push(m.text || '(비어 있음)');
@@ -1343,7 +1329,7 @@ function backupDocText(){
     }); else lines.push('(없음)');
   }
   if(sc.check){
-    lines.push('4. check');
+    lines.push('3. check');
     if(checks.length) checks.forEach(m=>{
       const c = checkCounts(m);
       lines.push(`◆ ${m.title} (${c.done}/${c.total})`);
@@ -1355,7 +1341,7 @@ function backupDocText(){
 }
 
 function parseBackupDoc(raw){
-  const out = {goals:[], events:[], memos:[]};
+  const out = {events:[], memos:[]};
   const lines = String(raw || '').replace(/\r/g, '').split('\n');
   let sec = 0, month = 0, year = S.year, note = null, chk = null;
   const flush = ()=>{
@@ -1365,15 +1351,13 @@ function parseBackupDoc(raw){
   for(const rawLine of lines){
     const line = rawLine.replace(/\s+$/, '');
     const head = line.trim().replace(/^#+\s*/, '').trim();
-    if(/^1\.\s*올해의\s*목표/.test(head)){ flush(); sec = 1; continue; }
-    if(/^2\.\s*월별\s*일정/.test(head)){ flush(); sec = 2; month = 0; continue; }
-    if(/^3\.\s*memo/i.test(head)){ flush(); sec = 3; continue; }
-    if(/^4\.\s*check/i.test(head)){ flush(); sec = 4; continue; }
-    if(sec === 1){
-      const m = line.match(/^\s*\[(x|X| )?\]\s*(.+?)\s*$/);
-      if(m && m[2]) out.goals.push({id:uid(), text:m[2], done:/x/i.test(m[1] || '')});
-      continue;
-    }
+    /* matched by name, not by number: a Doc written before the renumbering
+       (1. 올해의 목표 · 2. 월별 일정 · 3. memo · 4. check) restores just as
+       well as today's (1. 월별 일정 · 2. memo · 3. check) */
+    if(/^(?:\d+\.\s*)?올해의\s*목표/.test(head)){ flush(); sec = 1; continue; }
+    if(/^(?:\d+\.\s*)?월별\s*일정/.test(head)){ flush(); sec = 2; month = 0; continue; }
+    if(/^(?:\d+\.\s*)?memo$/i.test(head)){ flush(); sec = 3; continue; }
+    if(/^(?:\d+\.\s*)?check$/i.test(head)){ flush(); sec = 4; continue; }
     if(sec === 2){
       const mh = head.match(/^([A-Z][a-z]{2})\.?\s+(\d{4})$/);
       if(mh){
@@ -1509,14 +1493,12 @@ async function docsRestore(){
     const parsed = parseBackupDoc(await readDocText(token, docId));
     const sc = backupScopeState();
     const incomingMemos = parsed.memos.filter(m=> memoKind(m)==='note' ? sc.memo : sc.check);
-    const keepGoals = sc.goals ? parsed.goals : null;
     const keepEvents = sc.schedule ? parsed.events : null;
-    if(!parsed.goals.length && !parsed.events.length && !parsed.memos.length){
+    if(!parsed.events.length && !parsed.memos.length){
       toast('백업 문서에 복원할 내용이 없습니다');
       busy(false);
       return;
     }
-    if(keepGoals) S.goals = keepGoals;
     if(keepEvents) S.events = keepEvents;
     if(sc.memo || sc.check){
       /* memos of the categories she left out stay exactly as they are */
@@ -1530,7 +1512,6 @@ async function docsRestore(){
     persist(true);
     openBackup = false; renderModal(); render();
     const parts = [];
-    if(keepGoals) parts.push(`목표 ${keepGoals.length}`);
     if(keepEvents) parts.push(`일정 ${keepEvents.length}`);
     if(sc.memo || sc.check) parts.push(`메모 ${incomingMemos.length}`);
     toast(`Docs에서 복원했습니다 · ${parts.join(' · ')}`);
@@ -1726,8 +1707,6 @@ function renderYearly(){
     }
     rows.push(row);
   }
-  const done = S.goals.filter(g=>g.done).length;
-  const pct = S.goals.length? Math.round(done/S.goals.length*100) : 0;
   return `
   <div class="yhead-row">
     <div class="ytitle">Yearly<small>${y}</small></div>
@@ -1739,22 +1718,6 @@ function renderYearly(){
   </div>
   <div class="ywrap">
     <div class="yscroll"><div class="ygrid"><div class="ymat">${head}${rows.join('')}</div></div></div>
-    <aside class="panel">
-      <div class="panel-h"><h2>올해의 목표</h2><span class="pct">${done} / ${S.goals.length} · ${pct}%</span></div>
-      <div class="bar"><i style="width:${pct}%"></i></div>
-      <div class="goals">
-        ${S.goals.map(g=>`<div class="goal ${g.done?'on':''}">
-          <button class="cb" data-act="goal-toggle" data-val="${g.id}" aria-label="완료"><i></i></button>
-          <input class="goal-input" data-act="goal-edit" data-val="${g.id}" value="${esc(g.text)}" aria-label="목표">
-          <button class="del" data-act="goal-del" data-val="${g.id}" aria-label="삭제">×</button>
-        </div>`).join('') || `<div class="empty">아직 목표가 없습니다.</div>`}
-      </div>
-      <div class="gadd">
-        <input id="gnew" placeholder="새 목표를 적어보세요" data-act="goal-new">
-        <button data-act="goal-add">＋</button>
-      </div>
-      <div class="empty-note">목표는 ${y}년 내내 이 화면에 남습니다. 체크·수정·삭제 모두 바로 저장됩니다.</div>
-    </aside>
   </div>`;
 }
 
@@ -1941,14 +1904,10 @@ function renderModal(){
 function renderBackupModal(){
   const sc = backupScopeState();
   const anyScope = backupScopeAny();
-  const done = S.goals.filter(g=>g.done).length;
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
-  const sectionGoals = () => `
-        <h2>1. 올해의 목표</h2>
-        <ul>${S.goals.map(g=>`<li><span class="box" style="${g.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(g.text)}</li>`).join('')||'<li>—</li>'}</ul>`;
   const sectionSchedule = () => `
-        <h2>2. 월별 일정</h2>
+        <h2>1. 월별 일정</h2>
         ${[1,2,3,11,12].map(m=>{
           const evs = monthEvents(S.year,m);
           if(!evs.length) return '';
@@ -1966,12 +1925,11 @@ function renderBackupModal(){
       </div>
       <div class="doc-sheet">
         <h1>MONTHLY PLANNER — 백업</h1>
-        <div class="doc-sub">마지막 편집 ${new Date().toLocaleString('ko-KR')} · 목표 ${done}/${S.goals.length} · memo ${notes.length} · check ${checks.length}</div>
-        ${sc.goals ? sectionGoals() : ''}
+        <div class="doc-sub">마지막 편집 ${new Date().toLocaleString('ko-KR')} · memo ${notes.length} · check ${checks.length}</div>
         ${sc.schedule ? sectionSchedule() : ''}
-        ${sc.memo ? `<h2>3. memo</h2>
+        ${sc.memo ? `<h2>2. memo</h2>
         ${notes.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)}</h3><div class="mono">${esc((m.text||'(비어 있음)').slice(0,220))}</div>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
-        ${sc.check ? `<h2>4. check</h2>
+        ${sc.check ? `<h2>3. check</h2>
         ${checks.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)} (${checkCounts(m).done}/${checkCounts(m).total})</h3><ul>${(m.items||[]).map(it=>`<li><span class="box" style="${it.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(it.text)}</li>`).join('')}</ul>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
         ${anyScope ? '' : `<div class="mono" style="opacity:.6">저장할 카테고리를 하나 이상 선택하세요.</div>`}
       </div>
@@ -2015,7 +1973,7 @@ document.addEventListener('click', e=>{
   /* Only the backdrop itself closes a modal — clicks on inputs or empty space
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
-  if(act==='search'||act==='goal-new'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
+  if(act==='search'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
   if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   switch(act){
     case 'theme':
@@ -2079,23 +2037,6 @@ document.addEventListener('click', e=>{
       break;
     }
     case 'sync': calendarSync(); break;
-    case 'goal-toggle': {
-      const g = S.goals.find(x=>x.id===val); if(g){ g.done=!g.done; persist(true); render(); }
-      break;
-    }
-    case 'goal-del': {
-      S.goals = S.goals.filter(x=>x.id!==val); persist(true); render(); break;
-    }
-    case 'goal-add': {
-      const inp = document.getElementById('gnew');
-      const text = (inp.value||'').trim();
-      if(!text){ inp.focus(); return; }
-      S.goals.push({id:uid(), text, done:false});
-      persist(true);
-      inp.value=''; render();
-      document.getElementById('gnew')?.focus();
-      break;
-    }
     case 'memo-tab': {
       const tab = val==='check' ? 'check' : 'note';
       S.memoTab = tab; S.menuTab = tab; persist(true);
@@ -2203,13 +2144,6 @@ document.addEventListener('input', e=>{
       row.style.display = txt.includes(q)? '' : 'none';
     });
   }
-  else if(act==='goal-edit'){
-    const g = S.goals.find(x=>x.id===el.dataset.val); if(!g) return;
-    g.text = el.value; persist();
-  }
-  else if(act==='goal-new'){
-    // Enter handled in keydown
-  }
   else if(act==='memo-title'){
     const m = S.memos.find(x=>x.id===el.dataset.val); if(!m) return;
     m.title = el.value; m.updated = Date.now(); persist(); flashSaved();
@@ -2259,9 +2193,6 @@ function flashSaved(){
 
 /* keyboard */
 document.addEventListener('keydown', e=>{
-  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='gnew'){
-    e.preventDefault(); document.querySelector('[data-act="goal-add"]').click(); return;
-  }
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='cnew'){
     e.preventDefault(); document.querySelector('[data-act="check-add"]')?.click(); return;
   }
