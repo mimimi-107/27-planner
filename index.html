@@ -49,13 +49,17 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 html,body{margin:0;padding:0;height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-/* keep the scrollbar gutter reserved in every view so the top-right ≡ never shifts */
-html{scrollbar-gutter:stable}
+/* keep the scrollbar gutter reserved in every view so the top-right ≡ never shifts.
+   the paper colour sits on <html> itself: iOS paints the strip behind the status
+   bar from the root canvas, and with the colour only on <body> that strip kept
+   the previous theme (the body's 400ms fade also left it a frame behind). */
+html{scrollbar-gutter:stable;background-color:var(--paper)}
 body{
   background:var(--paper);color:var(--ink);
   font-family:var(--ui);font-size:14px;line-height:1.45;
   -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  transition:background-color .4s ease,color .4s ease;
+  /* no background fade: it kept the status-bar strip on the old tint */
+  transition:color .4s ease;
   overflow-x:hidden;
   /* no double-tap zoom delay on the calendar cells, no callout on long press */
   touch-action:manipulation;
@@ -283,9 +287,11 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .acctrow.on .em{font-weight:600}
 .acctrow .cur{font-size:10px;letter-spacing:.05em;opacity:.5;white-space:nowrap}
 .editor{min-width:0}
-.ehead{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.ehead{display:flex;align-items:center;gap:12px;margin-bottom:4px;min-width:0}
 .eback{display:none}
-.etitle{flex:1;font-family:var(--disp);font-style:italic;font-weight:600;font-size:30px;line-height:1.1;letter-spacing:.01em;padding:2px 0;min-width:0;border-bottom:1px solid transparent}
+/* flex:1 1 0 + width:100% keeps a 40-character title inside the column instead of
+   letting the input's intrinsic size stretch the whole page sideways */
+.etitle{flex:1 1 0;width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-family:var(--disp);font-style:italic;font-weight:600;font-size:30px;line-height:1.1;letter-spacing:.01em;padding:2px 0;border-bottom:1px solid transparent}
 .etitle:focus{border-bottom-color:var(--dash)}
 .saved{font-size:10px;letter-spacing:.05em;opacity:.45;white-space:nowrap}
 .canvas{position:relative;min-height:420px}
@@ -321,15 +327,18 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cadd button{font-family:var(--disp);font-style:italic;font-weight:600;font-size:17px;line-height:1;opacity:.6;padding:0 4px}
 .cadd button:hover{opacity:1}
 
-/* ---------- bottom year bar ---------- */
+/* ---------- bottom bar: ⌂ · year · theme disc ----------
+   Both discs live inside the bar instead of floating over the page: a floating
+   button used to steal taps from 검색 / ＋ new / the last week's events when the
+   calendar grew tall enough to reach it. In the bar they cover nothing. */
 .yearbar{
   position:fixed;left:0;right:0;bottom:0;z-index:44;
-  display:flex;align-items:center;justify-content:center;gap:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:7px var(--pad) calc(7px + env(safe-area-inset-bottom));
   background:var(--paper);border-top:1px solid var(--hair);
   box-shadow:0 -10px 26px rgba(0,0,0,.05);
 }
-.yb-switch{display:flex;align-items:center;gap:1px}
+.yb-switch{display:flex;align-items:center;gap:1px;flex:1 1 auto;justify-content:center}
 .yb-step{width:40px;height:34px;display:grid;place-items:center;font-size:20px;line-height:1;opacity:.68;border-radius:6px;transition:opacity .18s,background .18s}
 .yb-step:hover,.yb-step:focus-visible{opacity:1;background:var(--soft)}
 .yb-year{font-family:var(--disp);font-style:italic;font-weight:700;font-size:17px;letter-spacing:.12em;min-width:60px;text-align:center;font-variant-numeric:tabular-nums;padding:4px 7px;border-radius:6px;-webkit-tap-highlight-color:transparent;transition:background .18s,opacity .18s}
@@ -363,7 +372,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .noscript p{font-size:12px;opacity:.55;max-width:330px;line-height:1.7;margin:6px 0 0}
 
 /* ---------- cover ---------- */
-.cover{min-height:100dvh;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;align-items:center;padding:calc(34px + env(safe-area-inset-top)) 24px calc(34px + env(safe-area-inset-bottom));position:relative;cursor:pointer;transition:background-color .4s}
+.cover{min-height:100dvh;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;align-items:center;padding:calc(34px + env(safe-area-inset-top)) 24px calc(34px + env(safe-area-inset-bottom));position:relative;cursor:pointer}
 /* the open space between the eyebrow and the swatches, and the wordmark centred inside it */
 .cover-mid{flex:1 1 auto;display:flex;align-items:center;justify-content:center;width:100%;min-height:0}
 .cover-inner{display:flex;flex-direction:column;align-items:center;max-width:100%}
@@ -396,7 +405,13 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .dlist{margin:16px 0 0}
 .ditem{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dotted var(--dash);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ditem .time{font-family:var(--disp);font-style:italic;font-size:12px;letter-spacing:.05em;opacity:.6;min-width:44px;padding-top:2px;font-variant-numeric:tabular-nums}
-.ditem .body{flex:1;min-width:0;font-size:13.5px;line-height:1.4}
+.ditem .body{flex:1;min-width:0;font-size:13.5px;line-height:1.4;cursor:pointer}
+@media (hover:hover){.ditem .body:hover{opacity:.62}}
+/* inline edit of one event: same 36px line as the 일정 추가 row below it */
+.dedit{display:flex;gap:8px;align-items:flex-end;padding:8px 0 10px;border-bottom:1px dotted var(--dash);animation:fade .14s ease}
+.dedit .grow{flex:1 1 auto;min-width:0;height:36px;font-size:13px;border-bottom:1px solid var(--dash);padding:0}
+.dedit .btn{font-size:12.5px;padding:7px 12px}
+.dedit .btn.primary{padding:7px 14px}
 .ditem.done .body{opacity:.4;text-decoration:line-through}
 .ditem .src{font-size:9px;letter-spacing:.08em;opacity:.4;font-family:var(--disp);font-style:italic;border:1px solid var(--dash);border-radius:2px;padding:0 3px;margin-left:6px;vertical-align:1px}
 .ditem .del{opacity:.3}
@@ -444,13 +459,13 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* toast */
 .toast{position:fixed;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--ink);color:var(--paper);padding:10px 16px;font-size:12px;border-radius:2px;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;letter-spacing:.01em;max-width:calc(100% - 32px)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-/* ⊕ theme button — a plain solid disc in the active theme's swatch colour */
-.fab{position:fixed;right:20px;bottom:calc(72px + env(safe-area-inset-bottom));width:38px;height:38px;border-radius:50%;border:1.5px solid var(--fab-bd,transparent);background:var(--fab-bg,var(--paper));display:grid;place-items:center;z-index:45;transition:background .25s,border-color .25s,transform .18s}
+/* ⊕ theme disc and ⌂ home — both are children of the bottom bar now */
+.fab{flex:0 0 auto;width:32px;height:32px;border-radius:50%;border:1.5px solid var(--fab-bd,transparent);background:var(--fab-bg,var(--paper));display:grid;place-items:center;transition:background .25s,border-color .25s,transform .18s}
 .fab:hover{transform:scale(1.06)}
-.fab svg{width:18px;height:18px}
-/* ⌂ home — mirrors the ⊕ theme fab on the opposite side, back to the cover */
-.fab.homefab{left:20px;right:auto;background:var(--paper)}
-.palette-pop{position:fixed;right:20px;bottom:calc(120px + env(safe-area-inset-bottom));z-index:46;background:var(--paper);border:1px solid var(--hair);padding:12px 14px;display:none;grid-template-columns:repeat(4,auto);gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.fab svg{width:16px;height:16px}
+/* ⌂ keeps the opaque paper fill so the icon reads on every theme */
+.fab.homefab{background:var(--paper)}
+.palette-pop{position:fixed;right:calc(var(--pad) - 2px);bottom:calc(58px + env(safe-area-inset-bottom));z-index:46;background:var(--paper);border:1px solid var(--hair);padding:12px 14px;display:none;grid-template-columns:repeat(4,auto);gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
 .palette-pop.on{display:grid}
 .palette-pop .sw{width:18px;height:18px}
 
@@ -475,7 +490,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .evt{font-size:11px;gap:4px}
   .evt .tm{display:none}
   .dnum{font-size:12px}
-  .memo{grid-template-columns:1fr;grid-template-areas:"side" "editor" "foot";gap:0}
+  .memo{grid-template-columns:minmax(0,1fr);grid-template-areas:"side" "editor" "foot";gap:0}
   .side{border-right:0;padding-right:0}
   .editor{margin-top:18px;border-top:1px solid var(--dash);padding-top:14px;scroll-margin-top:calc(64px + env(safe-area-inset-top))}
   .foot{margin-top:22px;border-top:1px solid var(--dash);padding-top:16px}
@@ -492,8 +507,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .evt{font-size:9.8px;line-height:1.05}
   .evt .bul{display:none}
   .sync .opt{display:none}
-  .fab{width:34px;height:34px;right:14px;bottom:calc(64px + env(safe-area-inset-bottom))}
-  .fab.homefab{left:14px;right:auto}
+  .fab{width:30px;height:30px}
+  .palette-pop{right:calc(var(--pad) - 2px)}
   .memotabs{gap:18px;margin-top:12px}
   .mtab{font-size:15px}
   /* iOS Safari zooms the page in when a focused field's text is under 16px;
@@ -525,7 +540,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 
 /* ---------- 종이 질감 · 연필 동그라미 · option ---------- */
 #grain{
-  position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0;
+  /* the grain has to reach past the home indicator and the status bar: a fixed
+     layer that stops at inset:0 left a bare strip above the safe area */
+  position:fixed;left:0;right:0;top:-60px;bottom:-60px;pointer-events:none;z-index:9999;opacity:0;
   transition:opacity .4s ease;background-repeat:repeat;background-size:180px 180px;
   mix-blend-mode:multiply;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncG type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncB type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -541,6 +558,14 @@ html.grain[data-theme="navy"] #grain{opacity:0.2;mix-blend-mode:overlay}
 .pen{position:absolute;left:50%;top:50%;width:27px;height:21.6px;transform:translate(-50%,-50%);overflow:visible;color:var(--pen);pointer-events:none}
 .pen.d2{width:30px;height:24px}
 .pen path{fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+/* a circled day number pushes the holiday name clear of the loop (the oval runs
+   13.5px / 15px out from the digits, so the label needs that much lead) */
+.dnum.circled .hol{margin-left:12px}
+.dnum.circled.d2 .hol{margin-left:10px}
+/* 4+ events: the grid keeps three lines with a little air taken out of them, so
+   the rest can be counted below the third line without touching the week rule */
+.cell.more4 .evt{height:calc(var(--rowh) - 3px)}
+.more{position:absolute;right:3px;bottom:1px;font-family:var(--ui);font-size:9px;line-height:1.1;letter-spacing:.01em;opacity:.55;pointer-events:none;font-variant-numeric:tabular-nums}
 /* ---------- option tab ---------- */
 .opts{margin-top:26px;max-width:430px}
 .orow{display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%;padding:16px 0;border-bottom:1px solid var(--dash);font-family:var(--ui);font-size:13px;letter-spacing:.01em;color:var(--ink);text-align:left;transition:opacity .16s}
@@ -565,10 +590,6 @@ html.grain[data-theme="navy"] #grain{opacity:0.2;mix-blend-mode:overlay}
 <div id="modal-root"></div>
 <div id="grain" aria-hidden="true"></div>
 <div class="toast" id="toast"></div>
-<button class="fab" id="fab" aria-label="테마 변경" hidden></button>
-<button class="fab homefab" id="homefab" aria-label="표지로 돌아가기" title="표지" hidden>
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.8 11.4 12 4.2l8.2 7.2"/><path d="M6.4 10.1v9.1h11.2v-9.1"/></svg>
-</button>
 <div class="palette-pop" id="palette-pop"></div>
 <div class="ypop-scrim" id="ypop-scrim"></div>
 <div class="ypop-layer" id="ypop-layer">
@@ -955,6 +976,7 @@ function parseRoute(){
 let R = parseRoute();
 let openDay = null;      // iso date of open day modal
 let openBackup = false;
+let editEvent = null;    // id of the event being edited inside the day modal
 let syncBusy = false;
 
 function go(hash){
@@ -1061,31 +1083,37 @@ function noiseBuffer(ac, dur, decay){
   return buf;
 }
 /* the tick of a pen on paper — check box, swatch, saved event */
-function penClick(){
+/* iOS hands back a suspended AudioContext on the first gestures: its clock is
+   frozen, so a 15ms tick scheduled at currentTime while suspended is simply lost
+   when resume() lands later. Play only after resume() has resolved. */
+function runSound(build){
   if(!touched || !prefOn('sound')) return;
   const ac = audioCtx(); if(!ac) return;
+  const go = ()=>{ try{ build(ac); }catch(e){} };
   try{
-    if(ac.state === 'suspended') ac.resume();
-    const t = ac.currentTime, dur = .015;
+    if(ac.state === 'suspended') ac.resume().then(go, ()=>{});
+    else go();
+  }catch(e){}
+}
+function penClick(){
+  runSound(ac=>{
+    const t = ac.currentTime + .002, dur = .024;
     const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, dur);
     const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.1;
     const g = ac.createGain();
     g.gain.setValueAtTime(.0001, t);
-    g.gain.exponentialRampToValueAtTime(.03, t + .004);
+    g.gain.exponentialRampToValueAtTime(.06, t + .004);
     g.gain.exponentialRampToValueAtTime(.0001, t + dur);
     src.connect(bp); bp.connect(g); g.connect(ac.destination);
     src.start(t);
-  }catch(e){}
+  });
 }
 /* a quiet rustle of thin planner paper turning — month and view changes.
    Nothing here may snap: the gain climbs gently from silence for 45ms instead of
    jumping to a peak, so it reads as air moving over paper, not a slap. */
 function paperTurn(){
-  if(!touched || !prefOn('sound')) return;
-  const ac = audioCtx(); if(!ac) return;
-  try{
-    if(ac.state === 'suspended') ac.resume();
-    const t = ac.currentTime, dur = .205;
+  runSound(ac=>{
+    const t = ac.currentTime + .002, dur = .205;
     const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, dur, .6);
     const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800; hp.Q.value = .7;
     const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4500; lp.Q.value = .7;
@@ -1095,7 +1123,7 @@ function paperTurn(){
     g.gain.exponentialRampToValueAtTime(.0001, t + dur);   // gentle decay
     src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ac.destination);
     src.start(t);
-  }catch(e){}
+  });
 }
 /* iOS Safari has no navigator.vibrate — the call must never throw there */
 function buzz(ms){
@@ -1318,6 +1346,16 @@ async function pushEventToGoogle(ev){
   const j = await res.json();
   if(j && j.id){ ev.googleId = j.id; ev.source = 'google'; return true; }
   return false;
+}
+/* an edited title / time goes back to the same Google event */
+async function patchEventOnGoogle(ev){
+  const token = silentToken();
+  if(!token || !ev || !ev.googleId) return false;
+  const res = await googleFetch(`${CAL_EVENTS}/${encodeURIComponent(ev.googleId)}`, token, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(googleEventBody(ev))
+  });
+  return res.ok;
 }
 async function deleteEventEverywhere(ev){
   if(!ev || !ev.googleId) return;
@@ -1649,6 +1687,7 @@ const ICO = {
   year: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.2" y="4.4" width="17.6" height="15.4" rx="2.2"/><path d="M3.2 8.2h17.6" stroke-width="1.1"/><circle cx="8" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="18.2" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="18.2" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="18.2" r=".9" fill="currentColor" stroke="none"/></svg>`,
   memo: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.4" y="4.2" width="17.2" height="15.6" rx="2.2"/><path d="M6.8 9h10.4M6.8 12h10.4M6.8 15h6.4" stroke-linecap="round"/></svg>`,
   back: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 5.5 8 12l6.5 6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+  home: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.8 11.4 12 4.2l8.2 7.2"/><path d="M6.4 10.1v9.1h11.2v-9.1"/></svg>`,
   doc: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14 3.5V8h4"/></svg>`
 };
 
@@ -1661,14 +1700,11 @@ let monthQuote = pickQuote();
 
 function render(){
   document.documentElement.dataset.theme = S.theme;
+  syncPaper();
   applyPrefs();
-  document.querySelector('meta[name=theme-color]').setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--paper').trim());
-  const fab = document.getElementById('fab');
-  fab.hidden = R.view==='cover';
-  paintFab();
-  document.getElementById('homefab').hidden = R.view==='cover';
   if(R.view==='cover'){ app.innerHTML = renderCover(); }
   else { app.innerHTML = renderNav() + `<div class="page">${renderView()}</div>` + renderYearBar(); }
+  paintFab();
   renderModal();
   const wrap = document.querySelector('.months');
   const act = wrap && wrap.querySelector('.on');
@@ -1695,11 +1731,13 @@ function renderYearBar(){
   const prev = monthMode ? '이전 달' : '이전 연도';
   const next = monthMode ? '다음 달' : '다음 연도';
   return `<footer class="yearbar" role="group" aria-label="연도 · 월 이동">
+    <button class="fab homefab" id="homefab" data-act="home" aria-label="표지로 돌아가기" title="표지">${ICO.home}</button>
     <div class="yb-switch">
       <button class="yb-step" data-act="yb-prev" aria-label="${prev}" title="${prev}">‹</button>
       <button class="yb-year" data-act="year-pick" role="button" aria-haspopup="dialog" aria-label="${S.year}년, 연도 선택">${S.year}</button>
       <button class="yb-step" data-act="yb-next" aria-label="${next}" title="${next}">›</button>
     </div>
+    <button class="fab" id="fab" data-act="palette" aria-label="테마 변경" title="테마 변경"></button>
   </footer>`;
 }
 
@@ -1740,17 +1778,38 @@ function swatchColor(id){
 const FAB_INK = {
   white:{bg:'#FFFFFF', bd:'#C8C6C2'},
   cream:{bg:'#EDE4D2', bd:'#C7BDA8'},
-  olive:{bg:'#91A06F', bd:'rgba(42,46,24,.38)'},
-  navy:{bg:'#3E4E6E', bd:'rgba(242,240,234,.45)'}
+  olive:{bg:'#A3AD77', bd:'rgba(42,46,24,.45)'},
+  navy:{bg:'#48516C', bd:'rgba(242,240,234,.55)'}
 };
 function paintFab(){
   const c = FAB_INK[S.theme] || FAB_INK.cream;
+  const on = R.view !== 'cover';
   const f = document.getElementById('fab');
-  if(f){ f.style.background = c.bg; f.style.borderColor = c.bd; }
-  /* ⌂ keeps the opaque paper fill so checklist text scrolling underneath never
-     shows through the icon; it shares the same keyline as the theme disc */
+  if(f){ f.hidden = !on; f.style.background = c.bg; f.style.borderColor = c.bd; }
+  /* ⌂ keeps the opaque paper fill so the icon reads on every theme; it shares
+     the same keyline as the theme disc */
   const h = document.getElementById('homefab');
-  if(h){ h.style.background = 'var(--paper)'; h.style.borderColor = c.bd; }
+  if(h){ h.hidden = !on; h.style.background = 'var(--paper)'; h.style.borderColor = c.bd; }
+}
+/* ---------- paper colour: root canvas + status-bar tint, in one frame ----------
+   iOS paints the area behind the status bar from the root canvas and keeps the
+   last <meta name=theme-color> until the tag is re-read, so a theme switch used
+   to leave that strip on the previous paper. Setting <html>, <body> and the meta
+   together (and re-inserting the meta so Safari picks it up) fixes the strip. */
+function paperColor(){
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
+  return v || '#EDE4D2';
+}
+function syncPaper(){
+  const c = paperColor();
+  document.documentElement.style.backgroundColor = c;
+  document.body.style.backgroundColor = c;
+  const meta = document.querySelector('meta[name=theme-color]');
+  if(meta && meta.getAttribute('content') !== c){
+    const fresh = meta.cloneNode(false);
+    fresh.setAttribute('content', c);
+    meta.parentNode.replaceChild(fresh, meta);
+  }
 }
 
 /* ---------- monthly ---------- */
@@ -1761,7 +1820,7 @@ function holidayOn(ds){
   return (live && live[ds]) || HOLIDAYS[ds] || null;
 }
 /* narrow screens get a shorter holiday label */
-const HOL_SHORT = {'설날 연휴':'연휴','추석 연휴':'연휴','부처님오신날':'부처님','지방선거일':'선거일'};
+const HOL_SHORT = {'설날 연휴':'연휴','추석 연휴':'연휴','부처님오신날':'부처님','지방선거일':'선거일','기독탄신일':'성탄'};
 function holShort(hol){
   const out = [];
   hol.split('·').forEach(p=>{
@@ -1806,7 +1865,11 @@ function renderMonthly(){
     const lines = evs.slice(0,3).map(e=>`<div class="evt ${e.source==='google'?'g':''} ${e.done?'done':''}">
         <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`).join('');
     const pen = evs.length ? `<svg class="pen${day>9?' d2':''}" viewBox="0 0 30 24" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
-    cells.push(`<div class="${cls}" data-act="open-day" data-val="${ds}"${hol?` title="${esc(hol)}"`:''}><div class="dnum"><span class="dnum-n">${day}${pen}</span>${hol?`<span class="hol"><span class="f">${esc(hol)}</span><span class="s">${esc(holShort(hol))}</span></span>`:''}</div><div class="evts">${lines}</div></div>`);
+    /* the grid keeps three lines; a fourth event is counted in the corner */
+    const more = evs.length > 3 ? `<div class="more">+${evs.length-3}</div>` : '';
+    const dcls = evs.length ? (' circled' + (day>9 ? ' d2' : '')) : '';
+    const ccls = cls + (evs.length > 3 ? ' more4' : '');
+    cells.push(`<div class="${ccls}" data-act="open-day" data-val="${ds}"${hol?` title="${esc(hol)}"`:''}><div class="dnum${dcls}"><span class="dnum-n">${day}${pen}</span>${hol?`<span class="hol"><span class="f">${esc(hol)}</span><span class="s">${esc(holShort(hol))}</span></span>`:''}</div><div class="evts">${lines}</div>${more}</div>`);
   }
   const weeks = [];
   for(let r=0;r<rows;r++){
@@ -2035,9 +2098,17 @@ function renderModal(){
           ${evs.length? evs.map(e=>`<div class="ditem ${e.done?'done':''}">
             <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" style="margin-top:2px"><i></i></div>
             <div class="time">${e.time? fmtTime(e.time):'종일'}</div>
-            <div class="body">${esc(e.title)}${e.source==='google'?'<span class="src">G</span>':''}</div>
-            <button class="del" data-act="day-del" data-val="${e.id}">×</button>
-          </div>`).join('') : `<div class="empty">이 날의 일정이 없습니다.</div>`}
+            <div class="body" data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${e.source==='google'?'<span class="src">G</span>':''}</div>
+            <button class="del" data-act="day-del" data-val="${e.id}" aria-label="삭제">×</button>
+          </div>${editEvent===e.id ? `<div class="dedit" data-stop="1">
+            <div class="time-wrap ${e.time?'':'is-empty'}">
+              <svg class="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.4V12l3.1 1.9"/></svg>
+              <input type="time" id="edittime" value="${e.time||''}" aria-label="시간">
+            </div>
+            <input class="grow" type="text" id="edittitle" value="${esc(e.title)}" placeholder="일정" aria-label="일정 제목">
+            <button class="btn primary" data-act="day-save" data-val="${e.id}">저장</button>
+            <button class="btn" data-act="day-cancel">취소</button>
+          </div>` : ''}`).join('') : `<div class="empty">이 날의 일정이 없습니다.</div>`}
         </div>
         <div class="addrow">
           <div class="time-wrap is-empty">
@@ -2064,18 +2135,19 @@ function renderBackupModal(){
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
   const sectionSchedule = () => `
         <h2>1. 월별 일정</h2>
-        ${[1,2,3,11,12].map(m=>{
+        ${[1,2,3,4,5,6,7,8,9,10,11,12].filter(m=>monthEvents(S.year,m).length).map(m=>{
           const evs = monthEvents(S.year,m);
-          if(!evs.length) return '';
           return `<h3>${MON[m-1]} ${S.year}</h3><ul>${evs.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<li>${+e.date.slice(8,10)}일 ${e.time?'· '+e.time+' ':''}${esc(e.title)}</li>`).join('')}</ul>`;
-        }).join('')}`;
+        }).join('') || '<div class="mono">(일정 없음)</div>'}
+        ${(()=>{ const empty = [1,2,3,4,5,6,7,8,9,10,11,12].filter(m=>!monthEvents(S.year,m).length);
+          return empty.length ? `<div class="mono" style="opacity:.55">일정 없는 달: ${empty.map(m=>MON[m-1].replace('.','')).join(' · ')}</div>` : ''; })()}`;
   return `<div class="scrim" data-act="close-backup">
     <div class="modal wide" data-stop="1">
       <div class="modal-h">
         <div><span class="d">Docs</span><span class="dw">GOOGLE DRIVE BACKUP</span></div>
         <button class="x" data-act="close-backup">×</button>
       </div>
-      <div style="font-size:12px;opacity:.6;margin-bottom:12px">Google Drive의 ‘${BACKUP_DOC_NAME}’ 문서에 아래 내용이 저장됩니다.${S.google.account?' · '+esc(S.google.account):''}</div>
+      <div style="font-size:12px;opacity:.6;margin-bottom:12px">Google Drive의 ‘${BACKUP_DOC_NAME}’ 문서에 아래 내용이 저장됩니다.${S.google.account?' · '+esc(S.google.account):''}<br>일정은 ${S.year}년 1–12월 전체가 저장됩니다.</div>
       <div class="bscopes" role="group" aria-label="백업할 카테고리">
         ${BACKUP_SCOPES.map(s=>`<label class="bscope"><input type="checkbox" data-act="scope-toggle" data-val="${s.id}" ${sc[s.id]?'checked':''}><span>${s.label}</span></label>`).join('')}
       </div>
@@ -2122,10 +2194,35 @@ function stepYear(dir){
   S.year = next; persist(true); render();
   if(R.view !== 'cover') toast(`${S.year}년`);
 }
+/* ---------------- swipe the calendar to change month ---------------- */
+/* a quick horizontal flick on the grid turns the page (Dec. → Jan. wraps the
+   year); a tap or a vertical scroll is left exactly as it was. Touch events are
+   used rather than pointer events because iOS takes the pointer stream away as
+   soon as the browser starts scrolling — touchstart/touchend always arrive. */
+let swipeStart = null, swipeAt = 0;
+const SWIPE_MIN = 55;
+document.addEventListener('touchstart', e=>{
+  if(!e.target.closest || !e.target.closest('.cal') || e.touches.length !== 1){ swipeStart = null; return; }
+  const t = e.touches[0];
+  swipeStart = {x:t.clientX, y:t.clientY, t:Date.now()};
+}, {capture:true, passive:true});
+document.addEventListener('touchend', e=>{
+  const s = swipeStart; swipeStart = null;
+  if(!s) return;
+  const t = e.changedTouches && e.changedTouches[0]; if(!t) return;
+  const dx = t.clientX - s.x, dy = t.clientY - s.y, dt = Date.now() - s.t;
+  if(dt > 600 || Math.abs(dx) < SWIPE_MIN) return;
+  if(Math.abs(dx) <= Math.abs(dy) * 1.5) return;
+  swipeAt = Date.now();
+  stepMonth(dx < 0 ? 1 : -1);
+}, {capture:true, passive:true});
+document.addEventListener('touchcancel', ()=>{ swipeStart = null; }, {capture:true, passive:true});
 document.addEventListener('click', e=>{
   const el = e.target.closest('[data-act]');
   if(!el) return;
   const act = el.dataset.act, val = el.dataset.val;
+  /* a swipe that just turned the month must not also open that day's modal */
+  if(act==='open-day' && Date.now() - swipeAt < 450) return;
   /* Only the backdrop itself closes a modal — clicks on inputs or empty space
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
@@ -2161,8 +2258,44 @@ document.addEventListener('click', e=>{
     case 'nav-yearly': go('/yearly'); break;
     case 'nav-memo': openMenu(); break;
     case 'memo-list': go('/memo'); break;
-    case 'open-day': openDay = val; renderModal(); break;
-    case 'close-modal': openDay = null; renderModal(); break;
+    case 'home': go('#/cover'); break;
+    case 'palette': {
+      /* the theme disc: opens the four paper colours, with the pen tick */
+      const pop = document.getElementById('palette-pop');
+      const opening = !pop.classList.contains('on');
+      if(opening){
+        pop.innerHTML = THEMES.map(t=>`<button class="sw ${S.theme===t.id?'on':''}" data-act="theme" data-val="${t.id}" title="${t.ko}" style="background:${swatchColor(t.id)}"></button>`).join('');
+      }
+      pop.classList.toggle('on', opening);
+      if(opening) uiClick();
+      break;
+    }
+    case 'open-day': openDay = val; editEvent = null; renderModal(); break;
+    case 'close-modal': openDay = null; editEvent = null; renderModal(); break;
+    /* inline edit of one event: tap the title, fix it, save */
+    case 'day-edit': {
+      editEvent = val; renderModal();
+      const ti = document.getElementById('edittitle');
+      if(ti){ ti.focus(); try{ ti.setSelectionRange(ti.value.length, ti.value.length); }catch(err){} }
+      break;
+    }
+    case 'day-save': {
+      const ev = S.events.find(x=>x.id===val); if(!ev) return;
+      const tt = document.getElementById('edittitle');
+      const ti = document.getElementById('edittime');
+      const title = ((tt && tt.value) || '').trim();
+      if(!title){ if(tt) tt.focus(); return; }
+      const time = (ti && ti.value) || '';
+      if(ev.title === title && ev.time === time){ editEvent = null; renderModal(); return; }
+      ev.title = title; ev.time = time;
+      persist(true); editEvent = null; renderModal(); render();
+      toast('일정을 수정했습니다');
+      if(S.google.connected && ev.googleId){
+        patchEventOnGoogle(ev).catch(err=>{ if(err.status === 401) clearToken(); });
+      }
+      break;
+    }
+    case 'day-cancel': editEvent = null; renderModal(); break;
     case 'day-toggle': {
       const ev = S.events.find(x=>x.id===val); if(ev){ ev.done = !ev.done; persist(); renderModal(); render(); }
       break;
@@ -2368,7 +2501,14 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='newtitle'){
     e.preventDefault(); document.querySelector('[data-act="day-add"]').click(); return;
   }
-  if(e.key==='Escape'){ if(openDay){ openDay=null; renderModal(); } else if(openBackup){ openBackup=false; renderModal(); } }
+  if(e.key==='Enter' && document.activeElement && document.activeElement.id==='edittitle'){
+    e.preventDefault(); document.querySelector('[data-act="day-save"]')?.click(); return;
+  }
+  if(e.key==='Escape'){
+    if(editEvent){ editEvent = null; renderModal(); }
+    else if(openDay){ openDay=null; renderModal(); }
+    else if(openBackup){ openBackup=false; renderModal(); }
+  }
   if((e.key==='ArrowLeft'||e.key==='ArrowRight') && R.view==='monthly' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
     stepMonth(e.key==='ArrowRight'?1:-1);
   }
@@ -2379,18 +2519,11 @@ function syncTimeWrap(inp){
   const w = inp && inp.closest('.time-wrap');
   if(w) w.classList.toggle('is-empty', !inp.value);
 }
-document.addEventListener('input', e=>{ if(e.target && e.target.id==='newtime') syncTimeWrap(e.target); });
-document.addEventListener('change', e=>{ if(e.target && e.target.id==='newtime') syncTimeWrap(e.target); });
+document.addEventListener('input', e=>{ if(e.target && (e.target.id==='newtime'||e.target.id==='edittime')) syncTimeWrap(e.target); });
+document.addEventListener('change', e=>{ if(e.target && (e.target.id==='newtime'||e.target.id==='edittime')) syncTimeWrap(e.target); });
 
-/* palette fab */
-const fab = document.getElementById('fab');
-fab.addEventListener('click', ()=>{
-  const pop = document.getElementById('palette-pop');
-  pop.innerHTML = THEMES.map(t=>`<button class="sw ${S.theme===t.id?'on':''}" data-act="theme" data-val="${t.id}" title="${t.ko}" style="background:${swatchColor(t.id)}"></button>`).join('');
-  pop.classList.toggle('on');
-});
-/* ⌂ home — back to the cover (iPhone standalone mode has no browser back) */
-document.getElementById('homefab').addEventListener('click', ()=>go('#/cover'));
+/* palette fab and ⌂ are part of the bottom bar now; their clicks come through the
+   delegated [data-act] handler above, so no per-node listeners are bound here */
 
 /* ---------------- year wheel ---------------- */
 /* a paper wheel just above the bottom bar: tap, drag (mouse/pen) or flick (touch)
@@ -2458,17 +2591,21 @@ ywheel.addEventListener('click', e=>{
   if(y === S.year) render();
 });
 /* mouse and pen drag their way down the wheel; touch keeps the browser's own
-   momentum scrolling and snap */
+   momentum scrolling and snap. The pointer is captured only once the drag has
+   actually moved — capturing on pointerdown retargeted the following click to
+   the wheel itself, so a plain mouse click on a year did nothing. */
 ywheel.addEventListener('pointerdown', e=>{
   if(e.pointerType === 'touch') return;
-  ywheelDrag = {y:e.clientY, top:ywheel.scrollTop, moved:false};
-  try{ ywheel.setPointerCapture(e.pointerId); }catch(err){}
+  ywheelDrag = {y:e.clientY, top:ywheel.scrollTop, moved:false, id:e.pointerId, captured:false};
   ywheel.classList.add('grab');
 });
 ywheel.addEventListener('pointermove', e=>{
   if(!ywheelDrag) return;
   const dy = e.clientY - ywheelDrag.y;
-  if(Math.abs(dy) > 3) ywheelDrag.moved = true;
+  if(!ywheelDrag.moved && Math.abs(dy) > 4){
+    ywheelDrag.moved = true;
+    try{ ywheel.setPointerCapture(ywheelDrag.id); ywheelDrag.captured = true; }catch(err){}
+  }
   if(ywheelDrag.moved){ e.preventDefault(); ywheel.scrollTop = ywheelDrag.top - dy; }
 });
 function endWheelDrag(){
@@ -2484,6 +2621,7 @@ function endWheelDrag(){
 }
 ywheel.addEventListener('pointerup', endWheelDrag);
 ywheel.addEventListener('pointercancel', endWheelDrag);
+window.addEventListener('pointerup', e=>{ if(ywheelDrag && ywheelDrag.moved) endWheelDrag(); });
 ywheel.addEventListener('keydown', e=>{
   if(e.key==='Escape' || e.key==='Enter'){ e.preventDefault(); closeYearWheel(); return; }
   if(e.key==='ArrowUp' || e.key==='ArrowDown'){
