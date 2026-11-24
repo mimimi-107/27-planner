@@ -129,7 +129,7 @@ input::placeholder,textarea::placeholder{color:rgba(var(--ink-rgb),.32)}
 body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62,107,72,.18)}
 .sync-btn{border-bottom:1px solid rgba(var(--ink-rgb),.45);padding-bottom:1px;opacity:.9;margin-left:auto;font-size:11.5px;white-space:nowrap}
 .sync-btn:hover{opacity:1;border-bottom-color:var(--ink)}
-.dow{display:grid;grid-template-columns:repeat(7,1fr);padding-bottom:7px}
+.dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));padding-bottom:7px}
 .dow span{text-align:center;font-family:var(--disp);font-style:italic;font-weight:700;font-size:11.5px;letter-spacing:.16em}
 .dow span.sat{color:var(--sat-ink);opacity:.78}
 .dow span.sun{color:var(--sun-ink);opacity:.85}
@@ -139,15 +139,18 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 
 .cal{border-bottom:1px solid var(--hair)}
 .week{
-  position:relative;display:grid;grid-template-columns:repeat(7,1fr);
+  position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
   height:calc(var(--numh) + var(--rowh)*3 + 9px);
   border-top:1px solid var(--hair);
 }
-.cell{position:relative;padding:3px 7px 0;cursor:pointer;transition:background .16s;overflow:hidden}
+/* overflow stays visible so a hand-drawn circle around a day number is
+   never cut off at the cell edge; the top padding keeps its top stroke clear
+   of the week divider line above */
+.cell{position:relative;padding:6px 7px 0;cursor:pointer;transition:background .16s;overflow:visible}
 .cell:hover{background:var(--soft)}
 .cell.pad{cursor:default}
 .cell.pad:hover{background:none}
-.dnum{font-family:var(--ui);font-weight:500;font-size:13px;letter-spacing:.01em;height:var(--numh);display:flex;align-items:center;font-variant-numeric:tabular-nums}
+.dnum{font-family:var(--ui);font-weight:500;font-size:13px;letter-spacing:.01em;height:var(--numh);display:flex;align-items:center;font-variant-numeric:tabular-nums;overflow:visible}
 .cell.sat .dnum{color:var(--sat-ink);opacity:.8}
 .cell.sun .dnum{color:var(--sun-ink)}
 /* holidays wear the same ink as Sunday, number and label alike */
@@ -485,7 +488,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .canvas{min-height:0}
   .mlist{max-height:none}
   .wd{width:4px;height:4px}
-  .cell{padding:3px 3px 0}
+  .cell{padding:6px 3px 0}
   .evt{font-size:9.8px;line-height:1.05}
   .evt .bul{display:none}
   .sync .opt{display:none}
@@ -523,16 +526,20 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* ---------- 종이 질감 · 연필 동그라미 · option ---------- */
 #grain{
   position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:0;
-  transition:opacity .4s ease;background-repeat:repeat;background-size:200px 200px;
+  transition:opacity .4s ease;background-repeat:repeat;background-size:180px 180px;
   mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncG type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncB type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-html.grain #grain{opacity:.045}
-html.grain[data-theme="olive"] #grain{opacity:.06;mix-blend-mode:overlay}
-html.grain[data-theme="navy"] #grain{opacity:.11;mix-blend-mode:overlay}
+html.grain #grain{opacity:0.12}
+html.grain[data-theme="cream"] #grain{opacity:0.13}
+html.grain[data-theme="olive"] #grain{opacity:0.16;mix-blend-mode:overlay}
+html.grain[data-theme="navy"] #grain{opacity:0.2;mix-blend-mode:overlay}
 /* a date that holds at least one event gets its day number circled by hand */
-.dnum-n{position:relative;display:inline-flex;align-items:center;justify-content:center}
-.pen{position:absolute;left:50%;top:50%;width:23px;height:22px;transform:translate(calc(-50% + 1px),-50%);overflow:visible;color:var(--pen);pointer-events:none}
+.dnum-n{position:relative;display:inline-flex;align-items:center;justify-content:center;overflow:visible}
+/* the loop is drawn in a 30x24 (5:4) box, so a single digit gets a slightly
+   smaller oval and two digits a wider one; both stay centred on the number */
+.pen{position:absolute;left:50%;top:50%;width:27px;height:21.6px;transform:translate(-50%,-50%);overflow:visible;color:var(--pen);pointer-events:none}
+.pen.d2{width:30px;height:24px}
 .pen path{fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 /* ---------- option tab ---------- */
 .opts{margin-top:26px;max-width:430px}
@@ -1042,13 +1049,14 @@ function audioCtx(){
   }catch(e){ AC = false; }
   return AC;
 }
-function noiseBuffer(ac, dur){
+function noiseBuffer(ac, dur, decay){
   const len = Math.max(1, Math.floor(ac.sampleRate * dur));
   const buf = ac.createBuffer(1, len, ac.sampleRate);
   const d = buf.getChannelData(0);
+  const p = decay === undefined ? 2 : decay;   // 2 = dry pen noise, lower = airy paper
   for(let i=0;i<len;i++){
     const k = 1 - i/len;
-    d[i] = (Math.random()*2 - 1) * k * k;
+    d[i] = (Math.random()*2 - 1) * Math.pow(k, p);
   }
   return buf;
 }
@@ -1058,30 +1066,34 @@ function penClick(){
   const ac = audioCtx(); if(!ac) return;
   try{
     if(ac.state === 'suspended') ac.resume();
-    const t = ac.currentTime;
-    const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, .028);
-    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 1.2;
-    const g = ac.createGain(); g.gain.value = .085;
+    const t = ac.currentTime, dur = .015;
+    const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, dur);
+    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 1.1;
+    const g = ac.createGain();
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(.03, t + .004);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
     src.connect(bp); bp.connect(g); g.connect(ac.destination);
     src.start(t);
   }catch(e){}
 }
-/* a whisper of a page being turned — month and view changes */
+/* a quiet rustle of thin planner paper turning — month and view changes.
+   Nothing here may snap: the gain climbs gently from silence for 45ms instead of
+   jumping to a peak, so it reads as air moving over paper, not a slap. */
 function paperTurn(){
   if(!touched || !prefOn('sound')) return;
   const ac = audioCtx(); if(!ac) return;
   try{
     if(ac.state === 'suspended') ac.resume();
-    const t = ac.currentTime, dur = .075;
-    const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, dur);
-    const bp = ac.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = .8;
-    bp.frequency.setValueAtTime(820, t);
-    bp.frequency.linearRampToValueAtTime(1900, t + dur);
+    const t = ac.currentTime, dur = .205;
+    const src = ac.createBufferSource(); src.buffer = noiseBuffer(ac, dur, .6);
+    const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800; hp.Q.value = .7;
+    const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 4500; lp.Q.value = .7;
     const g = ac.createGain();
     g.gain.setValueAtTime(.0001, t);
-    g.gain.exponentialRampToValueAtTime(.05, t + .012);
-    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    src.connect(bp); bp.connect(g); g.connect(ac.destination);
+    g.gain.linearRampToValueAtTime(.045, t + .045);        // soft attack
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);   // gentle decay
+    src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ac.destination);
     src.start(t);
   }catch(e){}
 }
@@ -1759,15 +1771,16 @@ function holShort(hol){
   return out.join('·');
 }
 /* ---------- hand-drawn pencil circles ---------- */
-/* six organic loops, each closed with a small overshoot so it reads as a quick
-   pen stroke; one is chosen from the date itself, so a re-render never reshuffles */
+/* six organic loops drawn in the 30x24 box, each closed with a small overshoot so
+   it reads as a quick pen stroke; one is chosen from the date itself, so a re-render
+   never reshuffles */
 const PEN_PATHS = [
-  'M21.2 13.6C20.5 14.3 18.9 17.1 17.2 18.0C15.6 19.0 13.2 19.5 11.3 19.3C9.4 19.2 7.3 18.1 5.9 17.0C4.5 15.8 3.4 13.9 3.0 12.2C2.6 10.5 2.6 8.0 3.5 6.5C4.4 4.9 6.7 3.4 8.5 2.8C10.4 2.3 12.8 2.8 14.6 3.3C16.5 3.9 18.4 4.9 19.6 6.3C20.8 7.7 21.9 10.0 21.8 11.7C21.7 13.5 20.5 15.8 19.1 17.1C17.6 18.4 14.3 19.2 13.3 19.7',
-  'M3.8 15.5C3.7 14.5 2.6 11.4 3.0 9.7C3.4 8.0 4.9 6.2 6.3 5.1C7.8 4.0 9.9 3.1 11.8 3.1C13.7 3.0 15.9 3.7 17.5 4.7C19.1 5.8 20.8 7.6 21.2 9.3C21.7 11.0 21.3 13.6 20.3 15.1C19.3 16.6 16.9 17.6 15.1 18.2C13.3 18.7 11.1 19.0 9.2 18.6C7.3 18.2 4.8 17.2 3.7 15.7C2.5 14.2 2.2 11.6 2.6 9.8C3.0 8.0 5.4 5.7 6.0 4.9',
-  'M17.3 3.4C17.9 4.1 20.5 6.3 21.0 8.0C21.5 9.7 21.2 11.9 20.5 13.6C19.9 15.2 18.7 16.9 17.1 18.0C15.6 19.0 13.4 19.7 11.5 19.7C9.6 19.6 7.3 18.8 5.8 17.7C4.3 16.5 2.9 14.5 2.5 12.8C2.2 11.0 2.7 8.7 3.6 7.2C4.6 5.7 6.3 4.4 8.0 3.6C9.8 2.7 12.0 2.1 13.9 2.3C15.8 2.5 18.4 3.5 19.6 4.9C20.9 6.2 21.2 9.6 21.5 10.5',
-  'M13.6 19.4C12.5 19.3 8.9 19.6 7.3 18.6C5.7 17.7 4.5 15.6 4.0 13.9C3.4 12.2 3.4 10.3 3.9 8.6C4.4 6.9 5.4 4.7 6.9 3.7C8.4 2.6 11.2 2.1 13.1 2.3C15.0 2.6 17.1 3.9 18.5 5.2C19.8 6.6 20.8 8.6 21.0 10.3C21.1 12.0 20.5 14.2 19.4 15.7C18.4 17.2 16.5 18.7 14.7 19.4C12.8 20.0 9.9 20.2 8.1 19.4C6.3 18.7 4.6 15.7 3.8 15.0',
-  'M4.2 7.5C4.9 7.0 6.9 5.1 8.5 4.4C10.1 3.7 12.1 3.0 13.9 3.1C15.6 3.3 18.0 4.3 19.2 5.6C20.3 6.8 21.0 9.0 21.0 10.7C21.0 12.4 20.3 14.4 19.2 15.7C18.0 17.0 16.1 18.1 14.4 18.5C12.6 18.9 10.5 18.8 8.8 18.3C7.0 17.8 4.7 16.8 3.7 15.4C2.6 14.0 2.1 11.5 2.5 9.8C2.9 8.1 4.6 6.5 6.0 5.4C7.5 4.3 10.2 3.4 11.1 3.0',
-  'M20.0 7.0C20.1 7.9 21.1 10.7 20.8 12.4C20.5 14.2 19.6 16.3 18.2 17.5C16.8 18.8 14.3 19.9 12.3 20.0C10.4 20.0 8.0 18.7 6.5 17.6C5.0 16.4 3.9 14.6 3.4 12.9C2.8 11.2 2.5 8.9 3.2 7.3C3.9 5.6 5.8 3.8 7.7 3.0C9.5 2.2 12.2 2.0 14.2 2.5C16.1 2.9 18.3 4.2 19.6 5.6C20.8 7.1 21.5 9.3 21.5 11.1C21.5 13.0 20.0 15.8 19.7 16.8'
+  'M17.1 2.6C18.5 3.2 23.3 4.3 25.2 6.1C27.1 7.8 28.5 10.9 28.2 13.1C27.9 15.3 25.7 18.1 23.4 19.5C21.0 21.0 17.3 21.9 14.3 21.8C11.4 21.7 7.9 20.3 5.9 18.7C3.8 17.0 2.2 14.3 2.1 12.0C2.0 9.8 3.1 6.6 5.1 4.9C7.1 3.3 11.2 2.1 14.1 2.1C17.1 2.1 21.3 4.2 22.8 4.7',
+  'M26.0 16.9C24.8 17.7 21.5 20.8 18.6 21.4C15.8 22.1 11.6 22.0 9.0 21.0C6.4 20.0 3.7 17.5 2.8 15.3C1.9 13.2 2.5 10.3 3.6 8.2C4.8 6.1 7.2 3.7 9.8 2.7C12.5 1.8 16.8 1.6 19.5 2.4C22.3 3.2 25.1 5.5 26.3 7.6C27.6 9.6 27.9 12.6 27.1 14.7C26.3 16.8 22.3 19.4 21.4 20.3',
+  'M19.6 3.0C20.7 3.8 25.2 5.7 26.6 7.6C28.0 9.6 28.8 12.8 27.9 14.9C27.1 17.1 24.1 19.4 21.5 20.4C18.9 21.5 15.2 21.7 12.4 21.2C9.5 20.8 6.1 19.5 4.3 17.7C2.6 15.9 1.5 12.8 1.9 10.6C2.3 8.4 4.4 5.7 6.7 4.3C9.0 2.9 12.8 2.1 15.7 2.3C18.5 2.4 22.7 4.7 24.1 5.1',
+  'M17.6 21.8C16.1 21.6 10.6 21.9 8.2 20.7C5.7 19.5 3.7 16.9 2.9 14.7C2.2 12.5 2.3 9.6 3.5 7.6C4.8 5.6 7.6 3.4 10.3 2.6C13.0 1.8 17.0 1.9 19.7 2.7C22.5 3.5 25.5 5.5 26.8 7.5C28.0 9.5 28.0 12.6 27.1 14.7C26.2 16.8 23.9 19.0 21.4 20.2C18.9 21.4 13.7 21.8 12.2 22.2',
+  'M3.2 15.7C3.1 14.5 1.5 10.4 2.5 8.3C3.5 6.2 6.7 4.0 9.4 3.1C12.2 2.2 15.9 2.1 18.8 2.8C21.6 3.4 25.0 5.1 26.5 7.0C28.0 9.0 28.4 12.2 27.6 14.4C26.8 16.6 24.4 19.1 21.9 20.3C19.4 21.5 15.4 22.1 12.6 21.6C9.8 21.2 6.6 19.4 4.8 17.6C3.1 15.8 2.5 11.8 2.0 10.7',
+  'M14.4 22.0C13.0 21.5 8.0 20.6 5.9 19.0C3.8 17.5 1.9 14.7 1.8 12.5C1.7 10.3 3.3 7.6 5.2 5.9C7.1 4.2 10.2 2.9 13.0 2.5C15.9 2.0 20.0 2.1 22.4 3.2C24.8 4.4 27.0 7.2 27.6 9.4C28.2 11.6 27.3 14.3 26.0 16.3C24.7 18.3 22.2 20.6 19.6 21.4C17.0 22.2 11.8 21.2 10.3 21.1',
 ];
 function penPick(ds){
   let h = 0;
@@ -1792,7 +1805,7 @@ function renderMonthly(){
     const evs = eventsOn(ds);
     const lines = evs.slice(0,3).map(e=>`<div class="evt ${e.source==='google'?'g':''} ${e.done?'done':''}">
         <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`).join('');
-    const pen = evs.length ? `<svg class="pen" viewBox="0 0 24 22" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
+    const pen = evs.length ? `<svg class="pen${day>9?' d2':''}" viewBox="0 0 30 24" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
     cells.push(`<div class="${cls}" data-act="open-day" data-val="${ds}"${hol?` title="${esc(hol)}"`:''}><div class="dnum"><span class="dnum-n">${day}${pen}</span>${hol?`<span class="hol"><span class="f">${esc(hol)}</span><span class="s">${esc(holShort(hol))}</span></span>`:''}</div><div class="evts">${lines}</div></div>`);
   }
   const weeks = [];
