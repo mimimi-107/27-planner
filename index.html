@@ -1216,6 +1216,8 @@ function go(hash){
 }
 function setRoute(){
   R = parseRoute(); openDay = null; openBackup = false; searchModalOpen = false;
+  /* a page turn closes whatever line was open for typing and any sheet on top */
+  checkEditId = null; recurChoice = null; editSplit = null; actionPop = null;
   if(ywheelOpen) closeYearWheel();
   if(R.view==='cover') coverQuote = pickQuote();
   if(R.view==='monthly'){ S.lastMonth = R.month; monthQuote = pickQuote(); }
