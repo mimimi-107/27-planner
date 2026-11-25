@@ -248,6 +248,10 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* a secondary Google calendar paints the whole line in its own ink, dot included */
 .evt.csec .bul{background:currentColor;opacity:.85}
 .evt.done .t{opacity:.4;text-decoration:line-through}
+/* a remember day on the calendar: the pencil's own ink in a small diamond, so a
+   date that comes back every year reads apart from one appointment at a glance */
+.evt.rm .bul{border-radius:0;transform:rotate(45deg);background:var(--pen);opacity:.9;width:4.5px;height:4.5px}
+.evt.rm .t{opacity:.95}
 
 /* ---------- yearly ---------- */
 .yhead-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:18px 0 16px;flex-wrap:wrap}
@@ -354,6 +358,30 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .mempty-editor{display:grid;place-items:center;min-height:min(56vh,440px)}
 .plusbtn{width:66px;height:66px;border:0;border-radius:0;background:none;display:grid;place-items:center;font-size:calc(30px*var(--fs-k));line-height:1;font-weight:300;color:rgba(var(--ink-rgb),.55);transition:color .2s,opacity .2s}
 .plusbtn:hover{background:none;color:var(--ink)}
+/* ---------- remember: 매년 돌아오는 날 (양력 · 음력) ---------- */
+.remember{margin-top:20px;max-width:760px}
+.rmform{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rmdate{width:calc(76px*var(--fs-k));text-align:center;font-family:var(--disp);font-style:italic;font-weight:600;font-size:calc(14px*var(--fs-k));letter-spacing:.06em;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--dash);padding:6px 2px;border-radius:0}
+.rmkind{display:flex;gap:2px;flex:0 0 auto}
+.rmkind .rp{padding:5px 9px}
+.rmtitle{flex:1 1 120px;min-width:0;font-size:calc(var(--ctext-size)*var(--fs-k));border-bottom:1px solid var(--dash);padding:6px 2px;border-radius:0}
+.rmadd{flex:0 0 auto;padding:6px 12px;border:1px solid var(--dash);font-size:calc(12px*var(--fs-k));letter-spacing:.02em;transition:border-color .18s,background .18s}
+.rmadd:hover{border-color:var(--hair);background:var(--soft)}
+.rmdate.bad,.rmtitle.bad{border-bottom-color:var(--sun-ink)}
+.rlist{margin-top:18px}
+.rrow{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:baseline;gap:9px;padding:11px 0 10px;border-bottom:1px dotted var(--dash)}
+.rd{font-family:var(--disp);font-style:italic;font-weight:600;font-size:calc(14px*var(--fs-k));letter-spacing:.03em;font-variant-numeric:tabular-nums;white-space:nowrap;cursor:pointer}
+.rd .yl{font-style:normal;font-family:var(--ui);font-weight:400;font-size:calc(9.5px*var(--fs-k));letter-spacing:.02em;opacity:.62;margin-right:3px}
+.rsol{font-size:calc(10.5px*var(--fs-k));letter-spacing:.02em;opacity:.42;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rt{font-size:calc(var(--ctext-size)*var(--fs-k));min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.rtin{font-size:calc(var(--ctext-size)*var(--fs-k));min-width:0;width:100%;border-bottom:1px solid var(--dash);padding:1px 0}
+.rmx{width:calc(20px*var(--fs-k));height:calc(20px*var(--fs-k));display:grid;place-items:center;font-size:calc(15px*var(--fs-k));color:rgba(var(--ink-rgb),.55);opacity:.4;transition:opacity .15s;touch-action:manipulation}
+.rmx:hover,.rmx:focus{opacity:1}
+/* the same badge the day modal gives a repeat rule, for a remember row */
+.ditem .rmtag{font-size:calc(9px*var(--fs-k));letter-spacing:.02em;opacity:.6;border:1px solid var(--dash);border-radius:999px;padding:0 4px;margin-left:6px;vertical-align:1px;font-family:var(--ui);font-style:normal}
+.ditem .time.rmt{min-width:56px;font-size:calc(11px*var(--fs-k));opacity:.72;letter-spacing:.02em}
+.sres.rm .sr-b{border-radius:0;transform:rotate(45deg);opacity:.75}
+
 /* ---------- backup category picker ---------- */
 .bscopes{display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 14px;padding-bottom:11px;border-bottom:1px solid var(--dash)}
 .bscope{display:flex;align-items:center;gap:6px;font-size:calc(11.5px*var(--fs-k));letter-spacing:.01em;color:rgba(var(--ink-rgb),.72);cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -683,6 +711,18 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .palette-pop{right:calc(var(--pad) - 2px)}
   .memotabs{gap:18px;margin-top:12px}
   .mtab{font-size:calc(15px*var(--fs-k))}
+  .remember{margin-top:12px}
+  /* the phone gets a deliberate two-line form rather than a wrapped row:
+     월/일 + 양력·음력, then the words with 추가 at the right */
+  .rmform{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"date kind kind" "title title add";column-gap:10px;row-gap:8px;align-items:center}
+  .rmdate{grid-area:date}
+  .rmkind{grid-area:kind;justify-self:start}
+  .rmtitle{grid-area:title;width:100%}
+  .rmadd{grid-area:add;align-self:center}
+  /* the phone hides an event's dot to win space; a remember day keeps its mark */
+  .evt.rm .bul{display:block;width:4px;height:4px}
+  .rmdate,.rmtitle{font-size:max(16px,calc(var(--ctext-size)*var(--fs-k)))}
+  .rtin{font-size:max(16px,calc(var(--ctext-size)*var(--fs-k)))}
   /* iOS Safari zooms the page in when a focused field's text is under 16px;
      the fields a phone actually types into are lifted to 16px, while the
      display-sized ones (memo title 24px, check title 17px) keep their scale */
@@ -812,7 +852,8 @@ const DOW = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
 const DOW_FULL = ['SUN','MON','TUE','WED','THU','FRI','SAT'];   // index = Date.getDay()
 const MEMO_TABS = [
   {id:'check', label:'check'},
-  {id:'note', label:'memo'}
+  {id:'note', label:'memo'},
+  {id:'remember', label:'remember'}
 ];
 /* the ≡ menu carries one extra tab: the three switches */
 const MENU_TABS = MEMO_TABS.concat([{id:'option', label:'option'}]);
@@ -1076,9 +1117,9 @@ function initialState(){
     menuVisited:false,
     inlineTab:'check',        /* tab of the check · memo section under the calendar */
     inlineLast:{check:null, note:null},  /* item open in that section, per tab */
-    backupScopes:{schedule:true, memo:true, check:true},  /* what a Docs backup carries */
+    backupScopes:{schedule:true, memo:true, check:true, remember:true},  /* what a Docs backup carries */
     lastMonth:todayMonth(),
-    events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
+    events:[], goals:[], memos:[], remembers:[], clearedSeedEvents:false, clearedSeedMemos:false,
     prefs:{pencilCircle:true, quotes:true, fontSize:'normal', lunar:true, sound:true, haptic:true},
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}, calendars:[]},
     docId:null, lastBackup:null, autoBackupAt:null
@@ -1108,17 +1149,19 @@ function load(){
                 customColor: /^#[0-9a-f]{6}$/i.test(String(c.customColor||'')) ? String(c.customColor).toLowerCase() : null}));
     st.docId = typeof p.docId === 'string' ? p.docId : null;
     st.memos = (p.memos||base.memos).map(migrateMemo);
-    st.memoTab = (p.memoTab === 'note' || p.memoTab === 'option') ? p.memoTab : 'check';
+    st.remembers = (Array.isArray(p.remembers) ? p.remembers : []).map(migrateRemember).filter(Boolean);
+    st.memoTab = (p.memoTab === 'note' || p.memoTab === 'option' || p.memoTab === 'remember') ? p.memoTab : 'check';
     st.weekStart = p.weekStart === 's' ? 's' : 'm';
-    st.menuTab = (p.menuTab === 'note' || p.menuTab === 'option') ? p.menuTab : 'check';
+    st.menuTab = (p.menuTab === 'note' || p.menuTab === 'option' || p.menuTab === 'remember') ? p.menuTab : 'check';
     st.menuLast = Object.assign({check:null, note:null}, p.menuLast||{});
     st.menuVisited = !!p.menuVisited;
-    st.inlineTab = p.inlineTab === 'note' ? 'note' : 'check';
+    st.inlineTab = (p.inlineTab === 'note' || p.inlineTab === 'remember') ? p.inlineTab : 'check';
     st.inlineLast = Object.assign({check:null, note:null}, p.inlineLast||{});
-    /* only the three categories that still exist; a stored goals flag from
+    /* only the categories that still exist; a stored goals flag from
        before the renumbering is not carried over */
     const bs = p.backupScopes || {};
-    st.backupScopes = {schedule: bs.schedule !== false, memo: bs.memo !== false, check: bs.check !== false};
+    st.backupScopes = {schedule: bs.schedule !== false, memo: bs.memo !== false, check: bs.check !== false,
+                       remember: bs.remember !== false};
     /* older builds kept a goal list in here; a browser that still has one
        drops it, since nothing in the app can show or edit goals */
     st.goals = [];
@@ -1165,12 +1208,23 @@ function migrateMemo(m){
     updated:m.updated || Date.now()
   };
 }
+/* a remember day is a month/day that comes back every year, solar or lunar */
+function migrateRemember(r){
+  if(!r || typeof r !== 'object') return null;
+  const month = Math.min(12, Math.max(1, parseInt(r.month, 10) || 1));
+  const day = Math.min(31, Math.max(1, parseInt(r.day, 10) || 1));
+  return {
+    id: r.id || uid(), month, day,
+    lunar: !!r.lunar, leap: !!r.leap,
+    title: String(r.title == null ? '' : r.title).trim()
+  };
+}
 let saveTimer = null;
-/* what an auto-backup watches: 일정 · check · memo (and the year the Doc is
-   written for). A theme or a font switch never starts one. */
+/* what an auto-backup watches: 일정 · check · memo · remember (and the year the
+   Doc is written for). A theme or a font switch never starts one. */
 let dataSig = null;
 function dataSignature(){
-  try{ return JSON.stringify([S.year, S.events || [], S.memos || []]); }catch(e){ return ''; }
+  try{ return JSON.stringify([S.year, S.events || [], S.memos || [], S.remembers || []]); }catch(e){ return ''; }
 }
 function persist(now){
   const sig = dataSignature();
@@ -1209,6 +1263,10 @@ let editSplit = null;        // the date an edit applies to when she chose 이 �
 let checkEditId = null;      // the checklist item whose text field is open
 let memoEditId = null;       // the memo whose <textarea> is open (null = reading the sheet)
 let pendingMemoEdit = null;  // a brand-new memo that must open with the caret in it
+let rememberEditId = null;   // the remember entry whose title field is open
+let rememberNew = { lunar:false, leap:false };   // the 양력/음력 pills of the add form
+let rememberDraft = { date:'', title:'' };        // what is typed there, kept through a redraw
+let rememberBad = '';                             // 'date' or 'title' while that field needs a look
 
 function go(hash){
   /* same-hash navigation does not fire hashchange — render directly */
@@ -1219,7 +1277,7 @@ function go(hash){
 function setRoute(){
   R = parseRoute(); openDay = null; openBackup = false; searchModalOpen = false;
   /* a page turn closes whatever line was open for typing and any sheet on top */
-  checkEditId = null; recurChoice = null; editSplit = null; actionPop = null;
+  checkEditId = null; recurChoice = null; editSplit = null; actionPop = null; rememberEditId = null;
   memoEditId = (pendingMemoEdit && R.view==='memo' && R.memoId===pendingMemoEdit) ? pendingMemoEdit : null;
   pendingMemoEdit = null;
   if(ywheelOpen) closeYearWheel();
@@ -1253,7 +1311,7 @@ function setRoute(){
 function openMenu(){
   const first = !S.menuVisited;
   S.menuVisited = true;
-  const tab = first ? 'check' : (S.menuTab==='note'||S.menuTab==='option' ? S.menuTab : 'check');
+  const tab = first ? 'check' : ((S.menuTab==='note'||S.menuTab==='option'||S.menuTab==='remember') ? S.menuTab : 'check');
   S.menuTab = tab; S.memoTab = tab;
   const lastId = (S.menuLast || {})[tab];
   let target = lastId ? S.memos.find(m=>m.id===lastId && memoKind(m)===tab) : null;
@@ -1477,6 +1535,26 @@ function keywordHits(raw){
   });
   return out.sort((a,b)=>a.date.localeCompare(b.date) || (a.time||'99:99').localeCompare(b.time||'99:99'));
 }
+/* a remember day shows up in the search the same way an event does: the keyword
+   in its title, or a date that its month/day falls on */
+function rememberHitsOn(dates){
+  const out = [];
+  (S.remembers||[]).forEach(r=>{
+    dates.forEach(ds=>{ if(rememberSolarOn(r, +ds.slice(0,4)) === ds) out.push({date:ds, rm:r}); });
+  });
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
+function rememberHitsKeyword(needle){
+  const out = [];
+  (S.remembers||[]).forEach(r=>{
+    if(!String(r.title||'').toLowerCase().includes(needle)) return;
+    [S.year, S.year+1, S.year-1, S.year+2].forEach(y=>{
+      const ds = rememberSolarOn(r, y);
+      if(ds) out.push({date: ds, rm: r});
+    });
+  });
+  return out.sort((a,b)=>a.date.localeCompare(b.date));
+}
 function searchHits(raw){
   const q = String(raw||'').trim();
   const dq = parseDateQuery(q);
@@ -1489,13 +1567,17 @@ function searchHits(raw){
       if(yy < 1900 || yy > 2200) return;
       eventsOn(iso(yy, dq.month, dq.day)).forEach(o=>hits.push(o));
     });
-    return {jumps, hits: hits.slice(0,60)};
+    const dates = years.filter(yy=>yy >= 1900 && yy <= 2200).map(yy=>iso(yy, dq.month, dq.day));
+    return {jumps, hits: hits.slice(0,60), rems: rememberHitsOn(dates).slice(0,20)};
   }
   if(dq){
     const y = dq.year == null ? S.year : dq.year;
-    return {jumps:[{kind:'month', date: iso(y, dq.month, 1)}], hits: monthOccurrences(y, dq.month).slice(0,60)};
+    const dates = [];
+    for(let d = 1; d <= daysInMonth(y, dq.month); d++) dates.push(iso(y, dq.month, d));
+    return {jumps:[{kind:'month', date: iso(y, dq.month, 1)}], hits: monthOccurrences(y, dq.month).slice(0,60),
+            rems: rememberHitsOn(dates).slice(0,20)};
   }
-  return {jumps:[], hits: keywordHits(q).slice(0,60)};
+  return {jumps:[], hits: keywordHits(q).slice(0,60), rems: rememberHitsKeyword(q.toLowerCase()).slice(0,20)};
 }
 /* the words the calendar itself writes beside a day number — 공휴일, 전통 명절,
    24절기 — searched straight from the built-in tables */
@@ -1557,7 +1639,7 @@ function dateLabelRows(dq){
 function searchResultsHTML(raw){
   const q = String(raw||'').trim();
   if(!q) return '';
-  const {jumps, hits} = searchHits(q);
+  const {jumps, hits, rems} = searchHits(q);
   const dq = parseDateQuery(q);
   const labels = dq ? dateLabelRows(dq) : labelHits(q);
   const parts = [];
@@ -1581,6 +1663,18 @@ function searchResultsHTML(raw){
       <span class="sr-r">${tag}</span>
     </button>`);
   });
+  (rems||[]).forEach(h=>{
+    const y = +h.date.slice(0,4), m = +h.date.slice(5,7), d = +h.date.slice(8,10);
+    const wd = WDAY_KO[new Date(y, m-1, d).getDay()];
+    parts.push(`<button class="sres rm" data-act="search-go" data-jump="day" data-val="${h.date}">
+      <span class="sr-d">${y !== S.year ? `<span class="sr-y">${y}</span>` : ''}${pad(m)}.${pad(d)}</span>
+      <span class="sr-w">(${wd})</span>
+      <span class="sr-t">${rememberLabel(h.rm)}</span>
+      <span class="sr-b"></span>
+      <span class="sr-l">${esc(h.rm.title)}</span>
+      <span class="sr-r">remember</span>
+    </button>`);
+  });
   hits.forEach(e=>{
     const y = +e.date.slice(0,4), m = +e.date.slice(5,7), d = +e.date.slice(8,10);
     const wd = WDAY_KO[new Date(y, m-1, d).getDay()];
@@ -1595,7 +1689,7 @@ function searchResultsHTML(raw){
       ${rep ? `<span class="sr-r">${rep}</span>` : ''}
     </button>`);
   });
-  if(!jumps.length && !labels.length && !hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정·공휴일·절기가 없습니다.</div>`);
+  if(!jumps.length && !labels.length && !(rems||[]).length && !hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정·공휴일·절기·remember가 없습니다.</div>`);
   return parts.join('');
 }
 function openSearchUI(){
@@ -1729,7 +1823,7 @@ function routeFeedback(){
   viewKey = key;
 }
 /* actions that get the pen tick + pulse */
-const CLICK_ACTS = new Set(['theme','check-toggle','check-del','check-add','day-toggle','day-add','memo-new','imemo-new','time-open']);
+const CLICK_ACTS = new Set(['theme','check-toggle','check-del','check-add','day-toggle','day-add','memo-new','imemo-new','rm-add','rm-del','time-open']);
 
 /* =========================================================
    Google — Identity Services OAuth, Calendar, Docs
@@ -2211,14 +2305,15 @@ async function calendarSync(){
 const DOCS_API = 'https://docs.googleapis.com/v1/documents/';
 const DRIVE_API = 'https://www.googleapis.com/drive/v3/files';
 
-/* the three sections written into the Doc — each one can be left out */
+/* the four sections written into the Doc — each one can be left out */
 const BACKUP_SCOPES = [
   {id:'schedule', label:'월별 일정'},
   {id:'memo', label:'memo'},
-  {id:'check', label:'check'}
+  {id:'check', label:'check'},
+  {id:'remember', label:'remember'}
 ];
 function backupScopeState(){
-  return Object.assign({schedule:true, memo:true, check:true}, S.backupScopes||{});
+  return Object.assign({schedule:true, memo:true, check:true, remember:true}, S.backupScopes||{});
 }
 function backupScopeAny(){
   const sc = backupScopeState();
@@ -2290,11 +2385,21 @@ function backupDocText(){
       lines.push('');
     }); else lines.push('(없음)');
   }
+  if(sc.remember){
+    lines.push('4. remember');
+    const days = remembersSorted();
+    if(days.length) days.forEach(r=>{
+      /* 음 for a lunar day, 음윤 for one kept in a leap month */
+      const mark = r.lunar ? (r.leap ? '음윤 ' : '음 ') : '';
+      lines.push(`· ${mark}${pad(r.month)}.${pad(r.day)}  ${r.title}`);
+    }); else lines.push('(없음)');
+    lines.push('');
+  }
   return lines.join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
 function parseBackupDoc(raw){
-  const out = {events:[], memos:[]};
+  const out = {events:[], memos:[], remembers:[]};
   const lines = String(raw || '').replace(/\r/g, '').split('\n');
   let sec = 0, month = 0, year = S.year, note = null, chk = null;
   const flush = ()=>{
@@ -2311,6 +2416,7 @@ function parseBackupDoc(raw){
     if(/^(?:\d+\.\s*)?월별\s*일정/.test(head)){ flush(); sec = 2; month = 0; continue; }
     if(/^(?:\d+\.\s*)?memo$/i.test(head)){ flush(); sec = 3; continue; }
     if(/^(?:\d+\.\s*)?check$/i.test(head)){ flush(); sec = 4; continue; }
+    if(/^(?:\d+\.\s*)?remember$/i.test(head)){ flush(); sec = 5; continue; }
     if(sec === 2){
       const mh = head.match(/^([A-Z][a-z]{2})\.?\s+(\d{4})$/);
       if(mh){
@@ -2357,6 +2463,17 @@ function parseBackupDoc(raw){
       if(mt){ flush(); chk = {title: mt[1].trim().replace(/\s*\(\d+\s*\/\s*\d+\)$/, ''), items:[]}; continue; }
       const mi = line.match(/^\s*([☑☐])\s*(.+?)\s*$/);
       if(mi && chk) chk.items.push({id:uid(), text:mi[2], done: mi[1] === '☑'});
+      continue;
+    }
+    if(sec === 5){
+      /* · 03.15  별이 기일 · · 음 08.15  할머니 생신 — the marker is read first,
+         so a title may start with anything */
+      const mr = line.match(/^\s*[·•]\s*(음윤|음)?\s*(\d{1,2})\.(\d{1,2})\s+(.+?)\s*$/);
+      if(mr){
+        const month = Number(mr[2]), day = Number(mr[3]);
+        if(month >= 1 && month <= 12 && day >= 1 && day <= 31)
+          out.remembers.push({id:uid(), month, day, lunar:!!mr[1], leap: mr[1] === '음윤', title: mr[4].trim()});
+      }
       continue;
     }
   }
@@ -2464,12 +2581,14 @@ async function docsRestore(){
     const sc = backupScopeState();
     const incomingMemos = parsed.memos.filter(m=> memoKind(m)==='note' ? sc.memo : sc.check);
     const keepEvents = sc.schedule ? parsed.events : null;
-    if(!parsed.events.length && !parsed.memos.length){
+    const keepRems = sc.remember ? parsed.remembers : null;
+    if(!parsed.events.length && !parsed.memos.length && !parsed.remembers.length){
       toast('백업 문서에 복원할 내용이 없습니다');
       busy(false);
       return;
     }
     if(keepEvents) S.events = keepEvents;
+    if(keepRems) S.remembers = keepRems;
     if(sc.memo || sc.check){
       /* memos of the categories she left out stay exactly as they are */
       const rest = S.memos.filter(m=>{
@@ -2484,6 +2603,7 @@ async function docsRestore(){
     const parts = [];
     if(keepEvents) parts.push(`일정 ${keepEvents.length}`);
     if(sc.memo || sc.check) parts.push(`메모 ${incomingMemos.length}`);
+    if(keepRems) parts.push(`remember ${keepRems.length}`);
     toast(`Docs에서 복원했습니다 · ${parts.join(' · ')}`);
   }catch(err){
     googleError(err);
@@ -2795,6 +2915,54 @@ function lunarDate(ds){
   }
   return null;
 }
+/* lunar (year, month, day) -> solar 'YYYY-MM-DD', from the same rows. A lunar month
+   is 29 or 30 days, so a day the month does not have in that year (음력 30일 of a
+   29-day month) lands on its last day, the way a Korean birthday is kept. A leap
+   month the year does not carry has no date at all. */
+function lunarToSolar(ly, m, d, leap){
+  const row = LUNAR_ROWS[ly];
+  if(!row || m < 1 || m > 12) return null;
+  const leapMonth = row[1], bits = row[2];
+  let acc = 0, idx = 0;
+  for(let mm = 1; mm <= 12; mm++){
+    for(const isLeap of (mm === leapMonth ? [false, true] : [false])){
+      if(mm === m && isLeap === !!leap){
+        const len = bits[idx] === '1' ? 30 : 29;
+        const day = Math.min(Math.max(1, +d || 1), len);
+        return isoFromDay(dayNum(row[0]) + acc + day - 1);
+      }
+      acc += bits[idx] === '1' ? 30 : 29;
+      idx++;
+    }
+  }
+  return null;
+}
+/* ---------- remember: a month/day that comes back every year ---------- */
+/* the solar date a remember entry lands on in solar year `year`. A lunar month 11
+   or 12 of lunar year Y-1 falls in solar year Y, so both lunar years are tried;
+   a solar 2/29 falls on 2/28 in the years that have no 29th. */
+function rememberSolarOn(r, year){
+  if(!r) return null;
+  const m = +r.month, d = +r.day;
+  if(!(m >= 1 && m <= 12) || !(d >= 1 && d <= 31)) return null;
+  if(!r.lunar) return iso(year, m, Math.min(d, daysInMonth(year, m)));
+  for(const ly of [year - 1, year]){
+    const ds = lunarToSolar(ly, m, d, r.leap);
+    if(ds && +ds.slice(0,4) === year) return ds;
+  }
+  return null;
+}
+function remembersOn(ds){
+  const y = +ds.slice(0,4);
+  return (S.remembers||[]).filter(r=>rememberSolarOn(r, y) === ds);
+}
+function rememberLabel(r){
+  return (r.lunar ? (r.leap ? '음윤 ' : '음 ') : '') + pad(r.month) + '.' + pad(r.day);
+}
+function remembersSorted(){
+  return (S.remembers||[]).slice().sort((a,b)=> (a.month - b.month) || (a.day - b.day) ||
+    String(a.title||'').localeCompare(String(b.title||'')));
+}
 /* the one 24절기 name that falls on this date, or null */
 function solarTerm(ds){
   const row = TERM_DAYS[ds.slice(0,4)];
@@ -2862,23 +3030,30 @@ function renderMonthly(){
     const tag = dayTag(ds, hol);
     const cls = ['cell', wd===6?'sat':'', wd===0?'sun':'', hol?'hol':'', ds===todayISO()?'today':''].filter(Boolean).join(' ');
     const evs = eventsOn(ds);
-    const lines = evs.slice(0,3).map(e=>{
+    /* the days that come back every year come first: a 기일 or a 생신 is what the
+       page is for, and a pencil circle marks it like any other written day */
+    const rms = remembersOn(ds);
+    const rmLines = rms.slice(0,3).map(r=>
+      `<div class="evt rm"><span class="bul"></span><span class="t">${esc(r.title)}</span></div>`).join('');
+    const lines = rmLines + evs.slice(0, Math.max(0, 3 - Math.min(3, rms.length))).map(e=>{
       const ink = calColorOf(calById(e.calendarId));
       const cls = ['evt', e.source==='google'?'g':'', e.done?'done':'', ink?'csec':''].filter(Boolean).join(' ');
       return `<div class="${cls}"${calInk(e.calendarId)}>
         <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`;
     }).join('');
-    const circle = prefOn('pencilCircle') && evs.length;
+    const marked = rms.length + evs.length;
+    const circle = prefOn('pencilCircle') && marked;
     /* a secondary/shared calendar's event colours the loop, so a shared day stands
        out at a glance; primary and local days keep the theme's own pencil */
     const penInk = evs.reduce((hit,e)=> hit || calColorOf(calById(e.calendarId)), null);
     const pen = circle ? `<svg class="pen${day>9?' d2':''}${penInk?' sec':''}" viewBox="0 0 30 24" aria-hidden="true"${penInk?` style="color:${penInk}"`:''}><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
     /* the grid keeps three lines; a fourth event is counted in the corner */
-    const more = evs.length > 3 ? `<div class="more">+${evs.length-3}</div>` : '';
+    const more = marked > 3 ? `<div class="more">+${marked-3}</div>` : '';
     const dcls = circle ? (' circled' + (day>9 ? ' d2' : '')) : '';
-    const ccls = cls + (evs.length > 3 ? ' more4' : '');
+    const ccls = cls + (marked > 3 ? ' more4' : '');
     const l = prefOn('lunar') ? lunarDate(ds) : null;
-    const title = [hol, l ? '음력 ' + l.m + '.' + l.d : null].filter(Boolean).join(' · ');
+    const title = [hol, l ? '음력 ' + l.m + '.' + l.d : null,
+                   rms.length ? rms.map(r=>r.title).join(' · ') : null].filter(Boolean).join(' · ');
     const tagHTML = tag ? `<span class="ltag ${tag.cls}"><span class="f">${esc(tag.full)}</span><span class="s">${esc(tag.short)}</span></span>` : '';
     cells.push(`<div class="${ccls}" data-act="open-day" data-val="${ds}"${title?` title="${esc(title)}"`:''}><div class="dnum${dcls}"><span class="dnum-n">${day}${pen}</span>${tagHTML}</div><div class="evts">${lines}</div>${more}</div>`);
   }
@@ -2968,10 +3143,14 @@ function noteSearchText(m){
 }
 /* tabs, list rows and the side column, shared by the ≡ menu and the section
    under the calendar (they differ only in the actions they fire) */
+/* the number beside a tab: the memos of that kind, or the days kept in remember */
+function tabCount(id){
+  return id === 'remember' ? (S.remembers||[]).length : tabMemos(id).length;
+}
 function memoTabsHTML(tab, act, withOptions){
   const tabs = withOptions ? MENU_TABS : MEMO_TABS;
-  return `<div class="memotabs" role="tablist" aria-label="메모 종류">
-    ${tabs.map(t=>`<button class="mtab ${t.id===tab?'on':''}" role="tab" aria-selected="${t.id===tab}" data-act="${act}" data-val="${t.id}">${t.label}${t.id==='option'?'':`<span class="n">${tabMemos(t.id).length}</span>`}</button>`).join('')}
+  return `<div class="memotabs" role="tablist" aria-label="check · memo · remember">
+    ${tabs.map(t=>`<button class="mtab ${t.id===tab?'on':''}" role="tab" aria-selected="${t.id===tab}" data-act="${act}" data-val="${t.id}">${t.label}${t.id==='option'?'':`<span class="n">${tabCount(t.id)}</span>`}</button>`).join('')}
   </div>`;
 }
 function memoRowsHTML(list, sel, openAct, delAct){
@@ -2991,6 +3170,105 @@ function memoSideHTML(tab, memo, acts){
       <button class="newmemo" data-act="${acts.new}" data-val="${tab}">＋ new</button>
       <div class="mlist">${memoRowsHTML(tabMemos(tab), memo, acts.open, acts.del)}</div>
     </aside>`;
+}
+/* ---------- remember: the days that come back every year ---------- */
+/* one paper line to add a day on — the date as she says it (3/15 · 03.15 · 0315 ·
+   3월 15일), the 양력 · 음력 pills, and what the day is — then the days already
+   kept, in month order, each with the solar date it lands on this year */
+function parseRememberDate(raw){
+  const s = String(raw == null ? '' : raw).trim();
+  if(!s || s.length > 16) return null;
+  let m = 0, d = 0;
+  const sep = s.match(/^(\d{1,2})\s*[/.\-월]\s*(\d{1,2})\s*일?$/);
+  if(sep){ m = +sep[1]; d = +sep[2]; }
+  else if(/^\d{3,4}$/.test(s)){
+    if(s.length === 4){ m = +s.slice(0,2); d = +s.slice(2); }
+    else { m = +s.slice(0,1); d = +s.slice(1); }
+  }
+  else return null;
+  if(m < 1 || m > 12) return null;
+  const last = rememberNew.lunar ? 30 : daysInMonth(2028, m);   /* 2월 29일 is allowed */
+  if(d < 1 || d > last) return null;
+  return {month:m, day:d};
+}
+function rememberFormHTML(){
+  const lun = !!rememberNew.lunar;
+  return `<div class="rmform">
+    <input class="rmdate${rememberBad==='date'?' bad':''}" id="rm-date" data-act="rm-date" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" enterkeyhint="next" value="${esc(rememberDraft.date)}" placeholder="MM/DD" aria-label="월과 일">
+    <div class="rmkind" role="radiogroup" aria-label="양력 · 음력">
+      <button class="rp" role="radio" aria-checked="${!lun}" data-act="rm-kind" data-val="solar">양력</button>
+      <button class="rp" role="radio" aria-checked="${lun}" data-act="rm-kind" data-val="lunar">음력</button>
+    </div>
+    <input class="rmtitle${rememberBad==='title'?' bad':''}" id="rm-title" data-act="rm-title-input" type="text" value="${esc(rememberDraft.title)}" placeholder="기억할 날" aria-label="기억할 날" enterkeyhint="done">
+    <button class="rmadd" data-act="rm-add">추가</button>
+  </div>`;
+}
+function rememberRowsHTML(){
+  return remembersSorted().map(r=>{
+    const sol = r.lunar ? rememberSolarOn(r, S.year) : null;
+    const yl = r.lunar ? `<span class="yl">${r.leap ? '음윤' : '음'}</span>` : '';
+    return `<div class="rrow" data-id="${r.id}">
+      <span class="rd" data-act="rm-focus" data-val="${r.id}" role="button" tabindex="0">${yl}${pad(r.month)}.${pad(r.day)}</span>
+      <span class="rsol">${sol ? '→ ' + sol.slice(5).replace('-','.') : ''}</span>
+      ${rememberEditId===r.id
+        ? `<input class="rtin" data-act="rm-title" data-val="${r.id}" value="${esc(r.title)}" aria-label="기억할 날">`
+        : `<span class="rt" data-act="rm-focus" data-val="${r.id}">${esc(r.title)}</span>`}
+      <button class="rmx" data-act="rm-del" data-val="${r.id}" aria-label="삭제">×</button>
+    </div>`;
+  }).join('');
+}
+function renderRemember(){
+  return `<div class="remember">${rememberFormHTML()}<div class="rlist">${rememberRowsHTML()}</div></div>`;
+}
+/* adding a day: the date and the words are both needed, and neither can be wrong
+   in a way that would mark the wrong day — an unreadable date just asks again */
+function addRemember(){
+  const dEl = document.getElementById('rm-date');
+  const tEl = document.getElementById('rm-title');
+  const d = parseRememberDate(dEl ? dEl.value : rememberDraft.date);
+  const text = String((tEl ? tEl.value : rememberDraft.title) || '').trim();
+  if(!d){
+    rememberBad = 'date';
+    if(dEl){ dEl.classList.add('bad'); dEl.focus(); }
+    toast('날짜를 확인해 주세요');
+    return;
+  }
+  if(!text){
+    rememberBad = 'title';
+    if(tEl){ tEl.classList.add('bad'); tEl.focus(); }
+    return;
+  }
+  rememberBad = '';
+  rememberDraft = {date:'', title:''};
+  const same = (S.remembers||[]).some(r=>r.month===d.month && r.day===d.day &&
+    !!r.lunar===!!rememberNew.lunar && String(r.title||'')===text);
+  if(!same){
+    S.remembers = (S.remembers||[]).concat([{id:uid(), month:d.month, day:d.day,
+      lunar:!!rememberNew.lunar, leap:!!rememberNew.leap, title:text}]);
+  }
+  persist(true); render();
+  const nd = document.getElementById('rm-date');
+  if(nd) nd.focus();          /* the keyboard stays down for the next one */
+}
+function focusRememberTitle(id){
+  requestAnimationFrame(()=>{
+    const inp = document.querySelector(`.rtin[data-val="${id}"]`);
+    if(!inp) return;
+    inp.focus();
+    try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(e){}
+  });
+}
+/* a remember row tapped in the Day Modal: close the day and open that day in the
+   remember tab, ready to be changed */
+function openRememberFromDay(id){
+  if(!(S.remembers||[]).some(r=>r.id===id)) return;
+  rememberEditId = id;
+  S.inlineTab = 'remember'; S.memoTab = 'remember'; S.menuTab = 'remember';
+  openDay = null;
+  persist(true); render();
+  const sec = document.querySelector('.minline');
+  if(sec) requestAnimationFrame(()=>{ try{ sec.scrollIntoView({behavior:'smooth', block:'center'}); }catch(e){} });
+  focusRememberTitle(id);
 }
 /* ---------- option tab (inside ≡) : 화면 · 소리 ---------- */
 const PREF_ROWS = [
@@ -3051,8 +3329,9 @@ function calRowsHTML(){
   }).join('')}</div>`;
 }
 function renderMemo(){
-  const tab = (S.memoTab==='note'||S.memoTab==='option') ? S.memoTab : 'check';
+  const tab = (S.memoTab==='note'||S.memoTab==='option'||S.memoTab==='remember') ? S.memoTab : 'check';
   if(tab==='option') return `${memoTabsHTML('option', 'memo-tab', true)}${renderOptions()}${googleBlockHTML()}`;
+  if(tab==='remember') return `${memoTabsHTML('remember', 'memo-tab', true)}${renderRemember()}`;
   const memo = currentMemo();
   return `
   ${memoTabsHTML(tab, 'memo-tab', true)}
@@ -3120,7 +3399,7 @@ function renderChecklist(memo, backAct){
 /* ---------- check · memo directly under the monthly calendar ---------- */
 /* same list + editor as the ≡ menu, with its own tab and selection so the two
    never move each other */
-const inlineTabNow = () => (S.inlineTab === 'note' ? 'note' : 'check');
+const inlineTabNow = () => (S.inlineTab === 'note' || S.inlineTab === 'remember') ? S.inlineTab : 'check';
 function inlineMemo(){
   const tab = inlineTabNow();
   const id = (S.inlineLast || {})[tab];
@@ -3130,9 +3409,14 @@ function inlineMemo(){
 }
 function renderInlineMemo(){
   const tab = inlineTabNow();
+  if(tab === 'remember') return `
+  <section class="minline" aria-label="check · memo · remember">
+    ${memoTabsHTML('remember', 'imemo-tab')}
+    ${renderRemember()}
+  </section>`;
   const memo = inlineMemo();
   return `
-  <section class="minline" aria-label="check · memo">
+  <section class="minline" aria-label="check · memo · remember">
     ${memoTabsHTML(tab, 'imemo-tab')}
     <div class="memo ${memo?'open':''}">
       ${memoSideHTML(tab, memo, {new:'imemo-new', open:'imemo-open', del:'imemo-del'})}
@@ -3142,7 +3426,7 @@ function renderInlineMemo(){
 }
 
 /* labels used by the ≡ menu's empty editor */
-function panelLabel(kind){ return kind === 'note' ? 'memo' : 'check'; }
+function panelLabel(kind){ return kind === 'note' ? 'memo' : (kind === 'remember' ? 'remember' : 'check'); }
 
 /* ---------- modal ---------- */
 /* =========================================================
@@ -3387,6 +3671,16 @@ function dayRowHTML(e){
           </div>` : ''}`;
 }
 let dayHintTimer = null;
+/* a day that comes back every year, in the Day Modal: the month/day she keeps it
+   by, the title, and the same × as an event. Tapping the title opens that day in
+   the remember tab, ready to be changed. */
+function rememberRowHTML(r){
+  return `<div class="ditem">
+            <div class="time rmt">${rememberLabel(r)}</div>
+            <div class="body" data-act="day-rm" data-val="${r.id}" title="눌러서 고치기">${esc(r.title)}<span class="rmtag">remember</span></div>
+            <button class="del" data-act="day-rm-del" data-val="${r.id}" aria-label="삭제">×</button>
+          </div>`;
+}
 function dayHint(msg){
   const el = document.getElementById('dayhint');
   if(!el) return;
@@ -3402,6 +3696,7 @@ function renderModal(){
     const [y,m,d] = openDay.split('-').map(Number);
     const wd = dowMon(y,m,d);
     const evs = eventsOn(openDay);
+    const rms = remembersOn(openDay);
     const hol = holidayOn(openDay);
     html = `<div class="scrim" data-act="close-modal">
       <div class="modal" data-stop="1">
@@ -3410,7 +3705,7 @@ function renderModal(){
           <button class="x" data-act="close-modal">×</button>
         </div>
         <div class="dlist">
-          ${evs.length? evs.map(dayRowHTML).join('') : `<div class="empty">이 날의 일정이 없습니다.</div>`}
+          ${rms.map(rememberRowHTML).join('')}${evs.length? evs.map(dayRowHTML).join('') : (rms.length ? '' : `<div class="empty">이 날의 일정이 없습니다.</div>`)}
         </div>
         <div class="dayhint" id="dayhint" hidden></div>
         <div class="addrow">
@@ -3462,6 +3757,7 @@ function renderBackupModal(){
   const anyScope = backupScopeAny();
   const notes = memosNewest('note');
   const checks = memosNewest('check');
+  const days = remembersSorted();
   const sectionSchedule = () => {
     const rows = backupScheduleRows();
     const months = backupMonths(rows);
@@ -3483,12 +3779,14 @@ function renderBackupModal(){
       </div>
       <div class="doc-sheet">
         <h1>MONTHLY PLANNER — 백업</h1>
-        <div class="doc-sub">마지막 편집 ${new Date().toLocaleString('ko-KR')} · memo ${notes.length} · check ${checks.length}</div>
+        <div class="doc-sub">마지막 편집 ${new Date().toLocaleString('ko-KR')} · memo ${notes.length} · check ${checks.length} · remember ${days.length}</div>
         ${sc.schedule ? sectionSchedule() : ''}
         ${sc.memo ? `<h2>2. memo</h2>
         ${notes.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)}</h3><div class="mono">${esc((m.text||'(비어 있음)').slice(0,220))}</div>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
         ${sc.check ? `<h2>3. check</h2>
         ${checks.slice(0,2).map(m=>`<h3>◆ ${esc(m.title)} (${checkCounts(m).done}/${checkCounts(m).total})</h3><ul>${(m.items||[]).map(it=>`<li><span class="box" style="${it.done?'background:#1a73e8;border-color:#1a73e8':''}"></span>${esc(it.text)}</li>`).join('')}</ul>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
+        ${sc.remember ? `<h2>4. remember</h2>
+        ${days.slice(0,8).map(r=>`<div class="mono">${r.lunar?(r.leap?'음윤 ':'음 '):''}${pad(r.month)}.${pad(r.day)} · ${esc(r.title)}</div>`).join('') || '<div class="mono">(없음)</div>'}` : ''}
         ${anyScope ? '' : `<div class="mono" style="opacity:.6">저장할 카테고리를 하나 이상 선택하세요.</div>`}
       </div>
       <div class="backup-bar">
@@ -3557,6 +3855,7 @@ document.addEventListener('click', e=>{
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup'||act==='search-close'||act==='act-close') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='smodal-q'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new'||act==='act-name') return;
+  if(act==='rm-date'||act==='rm-title-input'||act==='rm-title') return;
   if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
@@ -3814,9 +4113,10 @@ document.addEventListener('click', e=>{
       break;
     }
     case 'memo-tab': {
-      const tab = val==='check' ? 'check' : (val==='option' ? 'option' : 'note');
-      S.memoTab = tab; S.menuTab = tab; persist(true); memoEditId = null;
+      const tab = val==='check' ? 'check' : (val==='option' ? 'option' : (val==='remember' ? 'remember' : 'note'));
+      S.memoTab = tab; S.menuTab = tab; persist(true); memoEditId = null; rememberEditId = null;
       const m = R.memoId ? S.memos.find(x=>x.id===R.memoId) : null;
+      if(tab==='remember' || tab==='option'){ go('/memo'); break; }
       if(!m || memoKind(m)!==tab) go('/memo'); else render();
       break;
     }
@@ -3863,9 +4163,35 @@ document.addEventListener('click', e=>{
     }
     /* --- check · memo under the calendar --- */
     case 'imemo-tab': {
-      const tab = val==='check' ? 'check' : 'note';
+      const tab = val==='check' ? 'check' : (val==='remember' ? 'remember' : 'note');
       S.inlineTab = S.memoTab = S.menuTab = tab;
-      memoEditId = null;
+      memoEditId = null; rememberEditId = null;
+      persist(true); render(); break;
+    }
+    /* --- remember: the days that come back every year --- */
+    case 'rm-kind': {
+      rememberNew.lunar = val === 'lunar';
+      rememberBad = '';
+      /* the two pills repaint in place, so a half-typed date stays in the field */
+      const kindBox = el.closest('.rmkind');
+      if(kindBox) kindBox.querySelectorAll('.rp').forEach(b=>
+        b.setAttribute('aria-checked', String((b.dataset.val === 'lunar') === rememberNew.lunar)));
+      break;
+    }
+    case 'rm-add': addRemember(); break;
+    case 'rm-del': {
+      S.remembers = (S.remembers||[]).filter(r=>r.id!==val);
+      if(rememberEditId === val) rememberEditId = null;
+      persist(true); render(); break;
+    }
+    case 'rm-focus': {
+      if(rememberEditId === val) break;
+      rememberEditId = val; persist(); render(); focusRememberTitle(val); break;
+    }
+    case 'day-rm': openRememberFromDay(val); break;
+    case 'day-rm-del': {
+      S.remembers = (S.remembers||[]).filter(r=>r.id!==val);
+      if(rememberEditId === val) rememberEditId = null;
       persist(true); render(); break;
     }
     case 'imemo-new': {
@@ -4022,6 +4348,14 @@ document.addEventListener('input', e=>{
     const it = (m.items||[]).find(i=>i.id===el.dataset.val); if(!it) return;
     it.text = el.value; m.updated = Date.now(); persist(); flashSaved();
   }
+  else if(act==='rm-date' || act==='rm-title-input'){
+    if(act==='rm-date') rememberDraft.date = el.value; else rememberDraft.title = el.value;
+    if(rememberBad){ rememberBad = ''; el.classList.remove('bad'); }
+  }
+  else if(act==='rm-title'){
+    const r = (S.remembers||[]).find(x=>x.id===el.dataset.val); if(!r) return;
+    r.title = el.value; persist();
+  }
   else if(act==='act-name'){
     if(actionPop) actionPop.name = el.value;
   }
@@ -4060,6 +4394,21 @@ document.addEventListener('focusout', e=>{
     const a = document.activeElement;
     if(a && a.closest && a.closest('input[data-act="memo-title"]')) return;
     memoEditId = null;
+    render();
+  }, 0);
+});
+
+/* a remember title stops being an input when it loses focus; it was saved on
+   every keystroke, so this only puts the paper back */
+document.addEventListener('focusout', e=>{
+  const inp = e.target && e.target.closest ? e.target.closest('input.rtin') : null;
+  if(!inp || !rememberEditId) return;
+  const id = rememberEditId;
+  setTimeout(()=>{
+    if(rememberEditId !== id) return;
+    const live = document.querySelector(`input.rtin[data-val="${id}"]`);
+    if(live && document.activeElement === live) return;   /* still typing */
+    rememberEditId = null;
     render();
   }, 0);
 });
@@ -4113,6 +4462,10 @@ document.addEventListener('keydown', e=>{
   if(tpopOpen){ if(e.key==='Escape'){ e.preventDefault(); closeTimePop(); } return; }
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='cnew'){
     e.preventDefault(); document.querySelector('[data-act="check-add"]')?.click(); return;
+  }
+  if(e.key==='Enter' && document.activeElement &&
+     (document.activeElement.id==='rm-date' || document.activeElement.id==='rm-title')){
+    e.preventDefault(); document.querySelector('[data-act="rm-add"]')?.click(); return;
   }
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='newtitle'){
     e.preventDefault(); document.querySelector('[data-act="day-add"]').click(); return;
