@@ -299,7 +299,14 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .foot{grid-area:foot;display:flex;flex-direction:column;gap:8px;margin-top:16px}
 .foot .backup{margin-top:0}
 .side{border-right:1px solid var(--dash);padding-right:26px;display:flex;flex-direction:column;min-height:0}
-.search{width:100%;border-bottom:1px solid var(--dash);padding:5px 0 6px;font-size:calc(12.5px*var(--fs-k));margin-bottom:10px}
+/* the check / memo search: the calendar's magnifier inside the same hairline the
+   field rides on, with a × that only appears once there is something to clear */
+.msearch{display:flex;align-items:center;gap:7px;width:100%;border-bottom:1px solid var(--dash);padding:4px 0 5px;margin-bottom:10px}
+.msearch .mag{width:calc(13px*var(--fs-k));height:calc(13px*var(--fs-k));flex:0 0 auto;opacity:.42;transition:opacity .16s}
+.msearch:focus-within .mag{opacity:.8}
+.search{flex:1 1 auto;min-width:0;width:auto;margin:0;padding:0;font-size:calc(12.5px*var(--fs-k));line-height:1.25}
+.msearch .sx{flex:0 0 auto;width:calc(19px*var(--fs-k));height:calc(19px*var(--fs-k));display:grid;place-items:center;font-size:calc(14px*var(--fs-k));line-height:1;opacity:.4;transition:opacity .16s}
+.msearch .sx:hover{opacity:.9}
 .newmemo{display:flex;align-items:center;gap:6px;width:100%;padding:9px 10px;border:1px solid var(--dash);font-size:calc(12.5px*var(--fs-k));margin-bottom:12px;transition:border-color .2s,background .2s}
 .newmemo:hover{border-color:var(--hair);background:var(--soft)}
 .mlist{display:flex;flex-direction:column;gap:1px;max-height:calc(100dvh - 452px);overflow-y:auto}
@@ -2756,7 +2763,11 @@ function memoRowsHTML(list, sel, openAct, delAct){
 }
 function memoSideHTML(tab, memo, acts){
   return `<aside class="side">
-      <input class="search" placeholder="검색" data-act="search" aria-label="검색">
+      <div class="msearch" data-act="msearch-focus">
+        <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20 20"/></svg>
+        <input class="search" placeholder="" data-act="search" aria-label="검색" autocomplete="off" spellcheck="false">
+        <button class="sx" data-act="search-clear" aria-label="검색어 지우기" hidden>×</button>
+      </div>
       <button class="newmemo" data-act="${acts.new}" data-val="${tab}">＋ new</button>
       <div class="mlist">${memoRowsHTML(tabMemos(tab), memo, acts.open, acts.del)}</div>
     </aside>`;
@@ -2984,7 +2995,7 @@ function renderSearchModal(){
   return `<div class="scrim" data-act="search-close">
     <div class="modal smodal" data-stop="1" role="dialog" aria-modal="true" aria-label="검색">
       <div class="modal-h">
-        <div><span class="d">Search</span><span class="dw">일정 · 날짜 · 공휴일 · 절기</span></div>
+        <div><span class="d">Search</span></div>
         <button class="x" data-act="search-close" aria-label="검색 닫기">×</button>
       </div>
       <div class="smfield">
@@ -3371,6 +3382,19 @@ document.addEventListener('click', e=>{
       paintSearchResults();
       break;
     }
+    case 'search-clear': {
+      const box = el.closest('.msearch');
+      const inp = box && box.querySelector('input.search');
+      if(inp){ inp.value = ''; inp.focus(); }
+      document.querySelectorAll('.mrow').forEach(r=>{ r.style.display = ''; });
+      el.hidden = true;
+      break;
+    }
+    case 'msearch-focus': {
+      const inp = el.querySelector('input.search');
+      if(inp) inp.focus();
+      break;
+    }
     case 'acct-open': googleSwitchAccount(); break;
     case 'backup-run': docsBackup(); break;
     case 'backup-restore': docsRestore(); break;
@@ -3387,6 +3411,8 @@ document.addEventListener('input', e=>{
       const txt = row.dataset.q || row.textContent.toLowerCase();
       row.style.display = txt.includes(q)? '' : 'none';
     });
+    const clr = el.parentElement && el.parentElement.querySelector('.sx');
+    if(clr) clr.hidden = !el.value;
   }
   else if(act==='smodal-q'){
     searchQ = el.value;
