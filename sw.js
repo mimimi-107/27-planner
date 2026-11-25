@@ -5,13 +5,11 @@
    straight to the network.
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
-const CACHE = 'mp27-v26';
-/* mp27-v26: paper time picker replaces the native time control (no <input type=time>
-   anywhere), the year wheel's unselected rows are lifted to .65 ink and the time
-   wheel shares .ywheel/.yitem/.yband/.yfade instead of duplicating them, and dead
-   CSS (account picker list, kbd, side-note, sheet-hint) plus dead helpers are gone.
-   (sw.js changes on purpose: a client that already took v26 re-installs and refills
-   the same cache name.) */
+const CACHE = 'mp27-v27';
+/* mp27-v27: search takes bare digits (20261225 · 261225 · 26.12.25 · 1225 · 202612),
+   and a date search now also prints that day's 공휴일·명절·절기 (or every one in that
+   month) under the quick-jump row. (sw.js changes on purpose: a client that already
+   took v27 re-installs and refills the same cache name.) */
 
 /* the whole app is these six files (the fonts live inside index.html) */
 const SHELL = [

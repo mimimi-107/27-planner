@@ -1305,8 +1305,10 @@ function eventsInRange(from, to){
 
 /* ---------------- event search ---------------- */
 /* the box takes a title word or a date: 2027-01-15 · 2027.1.15 · 2027년 1월 15일 ·
-   1/15 · 1월 15일 · 2027-01 · 1월. A date query also gets a jump row, so any day or
-   month can be reached even when nothing is written on it. */
+   1/15 · 1월 15일 · 2027-01 · 1월, and the same dates written as bare digits:
+   20261225 · 261225 · 26.12.25 · 1225 · 202612. A date query also gets a jump row and
+   what the paper prints on that day (공휴일·명절·절기), so any day or month can be
+   reached even when nothing is written on it. */
 const WDAY_KO = ['일','월','화','수','목','금','토'];
 function parseDateQuery(raw){
   const s = String(raw||'').trim();
@@ -1314,6 +1316,13 @@ function parseDateQuery(raw){
   const full = s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?$/);
   if(full){
     const y = +full[1], m = +full[2], d = +full[3];
+    if(m < 1 || m > 12 || d < 1 || d > daysInMonth(y,m)) return null;
+    return {kind:'day', year:y, month:m, day:d};
+  }
+  /* 26.12.25 · 26/12/25 · 26-12-25: a two-digit year in front of month and day */
+  const yy = s.match(/^(\d{2})\s*([.\-\/])\s*(\d{1,2})\s*\2\s*(\d{1,2})\s*일?$/);
+  if(yy){
+    const y = 2000 + +yy[1], m = +yy[3], d = +yy[4];
     if(m < 1 || m > 12 || d < 1 || d > daysInMonth(y,m)) return null;
     return {kind:'day', year:y, month:m, day:d};
   }
@@ -1334,6 +1343,32 @@ function parseDateQuery(raw){
     const m = +mo[1];
     if(m < 1 || m > 12) return null;
     return {kind:'month', year:null, month:m};
+  }
+  /* digits only, no separator: 20261225 (YYYYMMDD) · 261225 (YYMMDD) ·
+     202612 (YYYYMM) · 1225 (MMDD inside the year on screen) */
+  const dig = /^(\d{4}|\d{6}|\d{8})$/.exec(s);
+  if(dig){
+    const t = dig[1];
+    if(t.length === 8){
+      const y = +t.slice(0,4), m = +t.slice(4,6), d = +t.slice(6,8);
+      if(m < 1 || m > 12 || d < 1 || d > daysInMonth(y,m)) return null;
+      return {kind:'day', year:y, month:m, day:d};
+    }
+    if(t.length === 6){
+      /* YYMMDD first: 261225 → 2026-12-25 (201225 → 2020-12-25) */
+      const y = 2000 + +t.slice(0,2), m = +t.slice(2,4), d = +t.slice(4,6);
+      if(m >= 1 && m <= 12 && d >= 1 && d <= daysInMonth(y,m))
+        return {kind:'day', year:y, month:m, day:d};
+      /* otherwise YYYYMM when the year is plausible: 202612 → 2026-12 */
+      const yy2 = +t.slice(0,4), mm = +t.slice(4,6);
+      if(yy2 >= 2000 && yy2 <= 2099 && mm >= 1 && mm <= 12)
+        return {kind:'month', year:yy2, month:mm};
+      return null;
+    }
+    /* 1225 → 12월 25일 of the year on screen */
+    const m = +t.slice(0,2), d = +t.slice(2,4);
+    if(m < 1 || m > 12 || d < 1 || d > daysInMonth(S.year,m)) return null;
+    return {kind:'day', year:null, month:m, day:d};
   }
   return null;
 }
@@ -1411,11 +1446,34 @@ function labelHits(raw){
   });
   return rows.slice(0,24);
 }
+/* a date query also carries what the paper prints there: the built-in 공휴일, 전통
+   명절 and 24절기 of that day, or of every such day in that month */
+function dateLabelRows(dq){
+  const rows = [];
+  const add = ds => {
+    const hol = builtinHolidayOn(ds);
+    if(hol) rows.push({date:ds, kind:'hol', label:hol});
+    const feast = lunarFeast(ds, lunarDate(ds));
+    if(feast) rows.push({date:ds, kind:'fest', label:feast[0]});
+    const term = solarTerm(ds);
+    if(term) rows.push({date:ds, kind:'term', label:term});
+  };
+  const y = dq.year == null ? S.year : dq.year;
+  if(y < 1900 || y > 2200) return rows;
+  if(dq.kind === 'day'){
+    add(iso(y, dq.month, dq.day));
+    return rows;
+  }
+  const total = daysInMonth(y, dq.month);
+  for(let d=1; d<=total; d++) add(iso(y, dq.month, d));
+  return rows.slice(0,40);
+}
 function searchResultsHTML(raw){
   const q = String(raw||'').trim();
   if(!q) return '';
   const {jumps, hits} = searchHits(q);
-  const labels = labelHits(q);
+  const dq = parseDateQuery(q);
+  const labels = dq ? dateLabelRows(dq) : labelHits(q);
   const parts = [];
   jumps.forEach(j=>{
     const y = +j.date.slice(0,4), m = +j.date.slice(5,7), d = +j.date.slice(8,10);
@@ -1451,7 +1509,7 @@ function searchResultsHTML(raw){
       ${rep ? `<span class="sr-r">${rep}</span>` : ''}
     </button>`);
   });
-  if(!labels.length && !hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정·공휴일·절기가 없습니다.</div>`);
+  if(!jumps.length && !labels.length && !hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정·공휴일·절기가 없습니다.</div>`);
   return parts.join('');
 }
 function openSearchUI(){
