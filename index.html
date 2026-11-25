@@ -147,23 +147,26 @@ input::placeholder,textarea::placeholder{color:rgba(var(--ink-rgb),.32)}
 .wkstart input{-webkit-appearance:none;appearance:none;width:11px;height:11px;margin:0;border:1px solid rgba(var(--ink-rgb),.5);border-radius:50%;display:grid;place-items:center;cursor:pointer;transition:border-color .15s}
 .wkstart input:checked{border-color:var(--ink)}
 .wkstart input:checked::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--ink)}
-/* ---------- event search: a magnifier and a hairline, left of m / s ---------- */
-/* the two controls share one optical line with the big month number; the field
-   never grows past its share, so 01–12 · 검색 · m / s stay apart at every width */
+/* ---------- event search: one small magnifier over a short hairline, left of m / s ---------- */
+/* the trigger keeps the radio row's own line height, so the hairline hangs level with
+   m / s at every font size; the paper sheet behind it does the searching */
 .mhead{position:relative}
 .mtools{display:flex;align-items:flex-start;gap:14px;flex:1 1 auto;justify-content:flex-end;min-width:0;padding-top:14px;margin-left:12px}
 .mtools .wkstart{padding-top:0}
-.msearch-wrap{flex:0 1 178px;min-width:0}
-.msearch{display:flex;align-items:center;gap:6px;min-width:0;border-bottom:1px solid var(--line);padding-bottom:4px;transition:border-color .16s}
-.msearch .mag{width:13px;height:13px;flex:0 0 auto;opacity:.5;transition:opacity .16s}
-.msearch input{flex:1 1 auto;min-width:0;width:100%;height:22px;padding:0;font-family:var(--ui);font-size:calc(12.5px*var(--fs-k));letter-spacing:.01em;line-height:1;background:transparent;border:0;outline:none}
-.msearch .sx{flex:0 0 auto;width:16px;height:16px;display:grid;place-items:center;font-size:calc(12px*var(--fs-k));line-height:1;opacity:.42}
-.msearch .sx:hover{opacity:.9}
-.msearch.on{border-bottom-color:rgba(var(--ink-rgb),.72)}
-.msearch.on .mag{opacity:.85}
-/* results: one sheet of paper under the header row, kept inside the page width */
-.sresults{position:absolute;top:calc(100% + 4px);right:0;z-index:36;width:min(430px,100%);max-height:min(58dvh,360px);overflow-y:auto;background:var(--paper);border:1px solid var(--hair);border-radius:2px;box-shadow:0 18px 40px rgba(0,0,0,.16);animation:fade .13s ease}
-.sres{display:flex;align-items:baseline;gap:6px;width:100%;padding:9px 12px;text-align:left;border-bottom:1px dotted var(--dash);font-size:calc(12.5px*var(--fs-k));line-height:1.25}
+.msbtn{
+  position:relative;display:flex;align-items:center;
+  width:71px;height:1em;padding:0 0 4px;box-sizing:content-box;
+  font-size:calc(12.5px*var(--fs-k));line-height:1;
+  color:var(--ink);border-bottom:1px solid var(--line);
+  transition:border-color .16s;
+}
+.msbtn .mag{width:1.04em;height:1.04em;flex:0 0 auto;opacity:.5;transition:opacity .16s}
+.msbtn:hover{border-bottom-color:rgba(var(--ink-rgb),.62)}
+.msbtn:hover .mag,.msbtn:focus-visible .mag{opacity:.85}
+.msbtn::after{content:'';position:absolute;inset:-12px -8px -10px -8px} /* comfortable tap area */
+/* results: a plain list under the query line, scrolled inside the paper sheet */
+.sresults{width:100%;margin-top:6px;border-top:1px solid var(--hair);max-height:min(56dvh,430px);overflow-y:auto}
+.sres{display:flex;align-items:baseline;gap:6px;width:100%;padding:10px 2px;text-align:left;border-bottom:1px dotted var(--dash);font-size:calc(12.5px*var(--fs-k));line-height:1.25}
 .sres:last-child{border-bottom:0}
 .sres:hover{background:var(--soft)}
 .sres .sr-d{flex:0 0 auto;font-family:var(--disp);font-style:italic;font-weight:600;font-size:calc(12px*var(--fs-k));letter-spacing:.03em;font-variant-numeric:tabular-nums}
@@ -176,12 +179,16 @@ input::placeholder,textarea::placeholder{color:rgba(var(--ink-rgb),.32)}
 .sres.sr-go{opacity:.8}
 .sres.sr-go .sr-gl{font-size:calc(11px*var(--fs-k));letter-spacing:.01em;opacity:.85}
 .sres .sr-a{margin-left:auto;font-size:calc(11px*var(--fs-k));opacity:.5;font-style:normal}
-.sr-empty{padding:14px 12px;font-size:calc(11.5px*var(--fs-k));opacity:.5}
+/* a holiday, a traditional day or a 24절기: the name wears the ink the calendar gives it */
+.sres.lb .sr-d{font-size:calc(11px*var(--fs-k));letter-spacing:.02em}
+.sres.lb .sr-l{font-weight:500}
+.sres.lb.k-hol .sr-l,.sres.lb.k-fest .sr-l{color:var(--sun-ink)}
+.sres.lb.k-term .sr-l{color:rgba(var(--ink-rgb),.55)}
+.sres.lb.k-hol .sr-r,.sres.lb.k-fest .sr-r{opacity:.76}
+.sr-empty{padding:16px 2px;font-size:calc(11.5px*var(--fs-k));opacity:.5}
 @media (max-width:760px){
   .mtools{gap:10px;padding-top:10px;margin-left:8px}
-  .msearch-wrap{flex:1 1 auto;max-width:152px}
-  .msearch input{font-size:max(16px,calc(12.5px*var(--fs-k)));height:24px}
-  .msearch .mag{width:12px;height:12px}
+  .msbtn{width:61px}
 }
 
 /* ---------- repeat selector in the day modal ---------- */
@@ -218,7 +225,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cell:hover{background:var(--soft)}
 .cell.pad{cursor:default}
 .cell.pad:hover{background:none}
-.dnum{font-family:var(--ui);font-weight:500;font-size:calc(var(--num-size)*var(--fs-k));letter-spacing:.01em;height:var(--numh);display:flex;align-items:center;font-variant-numeric:tabular-nums;overflow:visible}
+.dnum{font-family:var(--ui);font-weight:500;font-size:calc(var(--num-size)*var(--fs-k));letter-spacing:-.005em;height:var(--numh);display:flex;align-items:center;font-variant-numeric:tabular-nums;overflow:visible}
 .cell.sat .dnum{color:var(--sat-ink);opacity:.8}
 .cell.sun .dnum{color:var(--sun-ink)}
 /* holidays wear the same ink as Sunday, number and label alike */
@@ -231,7 +238,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .dnum .hol{color:var(--sun-ink)}
 .dnum .lf{color:var(--sun-ink);opacity:.72}
 .dnum .st{color:var(--ink);opacity:.5;font-weight:500}
-.dnum .ld{color:var(--ink);opacity:.42;font-weight:400;letter-spacing:0;font-variant-numeric:tabular-nums}
+.dnum .ld{color:var(--ink);opacity:.42;font-weight:400;letter-spacing:-.005em;font-variant-numeric:tabular-nums}
 .evts{display:flex;flex-direction:column}
 .evt{
   height:var(--rowh);display:flex;align-items:center;gap:5px;
@@ -489,6 +496,13 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .dhol{font-size:calc(11.5px*var(--fs-k));letter-spacing:.02em;color:var(--sun-ink);margin-top:5px}
 .x{font-size:calc(20px*var(--fs-k));line-height:1;opacity:.45;padding:2px 4px}
 .x:hover{opacity:1}
+/* ---------- search sheet: one ruled query line, the results on paper below it ---------- */
+.modal.smodal{width:min(560px,100%)}
+.smfield{display:flex;align-items:center;gap:8px;margin:16px 0 0;padding-bottom:7px;border-bottom:1px solid rgba(var(--ink-rgb),.55)}
+.smfield .mag{width:calc(14px*var(--fs-k));height:calc(14px*var(--fs-k));flex:0 0 auto;opacity:.5}
+.smfield input{flex:1 1 auto;min-width:0;height:26px;padding:0;font-family:var(--ui);font-size:calc(13.5px*var(--fs-k));letter-spacing:.005em;line-height:1;background:transparent;border:0;outline:none;color:inherit}
+.smfield .sx{flex:0 0 auto;width:24px;height:24px;display:grid;place-items:center;font-size:calc(15px*var(--fs-k));line-height:1;opacity:.4}
+.smfield .sx:hover{opacity:.9}
 .dlist{margin:16px 0 0}
 .ditem{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px dotted var(--dash);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .ditem .time{font-family:var(--disp);font-style:italic;font-size:calc(12px*var(--fs-k));letter-spacing:.05em;opacity:.6;min-width:44px;padding-top:2px;font-variant-numeric:tabular-nums}
@@ -602,6 +616,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .etitle{font-size:calc(24px*var(--fs-k))}
   .modal{padding:20px 18px;max-height:92dvh}
   .modal-h .d{font-size:calc(28px*var(--fs-k))}
+  /* an input under 16px makes iOS Safari zoom the whole sheet in on focus */
+  .smfield input{font-size:max(16px,calc(13.5px*var(--fs-k)))}
   .doc-sheet{padding:24px 20px}
   .canvas{min-height:0}
   .mlist{max-height:none}
@@ -1108,8 +1124,8 @@ let openBackup = false;
 let editEvent = null;    // id of the event being edited inside the day modal
 let editRepeat = null;   // the repeat the edit form is showing (null = the event's own)
 let newRepeat = 'none';  // the repeat picked for the event about to be added
-let searchQ = '';        // what is typed into the monthly search field
-let searchOpen = false;
+let searchQ = '';        // what is typed into the search sheet
+let searchModalOpen = false;
 let pendingOpenDay = null;   // a search hit that must open its day modal after the jump
 let syncBusy = false;
 
@@ -1120,7 +1136,7 @@ function go(hash){
   location.hash = hash;
 }
 function setRoute(){
-  R = parseRoute(); openDay = null; openBackup = false;
+  R = parseRoute(); openDay = null; openBackup = false; searchModalOpen = false;
   if(ywheelOpen) closeYearWheel();
   if(R.view==='cover') coverQuote = pickQuote();
   if(R.view==='monthly'){ S.lastMonth = R.month; monthQuote = pickQuote(); }
@@ -1346,10 +1362,46 @@ function searchHits(raw){
   }
   return {jumps:[], hits: keywordHits(q).slice(0,60)};
 }
+/* the words the calendar itself writes beside a day number — 공휴일, 전통 명절,
+   24절기 — searched straight from the built-in tables */
+function builtinHolidayOn(ds){
+  const live = (S.google && S.google.holCache && S.google.holCache[ds.slice(0,4)]) || null;
+  return (live && live[ds]) || HOLIDAYS[ds] || null;
+}
+function labelHits(raw){
+  const needle = String(raw||'').trim().toLowerCase();
+  if(!needle || needle.length > 14) return [];
+  const out = [];
+  [S.year, S.year+1, S.year-1, S.year+2].forEach(y=>{
+    if(y < YEAR_MIN || y > YEAR_MAX) return;
+    for(let m=1;m<=12;m++){
+      const total = daysInMonth(y,m);
+      for(let d=1;d<=total;d++){
+        const ds = iso(y,m,d);
+        const hol = builtinHolidayOn(ds);
+        if(hol && hol.toLowerCase().includes(needle)) out.push({date:ds, kind:'hol', label:hol});
+        const l = lunarDate(ds);
+        const feast = lunarFeast(ds, l);
+        if(feast && feast[0].toLowerCase().includes(needle)) out.push({date:ds, kind:'fest', label:feast[0]});
+        const term = solarTerm(ds);
+        if(term && term.toLowerCase().includes(needle)) out.push({date:ds, kind:'term', label:term});
+      }
+    }
+  });
+  /* one row per day and word, the planner's own year first */
+  const seen = new Set(), rows = [];
+  out.forEach(r=>{ const k = r.date + '|' + r.label; if(seen.has(k)) return; seen.add(k); rows.push(r); });
+  rows.sort((a,b)=>{
+    const ra = Math.abs(+a.date.slice(0,4) - S.year), rb = Math.abs(+b.date.slice(0,4) - S.year);
+    return ra - rb || a.date.localeCompare(b.date);
+  });
+  return rows.slice(0,24);
+}
 function searchResultsHTML(raw){
   const q = String(raw||'').trim();
   if(!q) return '';
   const {jumps, hits} = searchHits(q);
+  const labels = labelHits(q);
   const parts = [];
   jumps.forEach(j=>{
     const y = +j.date.slice(0,4), m = +j.date.slice(5,7), d = +j.date.slice(8,10);
@@ -1359,6 +1411,17 @@ function searchResultsHTML(raw){
     }else{
       parts.push(`<button class="sres sr-go" data-act="search-go" data-jump="month" data-val="${j.date}"><span class="sr-gl"><span class="sr-d">${y}. ${m}월</span>로 이동</span><span class="sr-a">↗</span></button>`);
     }
+  });
+  labels.forEach(r=>{
+    const y = +r.date.slice(0,4), m = +r.date.slice(5,7), d = +r.date.slice(8,10);
+    const wd = WDAY_KO[new Date(y, m-1, d).getDay()];
+    const tag = r.kind === 'term' ? '절기' : (r.kind === 'fest' ? '명절' : '공휴일');
+    parts.push(`<button class="sres lb k-${r.kind}" data-act="search-go" data-jump="day" data-val="${r.date}">
+      <span class="sr-d">${y}.${pad(m)}.${pad(d)}</span>
+      <span class="sr-w">(${wd})</span>
+      <span class="sr-l">${esc(r.label)}</span>
+      <span class="sr-r">${tag}</span>
+    </button>`);
   });
   hits.forEach(e=>{
     const y = +e.date.slice(0,4), m = +e.date.slice(5,7), d = +e.date.slice(8,10);
@@ -1374,20 +1437,27 @@ function searchResultsHTML(raw){
       ${rep ? `<span class="sr-r">${rep}</span>` : ''}
     </button>`);
   });
-  if(!hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정이 없습니다.</div>`);
+  if(!labels.length && !hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정·공휴일·절기가 없습니다.</div>`);
   return parts.join('');
 }
-function searchPanelHTML(){
-  const q = String(searchQ||'').trim();
-  return `<div class="sresults" id="evresults"${q ? '' : ' hidden'}>${q ? searchResultsHTML(q) : ''}</div>`;
+function openSearchUI(){
+  searchQ = ''; searchModalOpen = true;
+  renderModal();
+  requestAnimationFrame(()=>{
+    const inp = document.getElementById('smodal-input');
+    if(inp){ inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  });
 }
 function closeSearchUI(){
-  searchQ = ''; searchOpen = false;
-  const box = document.getElementById('evresults');
-  if(box){ box.hidden = true; box.innerHTML = ''; }
-  const w = document.getElementById('msearch'); if(w) w.classList.remove('on');
-  const inp = document.getElementById('evsearch'); if(inp) inp.value = '';
-  const cl = document.getElementById('evclear'); if(cl) cl.hidden = true;
+  searchQ = '';
+  if(searchModalOpen){ searchModalOpen = false; renderModal(); }
+}
+/* typing in the sheet redraws only the list, so the caret never leaves the field */
+function paintSearchResults(){
+  const box = document.getElementById('smodal-results');
+  const cl = document.getElementById('smodal-clear');
+  if(box){ box.innerHTML = searchResultsHTML(searchQ); box.hidden = !String(searchQ).trim(); box.scrollTop = 0; }
+  if(cl) cl.hidden = !String(searchQ).trim();
 }
 function fmtTime(t){ if(!t) return ''; const [h,mi]=t.split(':'); const H=+h; const ap=H<12?'오전':'오후'; const hh=H%12===0?12:H%12; return `${ap} ${hh}:${mi}`; }
 function timeAgo(ts){
@@ -2597,14 +2667,9 @@ function renderMonthly(){
   <div class="mhead">
     <div class="mnum">${pad(m)}</div>
     <div class="mtools">
-      <div class="msearch-wrap">
-        <div class="msearch${searchQ.trim()?' on':''}" id="msearch">
-          <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20 20"/></svg>
-          <input id="evsearch" type="text" data-act="evsearch" value="${esc(searchQ)}" placeholder="검색" aria-label="일정 검색" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
-          <button class="sx" id="evclear" data-act="evsearch-clear" aria-label="검색 지우기"${searchQ?'':' hidden'}>×</button>
-        </div>
-        ${searchPanelHTML()}
-      </div>
+      <button class="msbtn" data-act="search-open" aria-label="검색" aria-haspopup="dialog" title="검색">
+        <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20 20"/></svg>
+      </button>
       <div class="wkstart" role="radiogroup" aria-label="주 시작 요일">
         <label title="월요일 시작"><input type="radio" name="wkstart" value="m" data-act="wkstart" ${ws==='m'?'checked':''}><span>m</span></label>
         <label title="일요일 시작"><input type="radio" name="wkstart" value="s" data-act="wkstart" ${ws==='s'?'checked':''}><span>s</span></label>
@@ -2905,9 +2970,31 @@ function renderModal(){
     </div>`;
   } else if(openBackup){
     root.innerHTML = renderBackupModal();
+  } else if(searchModalOpen){
+    root.innerHTML = renderSearchModal();
   } else {
     root.innerHTML = '';
   }
+}
+
+/* the search sheet: the same paper as the day modal, one ruled line to type on,
+   and the hits listed under it (built-in 공휴일·명절·절기 first, then the events) */
+function renderSearchModal(){
+  const q = String(searchQ||'').trim();
+  return `<div class="scrim" data-act="search-close">
+    <div class="modal smodal" data-stop="1" role="dialog" aria-modal="true" aria-label="검색">
+      <div class="modal-h">
+        <div><span class="d">Search</span><span class="dw">일정 · 날짜 · 공휴일 · 절기</span></div>
+        <button class="x" data-act="search-close" aria-label="검색 닫기">×</button>
+      </div>
+      <div class="smfield">
+        <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20 20"/></svg>
+        <input id="smodal-input" type="text" data-act="smodal-q" value="${esc(searchQ)}" placeholder="일정, 날짜, 공휴일·절기 검색" aria-label="검색어" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        <button class="sx" id="smodal-clear" data-act="smodal-clear" aria-label="검색어 지우기"${q?'':' hidden'}>×</button>
+      </div>
+      <div class="sresults" id="smodal-results"${q?'':' hidden'}>${q? searchResultsHTML(searchQ):''}</div>
+    </div>
+  </div>`;
 }
 
 function renderBackupModal(){
@@ -3001,8 +3088,6 @@ document.addEventListener('touchend', e=>{
 }, {capture:true, passive:true});
 document.addEventListener('touchcancel', ()=>{ swipeStart = null; }, {capture:true, passive:true});
 document.addEventListener('click', e=>{
-  /* anything outside the search field closes its results */
-  if(searchOpen && !e.target.closest('.msearch-wrap')) closeSearchUI();
   const el = e.target.closest('[data-act]');
   if(!el) return;
   const act = el.dataset.act, val = el.dataset.val;
@@ -3010,8 +3095,8 @@ document.addEventListener('click', e=>{
   if(act==='open-day' && Date.now() - swipeAt < 450) return;
   /* Only the backdrop itself closes a modal — clicks on inputs or empty space
      inside the modal bubble up to the scrim and used to dismiss it. */
-  if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
-  if(act==='search'||act==='evsearch'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
+  if((act==='close-modal'||act==='close-backup'||act==='search-close') && el.classList.contains('scrim') && e.target!==el) return;
+  if(act==='search'||act==='smodal-q'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
   if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
@@ -3277,7 +3362,15 @@ document.addEventListener('click', e=>{
       go('/monthly/' + m);
       break;
     }
-    case 'evsearch-clear': { closeSearchUI(); const inp = document.getElementById('evsearch'); if(inp) inp.focus(); break; }
+    case 'search-open': openSearchUI(); break;
+    case 'search-close': closeSearchUI(); break;
+    case 'smodal-clear': {
+      searchQ = '';
+      const inp = document.getElementById('smodal-input');
+      if(inp){ inp.value = ''; inp.focus(); }
+      paintSearchResults();
+      break;
+    }
     case 'acct-open': googleSwitchAccount(); break;
     case 'backup-run': docsBackup(); break;
     case 'backup-restore': docsRestore(); break;
@@ -3295,19 +3388,9 @@ document.addEventListener('input', e=>{
       row.style.display = txt.includes(q)? '' : 'none';
     });
   }
-  else if(act==='evsearch'){
+  else if(act==='smodal-q'){
     searchQ = el.value;
-    searchOpen = true;
-    const box = document.getElementById('evresults');
-    const wrap = document.getElementById('msearch');
-    const cl = document.getElementById('evclear');
-    if(box){
-      box.innerHTML = searchResultsHTML(searchQ);
-      box.hidden = !String(searchQ).trim();
-      box.scrollTop = 0;
-    }
-    if(wrap) wrap.classList.toggle('on', !!String(searchQ).trim());
-    if(cl) cl.hidden = !searchQ;
+    paintSearchResults();
   }
   else if(act==='memo-title'){
     const m = S.memos.find(x=>x.id===el.dataset.val); if(!m) return;
@@ -3381,13 +3464,13 @@ document.addEventListener('keydown', e=>{
     e.preventDefault(); document.querySelector('[data-act="day-save"]')?.click(); return;
   }
   if(e.key==='Escape'){
-    if(searchOpen || searchQ){ closeSearchUI(); return; }
+    if(searchModalOpen){ closeSearchUI(); return; }
     if(document.getElementById('calpop').classList.contains('on')){ closeCalPop(); return; }
     if(editEvent){ editEvent = null; renderModal(); }
     else if(openDay){ openDay=null; renderModal(); }
     else if(openBackup){ openBackup=false; renderModal(); }
   }
-  if((e.key==='ArrowLeft'||e.key==='ArrowRight') && R.view==='monthly' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
+  if((e.key==='ArrowLeft'||e.key==='ArrowRight') && R.view==='monthly' && !searchModalOpen && !openDay && !openBackup && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){
     stepMonth(e.key==='ArrowRight'?1:-1);
   }
 });
