@@ -176,11 +176,12 @@ input::placeholder,textarea::placeholder{color:rgba(var(--ink-rgb),.32)}
 .sres.sr-go{opacity:.8}
 .sres.sr-go .sr-gl{font-size:calc(11px*var(--fs-k));letter-spacing:.01em;opacity:.85}
 .sres .sr-a{margin-left:auto;font-size:calc(11px*var(--fs-k));opacity:.5;font-style:normal}
-/* a holiday, a traditional day or a 24절기: the name wears the ink the calendar gives it */
+/* a holiday, a traditional day, a 24절기 or a 기념일 · 데이: the name wears the ink
+   the calendar gives it */
 .sres.lb .sr-d{font-size:calc(11px*var(--fs-k));letter-spacing:.02em}
 .sres.lb .sr-l{font-weight:500}
 .sres.lb.k-hol .sr-l,.sres.lb.k-fest .sr-l{color:var(--sun-ink)}
-.sres.lb.k-term .sr-l{color:rgba(var(--ink-rgb),.55)}
+.sres.lb.k-term .sr-l,.sres.lb.k-ob .sr-l{color:rgba(var(--ink-rgb),.55)}
 .sres.lb.k-hol .sr-r,.sres.lb.k-fest .sr-r{opacity:.76}
 .sr-empty{padding:16px 2px;font-size:calc(11.5px*var(--fs-k));opacity:.5}
 @media (max-width:760px){
@@ -238,6 +239,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .dnum .hol{color:var(--sun-ink)}
 .dnum .lf{color:var(--sun-ink);opacity:.72}
 .dnum .st{color:var(--ink);opacity:.5;font-weight:500}
+/* 기념일 · 데이 keeps the same quiet ink as a 24절기, a touch warmer */
+.dnum .ob{color:var(--ink);opacity:.55;font-weight:500}
 .dnum .ld{color:var(--ink);opacity:.42;font-weight:400;letter-spacing:-.005em;font-variant-numeric:tabular-nums}
 .evts{display:flex;flex-direction:column}
 .evt{
@@ -520,6 +523,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .modal-h .d{font-family:var(--disp);font-style:italic;font-weight:700;font-size:calc(34px*var(--fs-k));line-height:1;letter-spacing:.02em}
 .modal-h .dw{font-family:var(--disp);font-style:italic;font-size:calc(12px*var(--fs-k));letter-spacing:.2em;opacity:.55;margin-left:9px;vertical-align:6px}
 .dhol{font-size:calc(11.5px*var(--fs-k));letter-spacing:.02em;color:var(--sun-ink);margin-top:5px}
+/* a 기념일 · 데이 is not a legal holiday, so it keeps the plain ink */
+.dhol.ob{color:rgba(var(--ink-rgb),.62)}
 .x{font-size:calc(20px*var(--fs-k));line-height:1;opacity:.45;padding:2px 4px}
 .x:hover{opacity:1}
 /* ---------- search sheet: one ruled query line, the results on paper below it ---------- */
@@ -793,6 +798,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .opts{margin-top:26px;max-width:430px}
 .orow{display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%;padding:16px 0;border-bottom:1px solid var(--dash);font-family:var(--ui);font-size:calc(13px*var(--fs-k));letter-spacing:.01em;color:var(--ink);text-align:left;transition:opacity .16s}
 .orow:hover{opacity:.72}
+.orow .olab{display:flex;flex-direction:column;gap:3px;min-width:0}
+.orow .osub{font-size:calc(10.5px*var(--fs-k));letter-spacing:.01em;line-height:1.3;opacity:.5}
 .orow .obox{width:15px;height:15px;border:1.3px solid var(--hair);flex:0 0 auto;display:grid;place-items:center;transition:border-color .15s}
 .orow .obox::after{content:'';width:8px;height:4px;border-left:1.6px solid var(--ink);border-bottom:1.6px solid var(--ink);transform:rotate(-45deg);opacity:0;transition:opacity .12s}
 .orow[aria-checked="true"] .obox::after{opacity:1}
@@ -1656,6 +1663,8 @@ function labelHits(raw){
         const ds = iso(y,m,d);
         const hol = builtinHolidayOn(ds);
         if(hol && hol.toLowerCase().includes(needle)) out.push({date:ds, kind:'hol', label:hol});
+        const obs = observanceOn(ds);
+        if(obs && obs[0].toLowerCase().includes(needle)) out.push({date:ds, kind:'ob', label:obs[0]});
         const l = lunarDate(ds);
         const feast = lunarFeast(ds, l);
         if(feast && feast[0].toLowerCase().includes(needle)) out.push({date:ds, kind:'fest', label:feast[0]});
@@ -1680,6 +1689,8 @@ function dateLabelRows(dq){
   const add = ds => {
     const hol = builtinHolidayOn(ds);
     if(hol) rows.push({date:ds, kind:'hol', label:hol});
+    const obs = observanceOn(ds);
+    if(obs) rows.push({date:ds, kind:'ob', label:obs[0]});
     const feast = lunarFeast(ds, lunarDate(ds));
     if(feast) rows.push({date:ds, kind:'fest', label:feast[0]});
     const term = solarTerm(ds);
@@ -1714,7 +1725,7 @@ function searchResultsHTML(raw){
   labels.forEach(r=>{
     const y = +r.date.slice(0,4), m = +r.date.slice(5,7), d = +r.date.slice(8,10);
     const wd = WDAY_KO[new Date(y, m-1, d).getDay()];
-    const tag = r.kind === 'term' ? '절기' : (r.kind === 'fest' ? '명절' : '공휴일');
+    const tag = r.kind === 'term' ? '절기' : (r.kind === 'fest' ? '명절' : (r.kind === 'ob' ? '기념일' : '공휴일'));
     parts.push(`<button class="sres lb k-${r.kind}" data-act="search-go" data-jump="day" data-val="${r.date}">
       <span class="sr-d">${y}.${pad(m)}.${pad(d)}</span>
       <span class="sr-w">(${wd})</span>
@@ -3051,9 +3062,64 @@ function lunarFeast(ds, l){
   if(!l || l.leap) return null;
   return LUNAR_FEASTS[l.m+'.'+l.d] || null;
 }
-/* what sits beside the day number: official holiday > traditional day > 절기 > 음력 5일 */
+/* ---------- 기념일 · 데이 (양력 고정, plus the one day that walks) ----------
+   법정 공휴일은 HOLIDAYS가 붉은 잉크로 먼저 그리고, 여기에는 그 표에 없는 날만
+   둡니다 — 제헌절(07-17)과 근로자의 날(05-01, 노동절)은 이미 공휴일이라 뺐습니다.
+   option 탭의 `기념일 · 데이` 스위치(prefs.observances) 하나로 통째로 끕니다.
+   [긴 이름, 좁은 화면에서 쓰는 짧은 이름] */
+const OBSERVANCES = {
+  '02-14':['밸런타인데이','밸런타인'],
+  '03-03':['삼겹살데이','삼겹살'],
+  '03-08':['세계 여성의 날','여성의 날'],
+  '03-14':['화이트데이','화이트'],
+  '03-23':['강아지의 날','강아지'],
+  '04-01':['만우절','만우절'],
+  '04-05':['식목일','식목일'],
+  '04-14':['블랙데이','블랙데이'],
+  '04-19':['4·19 혁명','4·19'],
+  '04-20':['장애인의 날','장애인'],
+  '04-22':['지구의 날','지구'],
+  '05-08':['어버이날','어버이'],
+  '05-15':['스승의 날','스승'],
+  '05-18':['5·18 민주화운동','5·18'],
+  '05-21':['부부의 날','부부'],
+  '06-05':['환경의 날','환경'],
+  '06-25':['6·25','6·25'],
+  '08-08':['세계 고양이의 날','세계 고양이'],
+  '09-09':['고양이의 날','고양이'],
+  '10-01':['국군의 날','국군'],
+  '10-02':['노인의 날','노인'],
+  '10-04':['동물의 날','동물'],
+  '10-31':['핼러윈','핼러윈'],
+  '11-11':['빼빼로데이','빼빼로'],
+  '12-24':['크리스마스 이브','이브'],
+};
+/* the 기념일 · 데이 names of this date as [[long, short], …]; 성년의 날 walks
+   (5월 셋째 월요일) and can share a day with a fixed one (2026-05-18 = 5·18) */
+function observanceNames(ds){
+  const out = [];
+  const fixed = OBSERVANCES[ds.slice(5)];
+  if(fixed) out.push(fixed);
+  if(+ds.slice(5,7) === 5){
+    const y = +ds.slice(0,4);
+    const firstDow = new Date(y, 4, 1).getDay();          /* 0 = Sunday */
+    const day = 1 + ((1 - firstDow + 7) % 7) + 14;         /* 셋째 월요일 */
+    if(+ds.slice(8,10) === day) out.push(['성년의 날','성년']);
+  }
+  return out;
+}
+/* [긴 이름, 짧은 이름], or null; two on one day join the way holidays do (·) */
+function observanceOn(ds){
+  if(!prefOn('observances')) return null;
+  const list = observanceNames(ds);
+  if(!list.length) return null;
+  return [list.map(x=>x[0]).join('·'), list.map(x=>x[1]).join('·')];
+}
+/* what sits beside the day number: official holiday > 기념일 > traditional day > 절기 > 음력 5일 */
 function dayTag(ds, hol){
   if(hol) return {cls:'hol', full:hol, short:holShort(hol)};
+  const obs = observanceOn(ds);
+  if(obs) return {cls:'ob', full:obs[0], short:obs[1]};
   if(!prefOn('lunar')) return null;
   const l = lunarDate(ds);
   const feast = lunarFeast(ds, l);
@@ -3121,7 +3187,8 @@ function renderMonthly(){
     const dcls = circle ? (' circled' + (day>9 ? ' d2' : '')) : '';
     const ccls = cls + (marked > 3 ? ' more4' : '');
     const l = prefOn('lunar') ? lunarDate(ds) : null;
-    const title = [hol, l ? '음력 ' + l.m + '.' + l.d : null,
+    const obs = observanceOn(ds);
+    const title = [hol, (obs && !hol) ? obs[0] : null, l ? '음력 ' + l.m + '.' + l.d : null,
                    rms.length ? rms.map(r=>r.title).join(' · ') : null].filter(Boolean).join(' · ');
     const tagHTML = tag ? `<span class="ltag ${tag.cls}"><span class="f">${esc(tag.full)}</span><span class="s">${esc(tag.short)}</span></span>` : '';
     cells.push(`<div class="${ccls}" data-act="open-day" data-val="${ds}"${title?` title="${esc(title)}"`:''}><div class="dnum${dcls}"><span class="dnum-n">${day}${pen}</span>${tagHTML}</div><div class="evts">${lines}</div>${more}</div>`);
@@ -3391,6 +3458,7 @@ const PREF_ROWS = [
   {id:'quotes',       label:'오늘의 명언'},
   {id:'fontSize',     label:'글씨 크기', seg:true},
   {id:'lunar',        label:'음력 · 절기'},
+  {id:'observances',  label:'기념일 · 데이', sub:'국군의 날 · 어버이날 · 고양이의 날 등'},
   {id:'sound',        label:'사운드'},
   {id:'haptic',       label:'햅틱'}
 ];
@@ -3399,7 +3467,9 @@ function renderOptions(){
   return `<div class="opts">
     ${PREF_ROWS.map(p=>p.seg
       ? `<div class="orow segrow"><span>${p.label}</span><div class="seg" role="radiogroup" aria-label="${p.label}">${FONT_STEPS.map(([v,l])=>`<button class="sg" role="radio" aria-checked="${fontPref()===v}" data-act="fontsize" data-val="${v}">${l}</button>`).join('')}</div></div>`
-      : `<button class="orow" role="switch" aria-checked="${prefOn(p.id)}" data-act="pref" data-val="${p.id}"><span>${p.label}</span><span class="obox"></span></button>`
+      : `<button class="orow" role="switch" aria-checked="${prefOn(p.id)}" data-act="pref" data-val="${p.id}">${p.sub
+          ? `<span class="olab"><span>${p.label}</span><span class="osub">${p.sub}</span></span>`
+          : `<span>${p.label}</span>`}<span class="obox"></span></button>`
     ).join('')}
   </div>`;
 }
@@ -3817,10 +3887,11 @@ function renderModal(){
     const evs = eventsOn(openDay);
     const rms = remembersOn(openDay);
     const hol = holidayOn(openDay);
+    const obs = observanceOn(openDay);
     html = `<div class="scrim" data-act="close-modal">
       <div class="modal" data-stop="1">
         <div class="modal-h">
-          <div><span class="d">${pad(d)}</span><span class="dw">${DOW[wd]} · ${MON[m-1].replace('.','')} ${y}</span>${hol?`<div class="dhol">${esc(hol)}</div>`:''}</div>
+          <div><span class="d">${pad(d)}</span><span class="dw">${DOW[wd]} · ${MON[m-1].replace('.','')} ${y}</span>${hol?`<div class="dhol">${esc(hol)}</div>`:(obs?`<div class="dhol ob">${esc(obs[0])}</div>`:'')}</div>
           <button class="x" data-act="close-modal">×</button>
         </div>
         <div class="dlist">
