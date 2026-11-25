@@ -45,19 +45,16 @@
   --fs-k:1; --num-size:13px; --evt-size:12.2px; --tag-size:9.6px;
   --mt-size:13px; --mm-size:10px; --ctext-size:14px; --note-size:13.5px;
 }
-[data-theme="white"]{--paper:#FFFFFF;--ink:#111111;--ink-rgb:17,17,17;--paper-rgb:255,255,255;--sat:#9BB7D4;--sun:#D3A29A;--sun-ink:#BE7469;--sat-ink:#5F7F9E;--pen:rgba(196,98,72,.52)}
-[data-theme="cream"]{--paper:#EDE4D2;--ink:#4B648C;--ink-rgb:75,100,140;--paper-rgb:237,228,210;--sat:#9BB0C8;--sun:#C08E80;--sun-ink:#A9716A;--sat-ink:#6C88A8;--pen:rgba(75,100,140,.52)}
-[data-theme="olive"]{--paper:#A3AD77;--ink:#2E331F;--ink-rgb:46,51,31;--paper-rgb:163,173,119;--sat:#7E9C9A;--sun:#A8735F;--sun-ink:#7C4F3F;--sat-ink:#3F6160;--pen:rgba(244,240,224,.62)}
-[data-theme="navy"]{--paper:#48516C;--ink:#C3B89B;--ink-rgb:195,184,155;--paper-rgb:72,81,108;--sat:#9DB3C9;--sun:#CFA096;--sun-ink:#D9AFA6;--sat-ink:#AEC5DA;--pen:rgba(232,217,178,.62)}
-/* ---------- Google secondary calendar inks ----------
-   five calm hues per theme, each one far enough from that theme's --ink and
-   --sun-ink to be told apart inside a cell and still ≥4:1 on its --paper.
-   기본 달력 (the primary calendar) keeps --ink; a secondary calendar takes the
-   next free slot in this list. */
-[data-theme="white"]{--cal-c0:#2E6B62;--cal-c1:#7B4A6E;--cal-c2:#6B5A1E;--cal-c3:#8A4A2C;--cal-c4:#3F4A8C}
-[data-theme="cream"]{--cal-c0:#2A6A5E;--cal-c1:#7A3F63;--cal-c2:#66571B;--cal-c3:#8B4527;--cal-c4:#573E84}
-[data-theme="olive"]{--cal-c0:#14483F;--cal-c1:#5E2436;--cal-c2:#1E3A66;--cal-c3:#5A3010;--cal-c4:#3B2A5E}
-[data-theme="navy"]{--cal-c0:#E8C57E;--cal-c1:#9AD0BC;--cal-c2:#C6B4E6;--cal-c3:#93C8E3;--cal-c4:#C8D98A}
+/* ---------- the four papers: one block per theme ----------
+   paper · ink · the two weekend inks · the pen, then the five Google secondary
+   calendar inks (--cal-c0 … --cal-c4): calm hues far enough from that theme's
+   --ink and --sun-ink to be told apart inside a cell and still ≥4:1 on its
+   --paper. 기본 달력 (the primary calendar) keeps --ink; a secondary calendar
+   takes the next free slot in the list. */
+[data-theme="white"]{--paper:#FFFFFF;--ink:#111111;--ink-rgb:17,17,17;--paper-rgb:255,255,255;--sat:#9BB7D4;--sun:#D3A29A;--sun-ink:#BE7469;--sat-ink:#5F7F9E;--pen:rgba(196,98,72,.52);--cal-c0:#2E6B62;--cal-c1:#7B4A6E;--cal-c2:#6B5A1E;--cal-c3:#8A4A2C;--cal-c4:#3F4A8C}
+[data-theme="cream"]{--paper:#EDE4D2;--ink:#4B648C;--ink-rgb:75,100,140;--paper-rgb:237,228,210;--sat:#9BB0C8;--sun:#C08E80;--sun-ink:#A9716A;--sat-ink:#6C88A8;--pen:rgba(75,100,140,.52);--cal-c0:#2A6A5E;--cal-c1:#7A3F63;--cal-c2:#66571B;--cal-c3:#8B4527;--cal-c4:#573E84}
+[data-theme="olive"]{--paper:#A3AD77;--ink:#2E331F;--ink-rgb:46,51,31;--paper-rgb:163,173,119;--sat:#7E9C9A;--sun:#A8735F;--sun-ink:#7C4F3F;--sat-ink:#3F6160;--pen:rgba(244,240,224,.62);--cal-c0:#14483F;--cal-c1:#5E2436;--cal-c2:#1E3A66;--cal-c3:#5A3010;--cal-c4:#3B2A5E}
+[data-theme="navy"]{--paper:#48516C;--ink:#C3B89B;--ink-rgb:195,184,155;--paper-rgb:72,81,108;--sat:#9DB3C9;--sun:#CFA096;--sun-ink:#D9AFA6;--sat-ink:#AEC5DA;--pen:rgba(232,217,178,.62);--cal-c0:#E8C57E;--cal-c1:#9AD0BC;--cal-c2:#C6B4E6;--cal-c3:#93C8E3;--cal-c4:#C8D98A}
 html[data-fs="small"]{--fs-k:.88}
 html[data-fs="large"]{--fs-k:1.14}
 /* the quote option only takes the lines away; nothing else moves */
@@ -251,7 +248,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* a secondary Google calendar paints the whole line in its own ink, dot included */
 .evt.csec .bul{background:currentColor;opacity:.85}
 .evt.done .t{opacity:.4;text-decoration:line-through}
-.kbd{border:1px solid var(--dash);border-radius:4px;padding:0 4px;font-size:calc(10px*var(--fs-k));line-height:15px}
 
 /* ---------- yearly ---------- */
 .yhead-row{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin:18px 0 16px;flex-wrap:wrap}
@@ -260,9 +256,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .ytitle small{font-family:var(--disp);font-style:italic;font-weight:300;font-size:calc(clamp(15px,1.7vw,22px)*var(--fs-k));letter-spacing:.06em;margin-left:12px;opacity:.75}
 .ywrap{display:grid;grid-template-columns:minmax(0,1fr);gap:34px;align-items:start}
 .ygrid{border-bottom:1px solid var(--hair)}
-.ymat{border-bottom:1px solid var(--hair);margin-bottom:-1px}
+.ymat{display:grid;grid-template-columns:34px repeat(12,minmax(46px,1fr));grid-auto-rows:25px;min-width:720px;border-bottom:1px solid var(--hair);margin-bottom:-1px}
 .yscroll{overflow-x:auto;scrollbar-width:thin}
-.ymat{display:grid;grid-template-columns:34px repeat(12,minmax(46px,1fr));grid-auto-rows:25px;min-width:720px}
 .yh{display:flex;align-items:baseline;gap:4px;justify-content:center;padding:0 2px 7px;height:26px;font-family:var(--disp);font-style:italic;font-size:calc(12.5px*var(--fs-k));letter-spacing:.05em;cursor:pointer;border-bottom:1px solid var(--hair);white-space:nowrap;transition:opacity .15s}
 .yh:hover{opacity:.6}
 .yh b{font-weight:700}
@@ -294,11 +289,10 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .mtab.on{opacity:1;font-weight:600;border-bottom-color:var(--ink)}
 .mtab .n{font-family:var(--ui);font-style:normal;font-weight:400;font-size:calc(10px*var(--fs-k));letter-spacing:0;opacity:.55;margin-left:6px;font-variant-numeric:tabular-nums}
 .memo{display:grid;grid-template-columns:280px minmax(0,1fr);grid-template-areas:"side editor" "foot editor";gap:0 34px;margin-top:20px;align-items:start}
-.side{grid-area:side}
-.editor{grid-area:editor}
+.side{grid-area:side;border-right:1px solid var(--dash);padding-right:26px;display:flex;flex-direction:column;min-height:0}
+.editor{grid-area:editor;min-width:0}
 .foot{grid-area:foot;display:flex;flex-direction:column;gap:8px;margin-top:16px}
 .foot .backup{margin-top:0}
-.side{border-right:1px solid var(--dash);padding-right:26px;display:flex;flex-direction:column;min-height:0}
 /* the check / memo search: the calendar's magnifier inside the same hairline the
    field rides on, with a × that only appears once there is something to clear */
 .msearch{display:flex;align-items:center;gap:7px;width:100%;border-bottom:1px solid var(--dash);padding:4px 0 5px;margin-bottom:10px}
@@ -328,7 +322,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 }
 .backup{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:16px;padding:9px;border:1px solid var(--dash);font-size:calc(12px*var(--fs-k))}
 .backup:hover{border-color:var(--hair);background:var(--soft)}
-.side-note{font-size:calc(10px*var(--fs-k));line-height:1.5;opacity:.42;margin-top:10px}
 /* ≡ menu footer: backup · account · google calendar sync */
 .acct{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:9px 10px;border:1px solid var(--dash);font-size:calc(12px*var(--fs-k));text-align:left;transition:border-color .2s,background .2s}
 .acct:hover{border-color:var(--hair);background:var(--soft)}
@@ -379,15 +372,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .minline .canvas{min-height:0}
 .minline .ruled textarea{min-height:calc(var(--rh)*10)}
 .minline .cbar{margin-top:10px}
-/* account picker modal */
-.acctlist{display:flex;flex-direction:column;margin:8px 0 4px;border-top:1px solid var(--dash)}
-.acctrow{display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:1px solid var(--dash);text-align:left;transition:background .15s}
-.acctrow:hover{background:var(--soft)}
-.acctrow .av{width:26px;height:26px;border-radius:50%;background:rgba(var(--ink-rgb),.1);display:grid;place-items:center;font-family:var(--disp);font-style:italic;font-weight:700;font-size:calc(12px*var(--fs-k));flex:0 0 auto}
-.acctrow .em{flex:1;min-width:0;font-size:calc(12.5px*var(--fs-k));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.acctrow.on .em{font-weight:600}
-.acctrow .cur{font-size:calc(10px*var(--fs-k));letter-spacing:.05em;opacity:.5;white-space:nowrap}
-.editor{min-width:0}
 .ehead{display:flex;align-items:center;gap:12px;margin-bottom:4px;min-width:0}
 .eback{display:none}
 /* flex:1 1 0 + width:100% keeps a 40-character title inside the column instead of
@@ -405,7 +389,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   font-size:calc(var(--note-size)*var(--fs-k));line-height:var(--rh);padding:0;letter-spacing:.005em;
   resize:none;display:block;background:transparent;
 }
-.sheet-hint{font-size:calc(10.5px*var(--fs-k));opacity:.45;margin-top:12px;letter-spacing:.01em;line-height:1.6}
 
 /* checklist */
 .prog{font-size:calc(11px*var(--fs-k));letter-spacing:.05em;opacity:.6;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -542,27 +525,19 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .time-wrap .tbtn{flex:1 1 auto;width:100%;min-width:0;height:36px;display:block;text-align:left;font-family:var(--ui);font-style:normal;font-weight:400;font-size:calc(12.5px*var(--fs-k));letter-spacing:0;line-height:36px;padding:0 0 0 16px;border:0;background:transparent;font-variant-numeric:tabular-nums;cursor:pointer;color:inherit;white-space:nowrap;overflow:hidden;-webkit-tap-highlight-color:transparent}
 .addrow .time-wrap .tbtn:hover,.addrow .time-wrap .tbtn:focus-visible{background:transparent;color:inherit}
 .time-wrap.is-empty .tbtn{color:rgba(var(--ink-rgb),.32);letter-spacing:.04em}
-/* ---------- paper time picker (오전·오후 / 시 / 분), the year wheel's paper ---------- */
+/* ---------- paper time picker (오전·오후 / 시 / 분) ---------- */
+/* the three columns are plain .ywheel wheels with .titem rows; the wheel, band and
+   fade come from the year wheel, so only the widths and the 오전·오후 type differ */
 .tpop-scrim{position:fixed;inset:0;z-index:70;display:none}
 .tpop-scrim.on{display:block}
 .tpop{position:fixed;left:0;top:0;z-index:71;display:none;background:var(--paper);border:1px solid var(--hair);box-shadow:0 18px 40px rgba(0,0,0,.18);animation:fade .16s ease}
 .tpop.on{display:block}
 .twrap{position:relative;display:flex}
-.tcol{position:relative;height:114px;overflow-y:auto;overflow-x:hidden;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;touch-action:pan-y;cursor:grab;outline:none}
-.tcol::-webkit-scrollbar{display:none}
-.tcol.grab{cursor:grabbing}
-.tcol+.tcol{border-left:1px solid var(--dash)}
+.tcol{width:46px}
 .tcol.ap{width:60px}
-.tcol.hh,.tcol.mm{width:46px}
-.titem{height:38px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:calc(15px*var(--fs-k));font-variant-numeric:tabular-nums;color:rgba(var(--ink-rgb),.62);transition:color .16s;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-.tcol.hh .titem,.tcol.mm .titem{font-family:var(--disp);font-style:italic;letter-spacing:.04em}
-.tcol.ap .titem{font-size:calc(12.5px*var(--fs-k));letter-spacing:.02em}
-.titem.on{color:var(--ink);font-weight:700}
-.tpad{height:38px}
-.tband{position:absolute;left:0;right:0;top:38px;height:38px;border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);pointer-events:none;z-index:1}
-.tfade{position:absolute;left:0;right:0;height:38px;pointer-events:none;z-index:2}
-.tfade-t{top:0;background:linear-gradient(to bottom,rgba(var(--paper-rgb),.82),rgba(var(--paper-rgb),0))}
-.tfade-b{bottom:0;background:linear-gradient(to top,rgba(var(--paper-rgb),.82),rgba(var(--paper-rgb),0))}
+.tcol+.tcol{border-left:1px solid var(--dash)}
+.titem{font-size:calc(15px*var(--fs-k));letter-spacing:.04em}
+.tcol.ap .titem{font-family:var(--ui);font-style:normal;font-size:calc(12.5px*var(--fs-k));letter-spacing:.02em}
 .tfoot{display:flex;border-top:1px solid var(--hair)}
 .tfoot button{flex:1 1 50%;height:34px;font-family:var(--ui);font-size:calc(12px*var(--fs-k));letter-spacing:.04em;background:transparent;color:inherit;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .tfoot button+button{border-left:1px solid var(--hair)}
@@ -638,8 +613,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .dnum .ltag .f{display:none}
   .dnum .ltag .s{display:inline}
   .mempty-editor{min-height:46vh}
-  .evt{gap:4px}
+  .evt{gap:4px;line-height:1.05}
   .evt .tm{display:none}
+  .evt .bul{display:none}
   .memo{grid-template-columns:minmax(0,1fr);grid-template-areas:"side" "editor" "foot";gap:0}
   .side{border-right:0;padding-right:0}
   .editor{margin-top:18px;border-top:1px solid var(--dash);padding-top:14px;scroll-margin-top:calc(64px + env(safe-area-inset-top))}
@@ -656,9 +632,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .mlist{max-height:none}
   .wd{width:4px;height:4px}
   .cell{padding:6px 3px 0}
-  .evt{line-height:1.05}
-  .evt .bul{display:none}
-  .sync .opt{display:none}
   .fab{width:30px;height:30px}
   .palette-pop{right:calc(var(--pad) - 2px)}
   .memotabs{gap:18px;margin-top:12px}
@@ -767,12 +740,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 <div class="tpop-scrim" id="tpop-scrim"></div>
 <div class="tpop" id="tpop" role="dialog" aria-label="시간 선택">
   <div class="twrap">
-    <div class="tcol ap" id="tcol-ap" role="listbox" aria-label="오전 오후" tabindex="0"></div>
-    <div class="tcol hh" id="tcol-hh" role="listbox" aria-label="시" tabindex="0"></div>
-    <div class="tcol mm" id="tcol-mm" role="listbox" aria-label="분" tabindex="0"></div>
-    <div class="tband"></div>
-    <div class="tfade tfade-t"></div>
-    <div class="tfade tfade-b"></div>
+    <div class="ywheel tcol ap" id="tcol-ap" role="listbox" aria-label="오전 오후" tabindex="0"></div>
+    <div class="ywheel tcol hh" id="tcol-hh" role="listbox" aria-label="시" tabindex="0"></div>
+    <div class="ywheel tcol mm" id="tcol-mm" role="listbox" aria-label="분" tabindex="0"></div>
+    <div class="yband"></div>
+    <div class="yfade yfade-t"></div>
+    <div class="yfade yfade-b"></div>
   </div>
   <div class="tfoot">
     <button type="button" data-tact="clear">비우기</button>
@@ -789,7 +762,6 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 const KEY = 'mp27.prototype.v3';
 const MON = ['Jan.','Feb.','Mar.','Apr.','May','Jun.','Jul.','Aug.','Sep.','Oct.','Nov.','Dec.'];
 const DOW = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
-const DOW_KO = ['월','화','수','목','금','토','일'];
 const DOW_FULL = ['SUN','MON','TUE','WED','THU','FRI','SAT'];   // index = Date.getDay()
 const MEMO_TABS = [
   {id:'check', label:'check'},
@@ -1313,8 +1285,6 @@ function eventsOn(date){
   (S.events||[]).forEach(ev=>{ if(occursOn(ev, date)) out.push(occurrence(ev, date)); });
   return out.sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
 }
-function monthEvents(y,m){ return S.events.filter(e=>e.date.startsWith(`${y}-${pad(m)}`)); }
-/* every occurrence that falls inside the month (recurring series expanded) */
 function monthOccurrences(y,m){ return eventsInRange(iso(y,m,1), iso(y,m,daysInMonth(y,m))); }
 function eventsInRange(from, to){
   const out = [];
@@ -1331,9 +1301,6 @@ function eventsInRange(from, to){
     }
   });
   return out.sort((a,b)=>a.date.localeCompare(b.date) || (a.time||'99:99').localeCompare(b.time||'99:99'));
-}
-function hasOccurrenceOn(ds){
-  return (S.events||[]).some(ev=>occursOn(ev, ds));
 }
 
 /* ---------------- event search ---------------- */
@@ -1526,7 +1493,6 @@ function toast(msg){
   el.textContent = msg; el.classList.add('on');
   clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('on'), 2400);
 }
-const themeMeta = id => THEMES.find(t=>t.id===id) || THEMES[1];
 /* =========================================================
    화면 · 소리 · 진동
    ========================================================= */
@@ -1793,7 +1759,6 @@ function googleError(err){
 /* ---------- Google Calendar: two-way, one calendar or several ---------- */
 const CAL_LIST = 'https://www.googleapis.com/calendar/v3/users/me/calendarList?maxResults=250';
 const CAL_BASE = 'https://www.googleapis.com/calendar/v3/calendars/';
-const CAL_EVENTS = CAL_BASE + 'primary/events';
 const CAL_SLOTS = 5;                                   /* --cal-c0 … --cal-c4 */
 const calList = () => (S.google && Array.isArray(S.google.calendars)) ? S.google.calendars : [];
 /* 'primary' is how the API spells her own calendar, and how its events are stored */
@@ -1818,7 +1783,7 @@ function calColorOf(c){
   if(c.colorIdx >= 0) return `var(--cal-c${c.colorIdx % CAL_SLOTS})`;
   return null;
 }
-/* the same colour as a hex value, for the <input type=color> swatch */
+/* the same colour as a hex value, for the paper swatch grid */
 function calHexOf(c){
   if(!c || c.primary) return null;
   if(c.customColor) return c.customColor;
@@ -2135,6 +2100,9 @@ function backupScheduleRows(){
   return rows;
 }
 function repeatTag(rep){ return rep==='weekly' ? '매주' : rep==='monthly' ? '매월' : rep==='yearly' ? '매년' : ''; }
+/* the backup text and its preview list the same memos and months, newest first */
+function memosNewest(kind){ return S.memos.filter(m=>memoKind(m)===kind).sort((a,b)=>b.updated-a.updated); }
+function backupMonths(rows){ return Object.keys(rows).map(Number).sort((a,b)=>a-b); }
 function backupDocText(){
   const sc = backupScopeState();
   const lines = [];
@@ -2144,7 +2112,7 @@ function backupDocText(){
   if(sc.schedule){
     lines.push('1. 월별 일정');
     const rows = backupScheduleRows();
-    const months = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+    const months = backupMonths(rows);
     if(months.length) months.forEach(m=>{
       lines.push(`${MON[m-1].replace('.','')} ${S.year}`);
       rows[m].forEach(r=>{
@@ -2155,8 +2123,8 @@ function backupDocText(){
     else lines.push('(없음)');
     lines.push('');
   }
-  const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
-  const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
+  const notes = memosNewest('note');
+  const checks = memosNewest('check');
   if(sc.memo){
     lines.push('2. memo');
     if(notes.length) notes.forEach(m=>{
@@ -3051,11 +3019,11 @@ function renderSearchModal(){
 function renderBackupModal(){
   const sc = backupScopeState();
   const anyScope = backupScopeAny();
-  const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
-  const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
+  const notes = memosNewest('note');
+  const checks = memosNewest('check');
   const sectionSchedule = () => {
     const rows = backupScheduleRows();
-    const months = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+    const months = backupMonths(rows);
     return `
         <h2>1. 월별 일정</h2>
         ${months.map(m=>`<h3>${MON[m-1]} ${S.year}</h3><ul>${rows[m].map(r=>`<li>${+r.date.slice(8,10)}일 ${r.time?'· '+r.time+' ':''}${esc(r.title)}${r.repeat!=='none'?` (${repeatTag(r.repeat)})`:''}</li>`).join('')}</ul>`).join('') || '<div class="mono">(일정 없음)</div>'}
@@ -3678,7 +3646,7 @@ const tcols = {
   mm: document.getElementById('tcol-mm')
 };
 function tcolFill(col, items){
-  col.innerHTML = '<div class="tpad"></div>' + items.map((v,i)=>`<div class="titem" role="option" data-i="${i}">${v}</div>`).join('') + '<div class="tpad"></div>';
+  col.innerHTML = '<div class="ypad"></div>' + items.map((v,i)=>`<div class="yitem titem" role="option" data-i="${i}">${v}</div>`).join('') + '<div class="ypad"></div>';
 }
 tcolFill(tcols.ap, TAP_ITEMS);
 tcolFill(tcols.hh, TH_ITEMS);

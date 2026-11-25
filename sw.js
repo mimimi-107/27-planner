@@ -6,10 +6,12 @@
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
 const CACHE = 'mp27-v26';
-/* mp27-v26: paper time picker replaces the native time control; the year wheel
-   and the new time wheel now show their unselected rows at .65/.62 ink so they
-   read as active instead of disabled. (sw.js changes on purpose: a client that
-   already took v26 re-installs and refills the same cache name.) */
+/* mp27-v26: paper time picker replaces the native time control (no <input type=time>
+   anywhere), the year wheel's unselected rows are lifted to .65 ink and the time
+   wheel shares .ywheel/.yitem/.yband/.yfade instead of duplicating them, and dead
+   CSS (account picker list, kbd, side-note, sheet-hint) plus dead helpers are gone.
+   (sw.js changes on purpose: a client that already took v26 re-installs and refills
+   the same cache name.) */
 
 /* the whole app is these six files (the fonts live inside index.html) */
 const SHELL = [
