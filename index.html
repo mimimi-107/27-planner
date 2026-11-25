@@ -40,11 +40,18 @@
   --soft:rgba(var(--ink-rgb),.055);
   --numh:24px; --rowh:27px;
   --pad:28px;
+  /* type scale: the 글씨 크기 option multiplies these by --fs-k */
+  --fs-k:1; --num-size:13px; --evt-size:12.2px; --tag-size:9.6px;
+  --mt-size:13px; --mm-size:10px; --ctext-size:14px; --note-size:13.5px;
 }
 [data-theme="white"]{--paper:#FFFFFF;--ink:#111111;--ink-rgb:17,17,17;--paper-rgb:255,255,255;--sat:#9BB7D4;--sun:#D3A29A;--sun-ink:#BE7469;--sat-ink:#5F7F9E;--pen:rgba(196,98,72,.52)}
 [data-theme="cream"]{--paper:#EDE4D2;--ink:#4B648C;--ink-rgb:75,100,140;--paper-rgb:237,228,210;--sat:#9BB0C8;--sun:#C08E80;--sun-ink:#A9716A;--sat-ink:#6C88A8;--pen:rgba(75,100,140,.52)}
 [data-theme="olive"]{--paper:#A3AD77;--ink:#2E331F;--ink-rgb:46,51,31;--paper-rgb:163,173,119;--sat:#7E9C9A;--sun:#A8735F;--sun-ink:#7C4F3F;--sat-ink:#3F6160;--pen:rgba(244,240,224,.62)}
 [data-theme="navy"]{--paper:#48516C;--ink:#C3B89B;--ink-rgb:195,184,155;--paper-rgb:72,81,108;--sat:#9DB3C9;--sun:#CFA096;--sun-ink:#D9AFA6;--sat-ink:#AEC5DA;--pen:rgba(232,217,178,.62)}
+html[data-fs="small"]{--fs-k:.88}
+html[data-fs="large"]{--fs-k:1.14}
+/* the quote option only takes the lines away; nothing else moves */
+html[data-noquote] .cover-meta,html[data-noquote] .mquote{display:none}
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
@@ -156,17 +163,24 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .cell:hover{background:var(--soft)}
 .cell.pad{cursor:default}
 .cell.pad:hover{background:none}
-.dnum{font-family:var(--ui);font-weight:500;font-size:13px;letter-spacing:.01em;height:var(--numh);display:flex;align-items:center;font-variant-numeric:tabular-nums;overflow:visible}
+.dnum{font-family:var(--ui);font-weight:500;font-size:calc(var(--num-size)*var(--fs-k));letter-spacing:.01em;height:var(--numh);display:flex;align-items:center;font-variant-numeric:tabular-nums;overflow:visible}
 .cell.sat .dnum{color:var(--sat-ink);opacity:.8}
 .cell.sun .dnum{color:var(--sun-ink)}
 /* holidays wear the same ink as Sunday, number and label alike */
 .cell.hol .dnum{color:var(--sun-ink);opacity:1}
-.dnum .hol{margin-left:6px;font-size:9.6px;font-weight:600;letter-spacing:-.005em;line-height:1;color:var(--sun-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.dnum .hol .s{display:none}
+/* one label slot after the day number: an official holiday, a traditional day, a
+   24절기 name, or the lunar 5-day date. The wide view gets the long wording and the
+   phone the short one, as the holiday label always did. */
+.dnum .ltag{margin-left:6px;font-size:calc(var(--tag-size)*var(--fs-k));font-weight:600;letter-spacing:-.005em;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dnum .ltag .s{display:none}
+.dnum .hol{color:var(--sun-ink)}
+.dnum .lf{color:var(--sun-ink);opacity:.72}
+.dnum .st{color:var(--ink);opacity:.5;font-weight:500}
+.dnum .ld{color:var(--ink);opacity:.42;font-weight:400;letter-spacing:0;font-variant-numeric:tabular-nums}
 .evts{display:flex;flex-direction:column}
 .evt{
   height:var(--rowh);display:flex;align-items:center;gap:5px;
-  font-size:12.2px;line-height:1;
+  font-size:calc(var(--evt-size)*var(--fs-k));line-height:1;
 }
 .evt .bul{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.45;flex:0 0 auto}
 .evt .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -227,8 +241,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .mlist{display:flex;flex-direction:column;gap:1px;max-height:calc(100dvh - 452px);overflow-y:auto}
 .mrow{position:relative;padding:9px 22px 9px 10px;cursor:pointer;border-left:2px solid transparent;transition:background .15s,border-color .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .mrow.on{border-left-color:var(--ink);background:var(--soft)}
-.mrow .mt{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mrow .mm{display:flex;gap:6px;align-items:center;font-size:10px;letter-spacing:.04em;opacity:.5;margin-top:3px}
+.mrow .mt{font-size:calc(var(--mt-size)*var(--fs-k));font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mrow .mm{display:flex;gap:6px;align-items:center;font-size:calc(var(--mm-size)*var(--fs-k));letter-spacing:.04em;opacity:.5;margin-top:3px}
 .mrow .mm .tpl{font-family:var(--disp);font-style:italic;font-size:11px;letter-spacing:.04em}
 /* iOS Safari gives the first tap to :hover when a hover rule changes what
    sits under the finger (here a × that only appeared on hover), which is
@@ -302,7 +316,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .ruled{position:relative;min-height:calc(var(--rh)*16)}
 .ruled textarea{
   position:relative;width:100%;height:100%;min-height:calc(var(--rh)*16);
-  font-size:13.5px;line-height:var(--rh);padding:0;letter-spacing:.005em;
+  font-size:calc(var(--note-size)*var(--fs-k));line-height:var(--rh);padding:0;letter-spacing:.005em;
   resize:none;display:block;background:transparent;
 }
 .sheet-hint{font-size:10.5px;opacity:.45;margin-top:12px;letter-spacing:.01em;line-height:1.6}
@@ -314,7 +328,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .clist{max-width:660px;margin-top:4px}
 .crow{display:flex;align-items:flex-start;gap:10px;padding:11px 0 10px;border-bottom:1px dotted var(--dash);touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .crow .cb{margin-top:1px}
-.ctext{flex:1;min-width:0;font-size:14px;line-height:1.55;padding:1px 0}
+.ctext{flex:1;min-width:0;font-size:calc(var(--ctext-size)*var(--fs-k));line-height:1.55;padding:1px 0}
 .crow.done .ctext{opacity:.4;text-decoration:line-through}
 .cdel{width:22px;height:22px;flex:0 0 auto;display:grid;place-items:center;font-size:15px;color:rgba(var(--ink-rgb),.5);opacity:.45;transition:opacity .15s;touch-action:manipulation}
 .cdel:focus{opacity:1}
@@ -477,20 +491,21 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .memo{grid-template-columns:240px minmax(0,1fr);gap:24px}
 }
 @media (max-width:760px){
-  :root{--pad:16px;--numh:21px;--rowh:24px}
+  :root{--pad:16px;--numh:21px;--rowh:24px;--num-size:12px;--evt-size:9.8px;--tag-size:8.4px;
+        --ctext-size:16px;--note-size:16px;--mt-size:13px;--mm-size:10px}
+  .seg .sg{padding:5px 8px;font-size:11px}
   .navin{padding:10px var(--pad) 8px;gap:clamp(14px,2.4vw,31px)}
   .mhead{margin:10px 0 22px}
   .mnum{font-size:52px}
   .sync{font-size:10px;padding-top:8px;gap:6px;max-width:52%}
   .wkstart{padding-top:12px;gap:10px}
   .wkstart label{font-size:11.5px}
-  .dnum .hol{font-size:8.4px;margin-left:3px}
-  .dnum .hol .f{display:none}
-  .dnum .hol .s{display:inline}
+  .dnum .ltag{margin-left:3px}
+  .dnum .ltag .f{display:none}
+  .dnum .ltag .s{display:inline}
   .mempty-editor{min-height:46vh}
-  .evt{font-size:11px;gap:4px}
+  .evt{gap:4px}
   .evt .tm{display:none}
-  .dnum{font-size:12px}
   .memo{grid-template-columns:minmax(0,1fr);grid-template-areas:"side" "editor" "foot";gap:0}
   .side{border-right:0;padding-right:0}
   .editor{margin-top:18px;border-top:1px solid var(--dash);padding-top:14px;scroll-margin-top:calc(64px + env(safe-area-inset-top))}
@@ -505,7 +520,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .mlist{max-height:none}
   .wd{width:4px;height:4px}
   .cell{padding:6px 3px 0}
-  .evt{font-size:9.8px;line-height:1.05}
+  .evt{line-height:1.05}
   .evt .bul{display:none}
   .sync .opt{display:none}
   .fab{width:30px;height:30px}
@@ -516,10 +531,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
      the fields a phone actually types into are lifted to 16px, while the
      display-sized ones (memo title 24px, check title 17px) keep their scale */
   .cadd input{font-size:16px}
-  .ctext{font-size:16px}
+  /* iOS zooms a page whose focused field is under 16px, so 작게 may not shrink
+     a field on the phone — 크게 still grows it */
+  .ctext{font-size:max(16px,calc(var(--ctext-size)*var(--fs-k)))}
   .search,.addrow input[type=text],.addrow input[type=time]{font-size:16px}
   .time-wrap.is-empty::after{font-size:16px}
-  .ruled textarea{font-size:16px}
+  .ruled textarea{font-size:max(16px,calc(var(--note-size)*var(--fs-k)))}
   .yb-step{width:36px;height:32px}
   .yb-year{font-size:16px;min-width:54px}
   .yearbar{padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
@@ -527,6 +544,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* iPhone widths: the 12 months stay spread across the calendar's full width on
    one row (same as desktop) — the type scales down instead of scrolling */
 @media (max-width:520px){
+  .dnum.circled .ltag.ld{display:none}
   .navin{gap:10px}
   .months{justify-content:space-between;gap:1.5px;overflow-x:hidden}
   .months button{font-size:clamp(12px,3.35vw,15px);padding:3px 0 4px;letter-spacing:0}
@@ -552,12 +570,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .pen path{fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
 /* a circled day number pushes the holiday name clear of the loop (the oval runs
    13.5px / 15px out from the digits, so the label needs that much lead) */
-.dnum.circled .hol{margin-left:12px}
-.dnum.circled.d2 .hol{margin-left:10px}
+.dnum.circled .ltag{margin-left:12px}
+.dnum.circled.d2 .ltag{margin-left:10px}
 /* 4+ events: the grid keeps three lines with a little air taken out of them, so
    the rest can be counted below the third line without touching the week rule */
 .cell.more4 .evt{height:calc(var(--rowh) - 3px)}
-.more{position:absolute;right:3px;bottom:1px;font-family:var(--ui);font-size:9px;line-height:1.1;letter-spacing:.01em;opacity:.55;pointer-events:none;font-variant-numeric:tabular-nums}
+.more{position:absolute;right:3px;bottom:1px;font-family:var(--ui);font-size:calc(9px*var(--fs-k));line-height:1.1;letter-spacing:.01em;opacity:.55;pointer-events:none;font-variant-numeric:tabular-nums}
 /* ---------- option tab ---------- */
 .opts{margin-top:26px;max-width:430px}
 .orow{display:flex;align-items:center;justify-content:space-between;gap:24px;width:100%;padding:16px 0;border-bottom:1px solid var(--dash);font-family:var(--ui);font-size:13px;letter-spacing:.01em;color:var(--ink);text-align:left;transition:opacity .16s}
@@ -565,6 +583,14 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .orow .obox{width:15px;height:15px;border:1.3px solid var(--hair);flex:0 0 auto;display:grid;place-items:center;transition:border-color .15s}
 .orow .obox::after{content:'';width:8px;height:4px;border-left:1.6px solid var(--ink);border-bottom:1.6px solid var(--ink);transform:rotate(-45deg);opacity:0;transition:opacity .12s}
 .orow[aria-checked="true"] .obox::after{opacity:1}
+/* 글씨 크기: the one row that is not a switch */
+.segrow{cursor:default}
+.segrow:hover{opacity:1}
+.seg{display:flex;flex:0 0 auto;border:1.3px solid var(--hair)}
+.seg .sg{padding:5px 9px;font-family:var(--ui);font-size:11.5px;line-height:1;letter-spacing:.01em;color:var(--ink);opacity:.55;transition:opacity .15s,background .15s}
+.seg .sg + .sg{border-left:1.3px solid rgba(var(--ink-rgb),.26)}
+.seg .sg[aria-checked="true"]{opacity:1;background:var(--soft)}
+.seg .sg:hover{opacity:.92}
 @media (max-width:760px){.opts{margin-top:20px}.orow{padding:15px 0;font-size:12.5px}}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -872,7 +898,7 @@ function initialState(){
     backupScopes:{schedule:true, memo:true, check:true},  /* what a Docs backup carries */
     lastMonth:todayMonth(),
     events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
-    prefs:{sound:true, haptic:true},   /* 사운드 · 햅틱 */
+    prefs:{pencilCircle:true, quotes:true, fontSize:'normal', lunar:true, sound:true, haptic:true},
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
   };
@@ -925,8 +951,10 @@ function load(){
     }
     /* only the four kept themes are valid — anything else falls back to cream */
     st.theme = THEMES.some(t=>t.id===p.theme) ? p.theme : 'cream';
-    st.prefs = Object.assign({sound:true, haptic:true}, p.prefs||{});
+    st.prefs = Object.assign({pencilCircle:true, quotes:true, fontSize:'normal', lunar:true,
+                              sound:true, haptic:true}, p.prefs||{});
     delete st.prefs.grain;   /* the paper-grain option is gone; drop its old key */
+    if(!['small','normal','large'].includes(st.prefs.fontSize)) st.prefs.fontSize = 'normal';
     return st;
   }catch(e){ return initialState(); }
 }
@@ -1043,9 +1071,16 @@ function toast(msg){
 }
 const themeMeta = id => THEMES.find(t=>t.id===id) || THEMES[1];
 /* =========================================================
-   소리 · 진동
+   화면 · 소리 · 진동
    ========================================================= */
 const prefOn = id => ((S.prefs || {})[id] !== false);
+const fontPref = () => { const v = (S.prefs||{}).fontSize; return (v==='small'||v==='large') ? v : 'normal'; };
+/* two prefs reach the page as attributes on <html> so a re-render is not needed */
+function applyPrefs(){
+  const p = S.prefs || {};
+  document.documentElement.dataset.fs = (p.fontSize==='small'||p.fontSize==='large') ? p.fontSize : 'normal';
+  document.documentElement.toggleAttribute('data-noquote', p.quotes === false);
+}
 /* Every sound is synthesised here, so the app stays one offline file. Nothing is
    created before the page has been touched: a fresh load stays silent. */
 let touched = false, AC = null;
@@ -1688,6 +1723,7 @@ let monthQuote = pickQuote();
 function render(){
   document.documentElement.dataset.theme = S.theme;
   syncPaper();
+  applyPrefs();
   if(R.view==='cover'){ app.innerHTML = renderCover(); }
   else { app.innerHTML = renderNav() + `<div class="page">${renderView()}</div>` + renderYearBar(); }
   paintFab();
@@ -1821,6 +1857,133 @@ function holShort(hol){
   });
   return out.join('·');
 }
+/* ---------- 음력 · 24절기 · 전통 명절 (2015–2040) ---------- */
+/* 24절기: the sun's apparent longitude at 15°·k, solved astronomically and taken
+   on the KST date. Two digits of the day per term, in the order below. */
+const TERM_NAMES = ['소한','대한','입춘','우수','경칩','춘분','청명','곡우','입하','소만','망종','하지',
+                    '소서','대서','입추','처서','백로','추분','한로','상강','입동','소설','대설','동지'];
+const TERM_MONTHS = [1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12];
+const TERM_DAYS = {
+  2015:"062004190621052006210622072308230823082408230722",
+  2016:"062104190520042005200521072207230722082307220721",
+  2017:"052004180520042005210521072307230723082307220722",
+  2018:"052004190621052005210621072307230823082307220722",
+  2019:"062004190621052006210622072308230823082408220722",
+  2020:"062004190520041905200521062207230722082307220721",
+  2021:"052003180520042005210521072207230723082307220722",
+  2022:"052004190521052005210621072307230823082307220722",
+  2023:"052004190621052006210621072308230823082408220722",
+  2024:"062004190520041905200521062207220722082307220721",
+  2025:"052003180520042005210521072207230723082307220721",
+  2026:"052004190520052005210621072307230723082307220722",
+  2027:"052004190621052006210621072308230823082408220722",
+  2028:"062004190520041905200521062207220722082307220621",
+  2029:"052003180520042005210521072207230723082307220721",
+  2030:"052004180520052005210521072307230723082307220722",
+  2031:"052004190621052006210621072308230823082308220722",
+  2032:"062004190520041905200521062207220722082307220621",
+  2033:"052003180520042005210521072207230723082307220721",
+  2034:"052004180520052005210521072307230723082307220722",
+  2035:"052004190621052006210621072308230823082307220722",
+  2036:"062004190520041905200521062207220722082307220621",
+  2037:"052003180520042005210521072207230723082307220721",
+  2038:"052004180520052005210521072307230723082307220722",
+  2039:"052004190621052006210621072308230823082307220722",
+  2040:"062004190520041905200521062207220722082307220621",
+};
+const LUNAR_ROWS = {
+  2014:["2014-01-31",9,"0101010110101"],
+  2015:["2015-02-19",0,"010010111010"],
+  2016:["2016-02-08",0,"101001011011"],
+  2017:["2017-01-28",5,"0101001010111"],
+  2018:["2018-02-16",0,"010100101011"],
+  2019:["2019-02-05",0,"101010010101"],
+  2020:["2020-01-25",4,"1011010010101"],
+  2021:["2021-02-12",0,"011010101010"],
+  2022:["2022-02-01",0,"101011010101"],
+  2023:["2023-01-22",2,"0101010110101"],
+  2024:["2024-02-10",0,"010010110110"],
+  2025:["2025-01-29",6,"1010010101110"],
+  2026:["2026-02-17",0,"101001010111"],
+  2027:["2027-02-07",0,"010100100111"],
+  2028:["2028-01-27",5,"0110100100110"],
+  2029:["2029-02-13",0,"110110010011"],
+  2030:["2030-02-03",0,"010110101010"],
+  2031:["2031-01-23",3,"1010101101010"],
+  2032:["2032-02-11",0,"100101101101"],
+  2033:["2033-01-31",11,"0100101011101"],
+  2034:["2034-02-19",0,"010010101110"],
+  2035:["2035-02-08",0,"101001001101"],
+  2036:["2036-01-28",6,"1101001001101"],
+  2037:["2037-02-15",0,"110100100101"],
+  2038:["2038-02-04",0,"110101010010"],
+  2039:["2039-01-24",5,"1101101010100"],
+  2040:["2040-02-12",0,"101101101010"],
+  2041:["2041-02-01",0,"100101101101"],
+};
+
+/* lunar year -> [설날 date, 윤달 month (0 none), one flag per lunar month: 1 = 30 days] */
+const DAYMS = 86400000;
+const LUNAR_FIVE = [1,5,10,15,20,25];
+const LUNAR_FEASTS = {'1.15':['정월대보름','보름'],'5.5':['단오','단오'],
+                      '7.7':['칠석','칠석'],'9.9':['중양절','중양']};
+function dayNum(ds){ const q = ds.split('-'); return Date.UTC(+q[0], +q[1]-1, +q[2]) / DAYMS; }
+function isoFromDay(n){
+  const d = new Date(n * DAYMS);
+  return d.getUTCFullYear() + '-' + String(d.getUTCMonth()+1).padStart(2,'0') + '-' + String(d.getUTCDate()).padStart(2,'0');
+}
+/* solar date -> {m, d, leap} in the Korean lunar calendar, or null outside 2015–2040 */
+function lunarDate(ds){
+  let y = +ds.slice(0,4);
+  while(y >= 2014 && LUNAR_ROWS[y] && ds < LUNAR_ROWS[y][0]) y--;
+  const row = LUNAR_ROWS[y];
+  if(!row) return null;
+  const diff = dayNum(ds) - dayNum(row[0]);
+  if(diff < 0) return null;
+  const leap = row[1], bits = row[2];
+  let idx = 0, acc = 0;
+  for(let m=1;m<=12;m++){
+    for(const isLeap of (m===leap ? [false,true] : [false])){
+      const len = bits[idx]==='1' ? 30 : 29;
+      if(acc + len > diff) return {m:m, d:diff-acc+1, leap:isLeap};
+      acc += len; idx++;
+    }
+  }
+  return null;
+}
+/* the one 24절기 name that falls on this date, or null */
+function solarTerm(ds){
+  const row = TERM_DAYS[ds.slice(0,4)];
+  if(!row) return null;
+  const mo = +ds.slice(5,7), day = +ds.slice(8);
+  for(let i=0;i<24;i++) if(TERM_MONTHS[i] === mo && +row.substr(i*2,2) === day) return TERM_NAMES[i];
+  return null;
+}
+/* 한식: the day after 청명 — KASI's 2024–2027 달력자료 all fall on that day */
+function hansikOf(y){
+  const row = TERM_DAYS[String(y)];
+  if(!row) return null;
+  return isoFromDay(dayNum(y + '-04-' + row.substr(6*2,2)) + 1);
+}
+function lunarFeast(ds, l){
+  if(ds === hansikOf(+ds.slice(0,4))) return ['한식','한식'];
+  if(!l || l.leap) return null;
+  return LUNAR_FEASTS[l.m+'.'+l.d] || null;
+}
+/* what sits beside the day number: official holiday > traditional day > 절기 > 음력 5일 */
+function dayTag(ds, hol){
+  if(hol) return {cls:'hol', full:hol, short:holShort(hol)};
+  if(!prefOn('lunar')) return null;
+  const l = lunarDate(ds);
+  const feast = lunarFeast(ds, l);
+  if(feast) return {cls:'lf', full:feast[0], short:feast[1]};
+  const term = solarTerm(ds);
+  if(term) return {cls:'st', full:term, short:term};
+  if(l && !l.leap && LUNAR_FIVE.includes(l.d))
+    return {cls:'ld', full:'음 ' + l.m + '.' + l.d, short:l.m + '.' + l.d};
+  return null;
+}
+
 /* ---------- hand-drawn pencil circles ---------- */
 /* six organic loops drawn in the 30x24 box, each closed with a small overshoot so
    it reads as a quick pen stroke; one is chosen from the date itself, so a re-render
@@ -1852,16 +2015,21 @@ function renderMonthly(){
     const ds = iso(y,m,day);
     const wd = ws==='m' ? (i%7 + 1) % 7 : i%7;            // 0 = Sunday … 6 = Saturday
     const hol = holidayOn(ds);
+    const tag = dayTag(ds, hol);
     const cls = ['cell', wd===6?'sat':'', wd===0?'sun':'', hol?'hol':'', ds===todayISO()?'today':''].filter(Boolean).join(' ');
     const evs = eventsOn(ds);
     const lines = evs.slice(0,3).map(e=>`<div class="evt ${e.source==='google'?'g':''} ${e.done?'done':''}">
         <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`).join('');
-    const pen = evs.length ? `<svg class="pen${day>9?' d2':''}" viewBox="0 0 30 24" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
+    const circle = prefOn('pencilCircle') && evs.length;
+    const pen = circle ? `<svg class="pen${day>9?' d2':''}" viewBox="0 0 30 24" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
     /* the grid keeps three lines; a fourth event is counted in the corner */
     const more = evs.length > 3 ? `<div class="more">+${evs.length-3}</div>` : '';
-    const dcls = evs.length ? (' circled' + (day>9 ? ' d2' : '')) : '';
+    const dcls = circle ? (' circled' + (day>9 ? ' d2' : '')) : '';
     const ccls = cls + (evs.length > 3 ? ' more4' : '');
-    cells.push(`<div class="${ccls}" data-act="open-day" data-val="${ds}"${hol?` title="${esc(hol)}"`:''}><div class="dnum${dcls}"><span class="dnum-n">${day}${pen}</span>${hol?`<span class="hol"><span class="f">${esc(hol)}</span><span class="s">${esc(holShort(hol))}</span></span>`:''}</div><div class="evts">${lines}</div>${more}</div>`);
+    const l = prefOn('lunar') ? lunarDate(ds) : null;
+    const title = [hol, l ? '음력 ' + l.m + '.' + l.d : null].filter(Boolean).join(' · ');
+    const tagHTML = tag ? `<span class="ltag ${tag.cls}"><span class="f">${esc(tag.full)}</span><span class="s">${esc(tag.short)}</span></span>` : '';
+    cells.push(`<div class="${ccls}" data-act="open-day" data-val="${ds}"${title?` title="${esc(title)}"`:''}><div class="dnum${dcls}"><span class="dnum-n">${day}${pen}</span>${tagHTML}</div><div class="evts">${lines}</div>${more}</div>`);
   }
   const weeks = [];
   for(let r=0;r<rows;r++){
@@ -1960,14 +2128,22 @@ function memoSideHTML(tab, memo, acts){
       <div class="mlist">${memoRowsHTML(tabMemos(tab), memo, acts.open, acts.del)}</div>
     </aside>`;
 }
-/* ---------- option tab (inside ≡) : 사운드 · 햅틱 ---------- */
+/* ---------- option tab (inside ≡) : 화면 · 소리 ---------- */
 const PREF_ROWS = [
-  {id:'sound',  label:'사운드'},
-  {id:'haptic', label:'햅틱'}
+  {id:'pencilCircle', label:'연필 동그라미'},
+  {id:'quotes',       label:'오늘의 명언'},
+  {id:'fontSize',     label:'글씨 크기', seg:true},
+  {id:'lunar',        label:'음력 · 절기'},
+  {id:'sound',        label:'사운드'},
+  {id:'haptic',       label:'햅틱'}
 ];
+const FONT_STEPS = [['small','작게'],['normal','보통'],['large','크게']];
 function renderOptions(){
   return `<div class="opts">
-    ${PREF_ROWS.map(p=>`<button class="orow" role="switch" aria-checked="${prefOn(p.id)}" data-act="pref" data-val="${p.id}"><span>${p.label}</span><span class="obox"></span></button>`).join('')}
+    ${PREF_ROWS.map(p=>p.seg
+      ? `<div class="orow segrow"><span>${p.label}</span><div class="seg" role="radiogroup" aria-label="${p.label}">${FONT_STEPS.map(([v,l])=>`<button class="sg" role="radio" aria-checked="${fontPref()===v}" data-act="fontsize" data-val="${v}">${l}</button>`).join('')}</div></div>`
+      : `<button class="orow" role="switch" aria-checked="${prefOn(p.id)}" data-act="pref" data-val="${p.id}"><span>${p.label}</span><span class="obox"></span></button>`
+    ).join('')}
   </div>`;
 }
 function renderMemo(){
@@ -2323,11 +2499,17 @@ document.addEventListener('click', e=>{
     }
     case 'sync': calendarSync(); break;
     case 'pref': {
-      const p = Object.assign({sound:true, haptic:true}, S.prefs||{});
+      const p = Object.assign({}, S.prefs||{});
       p[val] = p[val] === false;          /* flip this one switch */
       S.prefs = p; persist(true); render();
       /* switching a feedback option on shows what it does right away */
       if(p[val]){ if(val==='sound') penClick(); if(val==='haptic') buzz(14); }
+      break;
+    }
+    case 'fontsize': {
+      if(!['small','normal','large'].includes(val)) break;
+      S.prefs = Object.assign({}, S.prefs, {fontSize: val});
+      persist(true); render();
       break;
     }
     case 'memo-tab': {
