@@ -48,6 +48,15 @@
 [data-theme="cream"]{--paper:#EDE4D2;--ink:#4B648C;--ink-rgb:75,100,140;--paper-rgb:237,228,210;--sat:#9BB0C8;--sun:#C08E80;--sun-ink:#A9716A;--sat-ink:#6C88A8;--pen:rgba(75,100,140,.52)}
 [data-theme="olive"]{--paper:#A3AD77;--ink:#2E331F;--ink-rgb:46,51,31;--paper-rgb:163,173,119;--sat:#7E9C9A;--sun:#A8735F;--sun-ink:#7C4F3F;--sat-ink:#3F6160;--pen:rgba(244,240,224,.62)}
 [data-theme="navy"]{--paper:#48516C;--ink:#C3B89B;--ink-rgb:195,184,155;--paper-rgb:72,81,108;--sat:#9DB3C9;--sun:#CFA096;--sun-ink:#D9AFA6;--sat-ink:#AEC5DA;--pen:rgba(232,217,178,.62)}
+/* ---------- Google secondary calendar inks ----------
+   five calm hues per theme, each one far enough from that theme's --ink and
+   --sun-ink to be told apart inside a cell and still ≥4:1 on its --paper.
+   기본 달력 (the primary calendar) keeps --ink; a secondary calendar takes the
+   next free slot in this list. */
+[data-theme="white"]{--cal-c0:#2E6B62;--cal-c1:#7B4A6E;--cal-c2:#6B5A1E;--cal-c3:#8A4A2C;--cal-c4:#3F4A8C}
+[data-theme="cream"]{--cal-c0:#2A6A5E;--cal-c1:#7A3F63;--cal-c2:#66571B;--cal-c3:#8B4527;--cal-c4:#573E84}
+[data-theme="olive"]{--cal-c0:#14483F;--cal-c1:#5E2436;--cal-c2:#1E3A66;--cal-c3:#5A3010;--cal-c4:#3B2A5E}
+[data-theme="navy"]{--cal-c0:#E8C57E;--cal-c1:#9AD0BC;--cal-c2:#C6B4E6;--cal-c3:#93C8E3;--cal-c4:#C8D98A}
 html[data-fs="small"]{--fs-k:.88}
 html[data-fs="large"]{--fs-k:1.14}
 /* the quote option only takes the lines away; nothing else moves */
@@ -186,6 +195,8 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .evt .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .evt .tm{font-variant-numeric:tabular-nums;opacity:.55;font-size:calc(10.5px*var(--fs-k));flex:0 0 auto;letter-spacing:.02em}
 .evt.g .bul{background:var(--sat);opacity:.95}
+/* a secondary Google calendar paints the whole line in its own ink, dot included */
+.evt.csec .bul{background:currentColor;opacity:.85}
 .evt.done .t{opacity:.4;text-decoration:line-through}
 .kbd{border:1px solid var(--dash);border-radius:4px;padding:0 4px;font-size:calc(10px*var(--fs-k));line-height:15px}
 
@@ -271,6 +282,15 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .holrow input{-webkit-appearance:none;appearance:none;width:12px;height:12px;margin:0;border:1.2px solid rgba(var(--ink-rgb),.5);display:grid;place-items:center;cursor:pointer}
 .holrow input:checked{border-color:var(--ink)}
 .holrow input:checked::after{content:'';width:6px;height:3px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(-45deg) translate(0,-1px)}
+/* ---------- the connected account's calendars: checkbox · colour · name ---------- */
+.callist{display:flex;flex-direction:column;gap:1px;margin:-1px 0 0 18px;max-width:100%}
+.calrow{display:flex;align-items:center;gap:6px;padding:2px 0;font-size:calc(10.5px*var(--fs-k));letter-spacing:.01em;color:rgba(var(--ink-rgb),.62);cursor:pointer;min-width:0}
+.calrow input{-webkit-appearance:none;appearance:none;width:12px;height:12px;margin:0;border:1.2px solid rgba(var(--ink-rgb),.5);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+.calrow input:checked{border-color:var(--ink)}
+.calrow input:checked::after{content:'';width:6px;height:3px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(-45deg) translate(0,-1px)}
+.calrow .cdot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--ink)}
+.calrow .cdot.ink{opacity:.62}
+.calrow .cname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 /* empty editor: only a centered + */
 .mempty-editor{display:grid;place-items:center;min-height:min(56vh,440px)}
 .plusbtn{width:66px;height:66px;border:0;border-radius:0;background:none;display:grid;place-items:center;font-size:calc(30px*var(--fs-k));line-height:1;font-weight:300;color:rgba(var(--ink-rgb),.55);transition:color .2s,opacity .2s}
@@ -430,6 +450,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .ditem.done .body{opacity:.4;text-decoration:line-through}
 .ditem .src{font-size:calc(9px*var(--fs-k));letter-spacing:.08em;opacity:.4;font-family:var(--disp);font-style:italic;border:1px solid var(--dash);border-radius:2px;padding:0 3px;margin-left:6px;vertical-align:1px}
 .ditem .del{opacity:.3}
+/* a calendar she can only read: the row stays visible, the pen and the × do not act */
+.ditem.ro .body{cursor:default}
+.ditem.ro .del{opacity:.12}
+.ditem .dcal{font-size:calc(9.5px*var(--fs-k));letter-spacing:.02em;opacity:.72;margin-left:6px;white-space:nowrap;vertical-align:1px}
+/* a one-line answer to a tap that cannot go through (read-only calendar etc.) */
+.dayhint{font-size:calc(11px*var(--fs-k));letter-spacing:.01em;color:var(--sun-ink);padding:8px 0 0}
 @media (hover:hover){.ditem:hover .del{opacity:.6}}
 /* one baseline for the whole row: the clock cell and the title share the same
    36px height and bottom rule, and the 추가 button sits on that same line */
@@ -901,7 +927,7 @@ function initialState(){
     lastMonth:todayMonth(),
     events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     prefs:{pencilCircle:true, quotes:true, fontSize:'normal', lunar:true, sound:true, haptic:true},
-    google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
+    google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}, calendars:[]},
     docId:null, lastBackup:null
   };
 }
@@ -915,8 +941,16 @@ function load(){
     const p = JSON.parse(raw);
     const base = initialState();
     const st = Object.assign(base, p);
-    st.google = Object.assign({connected:false,lastSync:null,holidays:true,account:null,holCache:{}}, p.google||{});
+    st.google = Object.assign({connected:false,lastSync:null,holidays:true,account:null,holCache:{},calendars:[]}, p.google||{});
     st.google.holCache = Object.assign({}, (p.google && p.google.holCache) || {});
+    /* the calendars this account showed last time — kept as they were, so the ticks
+       and colours she chose survive every sync */
+    st.google.calendars = (Array.isArray(p.google && p.google.calendars) ? p.google.calendars : [])
+      .filter(c=>c && c.id)
+      .map(c=>({id:String(c.id), summary:String(c.summary||''), primary:!!c.primary,
+                accessRole:c.accessRole || 'reader',
+                enabled: typeof c.enabled === 'boolean' ? c.enabled : !!c.primary,
+                colorIdx: Number.isInteger(c.colorIdx) ? c.colorIdx : -1}));
     st.docId = typeof p.docId === 'string' ? p.docId : null;
     st.memos = (p.memos||base.memos).map(migrateMemo);
     st.memoTab = (p.memoTab === 'note' || p.memoTab === 'option') ? p.memoTab : 'check';
@@ -1179,6 +1213,7 @@ const GOOGLE_SCOPES = [
 const GOOGLE_TOKEN_KEY = 'mp27.google.token';            /* sessionStorage only */
 const GOOGLE_TZ = 'Asia/Seoul';
 const HOLIDAY_CAL = 'ko.south_korea%23holiday%40group.v.calendar.google.com';
+const HOLIDAY_CAL_ID = 'ko.south_korea#holiday@group.v.calendar.google.com';
 const BACKUP_DOC_NAME = 'Monthly Planner 백업';
 const LEGACY_BACKUP_DOC_NAME = '27 Monthly Planner 백업';
 const DOC_MIME = 'application/vnd.google-apps.document';
@@ -1301,6 +1336,7 @@ async function connectGoogleAccount(opts){
     if(S.google.account && S.google.account !== email){
       /* the stored google ids belong to the previous account's calendar */
       S.events.forEach(e=>{ if(e.googleId) e.googleId = null; });
+      S.google.calendars = [];                 /* and so does the calendar list */
       toast('Google 계정이 바뀌었습니다 · 새 계정 기준으로 다시 맞춥니다');
     }
     S.google.account = email;
@@ -1333,8 +1369,91 @@ function googleError(err){
   toast('Google 연동 실패 · ' + msg);
 }
 
-/* ---------- Google Calendar: two-way ---------- */
-const CAL_EVENTS = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+/* ---------- Google Calendar: two-way, one calendar or several ---------- */
+const CAL_LIST = 'https://www.googleapis.com/calendar/v3/users/me/calendarList?maxResults=250';
+const CAL_BASE = 'https://www.googleapis.com/calendar/v3/calendars/';
+const CAL_EVENTS = CAL_BASE + 'primary/events';
+const CAL_SLOTS = 5;                                   /* --cal-c0 … --cal-c4 */
+const calList = () => (S.google && Array.isArray(S.google.calendars)) ? S.google.calendars : [];
+/* 'primary' is how the API spells her own calendar, and how its events are stored */
+const calApiId = cid => (cid && cid !== 'primary') ? cid : 'primary';
+function calById(cid){
+  const list = calList();
+  if(!cid || cid === 'primary') return list.find(c=>c.primary) || null;
+  return list.find(c=>c.id === cid) || null;
+}
+const eventCalId = ev => calApiId(ev && ev.calendarId);
+/* the --cal-c slot a secondary calendar paints with; null = the theme's own ink */
+function calSlot(cid){
+  const c = calById(cid);
+  if(!c || c.primary || !(c.colorIdx >= 0)) return null;
+  return c.colorIdx % CAL_SLOTS;
+}
+const calInk = slot => slot === null ? '' : ` style="color:var(--cal-c${slot})"`;
+function calName(cid){
+  const c = calById(cid);
+  return c ? (c.primary ? '기본 달력' : (c.summary || '')) : '';
+}
+function eventReadOnly(ev){
+  const c = calById(eventCalId(ev));
+  return !!(c && (c.accessRole === 'reader' || c.accessRole === 'freeBusyReader'));
+}
+const calEventsUrl = cid => `${CAL_BASE}${encodeURIComponent(calApiId(cid))}/events`;
+/* every synced event whose calendar is gone or no longer ticked gives way */
+function pruneCalendarEvents(){
+  const list = calList();
+  if(!list.length) return 0;                /* no list yet: everything stays */
+  const byId = {};
+  list.forEach(c=>{ byId[c.primary ? 'primary' : c.id] = c; byId[c.id] = c; });
+  let dropped = 0;
+  S.events = S.events.filter(ev=>{
+    if(!ev || !ev.googleId) return true;
+    const c = byId[eventCalId(ev)];
+    if(!c || c.enabled === false){ dropped++; return false; }
+    return true;
+  });
+  return dropped;
+}
+/* which calendars a sync reads; before the list arrives, just 기본 달력 */
+function enabledCalendars(){
+  const list = calList().filter(c=>c.enabled !== false);
+  if(!list.length) return ['primary'];
+  return list.map(c=>c.primary ? 'primary' : c.id);
+}
+/* GET calendarList → S.google.calendars, keeping the ticks and colours she chose */
+async function loadCalendarList(token){
+  const res = await googleFetch(CAL_LIST, token);
+  const j = await res.json();
+  const known = calList();
+  let slot = 0;
+  known.forEach(c=>{ if(c.colorIdx >= slot) slot = c.colorIdx + 1; });
+  const next = [];
+  (j.items || []).forEach(it=>{
+    if(!it || !it.id) return;
+    if(it.id === HOLIDAY_CAL_ID) return;     /* 공휴일 has its own tick */
+    const prev = known.find(c=>c.id === it.id);
+    const primary = !!it.primary;
+    next.push({
+      id: it.id,
+      summary: it.summaryOverride || it.summary || it.id,
+      primary,
+      accessRole: it.accessRole || 'reader',
+      /* 기본 달력 starts on; a secondary or shared calendar waits for her tick */
+      enabled: prev ? !!prev.enabled : primary,
+      colorIdx: prev && Number.isInteger(prev.colorIdx) ? prev.colorIdx : (primary ? -1 : (slot++) % CAL_SLOTS)
+    });
+  });
+  S.google.calendars = next;
+  pruneCalendarEvents();
+  persist(true);
+  return next.length;
+}
+async function pullCalendarEvents(token, cid, r){
+  const url = `${calEventsUrl(cid)}?singleEvents=true&orderBy=startTime&maxResults=2500&timeMin=${r.min}&timeMax=${r.max}`;
+  const res = await googleFetch(url, token);
+  const j = await res.json();
+  return j.items || [];
+}
 function nextDay(ds){
   const d = new Date(ds + 'T00:00:00');
   d.setDate(d.getDate() + 1);
@@ -1363,19 +1482,20 @@ function googleEventBody(e){
 async function pushEventToGoogle(ev){
   const token = silentToken();
   if(!token) return false;
-  const res = await googleFetch(CAL_EVENTS, token, {
+  const res = await googleFetch(calEventsUrl('primary'), token, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(googleEventBody(ev))
   });
   const j = await res.json();
-  if(j && j.id){ ev.googleId = j.id; ev.source = 'google'; return true; }
+  /* what she writes in the planner always lands on 기본 달력 */
+  if(j && j.id){ ev.googleId = j.id; ev.calendarId = 'primary'; ev.source = 'google'; return true; }
   return false;
 }
-/* an edited title / time goes back to the same Google event */
+/* an edited title / time goes back to the same Google event, in its own calendar */
 async function patchEventOnGoogle(ev){
   const token = silentToken();
   if(!token || !ev || !ev.googleId) return false;
-  const res = await googleFetch(`${CAL_EVENTS}/${encodeURIComponent(ev.googleId)}`, token, {
+  const res = await googleFetch(`${calEventsUrl(ev.calendarId)}/${encodeURIComponent(ev.googleId)}`, token, {
     method:'PATCH', headers:{'Content-Type':'application/json'},
     body: JSON.stringify(googleEventBody(ev))
   });
@@ -1386,7 +1506,7 @@ async function deleteEventEverywhere(ev){
   const token = silentToken();
   if(!token) return;
   try{
-    await googleFetch(`${CAL_EVENTS}/${encodeURIComponent(ev.googleId)}`, token, {method:'DELETE'});
+    await googleFetch(`${calEventsUrl(ev.calendarId)}/${encodeURIComponent(ev.googleId)}`, token, {method:'DELETE'});
     toast('Google Calendar에서도 삭제했습니다');
   }catch(err){
     if(err.status === 401) clearToken();
@@ -1421,35 +1541,44 @@ async function calendarSync(){
   if(syncBusy) return;
   if(!navigator.onLine){ toast(AUTH_FAIL_MSG); return; }
   syncBusy = true; render();
-  let pushed = 0, pulled = 0, failed = 0, holCount = 0;
+  let pushed = 0, pulled = 0, failed = 0, holCount = 0, calErrors = 0;
   try{
     const token = await connectGoogleAccount({});
-    /* 1 — pull the active year first, so an event that is already in Google
+    /* 0 — which calendars this account has, and which of them she ticks */
+    try{ await loadCalendarList(token); }
+    catch(err){ if(err.status === 401) throw err; calErrors++; }
+    const r = yearRange(S.year);
+    const ids = enabledCalendars();
+    /* 1 — pull the ticked calendars first, so an event that is already in Google
            (restored from a Doc, or re-created) adopts its id instead of
            being pushed a second time */
-    const r = yearRange(S.year);
-    const url = `${CAL_EVENTS}?singleEvents=true&orderBy=startTime&maxResults=2500&timeMin=${r.min}&timeMax=${r.max}`;
-    const res = await googleFetch(url, token);
-    const j = await res.json();
-    (j.items || []).forEach(it=>{
-      if(!it.id || it.status === 'cancelled') return;
-      const start = it.start || {};
-      const date = start.date || (start.dateTime || '').slice(0, 10);
-      if(!date) return;
-      const time = start.dateTime ? start.dateTime.slice(11, 16) : '';
-      const title = (it.summary || '(제목 없음)').trim();
-      let ev = S.events.find(e=>e.googleId === it.id);
-      if(!ev){
-        ev = S.events.find(e=>!e.googleId && e.date === date && (e.time || '') === time && (e.title || '').trim() === title);
-      }
-      if(ev){
-        ev.googleId = it.id; ev.date = date; ev.time = time; ev.title = title; ev.source = 'google';
-      }else{
-        S.events.push({id:uid(), date, time, title, done:false, source:'google', googleId: it.id});
-      }
-      pulled++;
-    });
-    /* 2 — local events that are still not in Google */
+    for(const cid of ids){
+      let items = [];
+      try{ items = await pullCalendarEvents(token, cid, r); }
+      catch(err){ if(err.status === 401) throw err; calErrors++; continue; }
+      items.forEach(it=>{
+        if(!it.id || it.status === 'cancelled') return;
+        const start = it.start || {};
+        const date = start.date || (start.dateTime || '').slice(0, 10);
+        if(!date) return;
+        const time = start.dateTime ? start.dateTime.slice(11, 16) : '';
+        const title = (it.summary || '(제목 없음)').trim();
+        let ev = S.events.find(e=>e.googleId === it.id && eventCalId(e) === cid);
+        if(!ev) ev = S.events.find(e=>e.googleId === it.id);
+        if(!ev){
+          ev = S.events.find(e=>!e.googleId && e.date === date && (e.time || '') === time && (e.title || '').trim() === title);
+        }
+        if(ev){
+          ev.googleId = it.id; ev.calendarId = cid; ev.date = date; ev.time = time; ev.title = title; ev.source = 'google';
+        }else{
+          S.events.push({id:uid(), date, time, title, done:false, source:'google', googleId: it.id, calendarId: cid});
+        }
+        pulled++;
+      });
+    }
+    /* a calendar she unticked, or one that is no longer shared, gives its events back */
+    pruneCalendarEvents();
+    /* 2 — local events that are still not in Google (they go to 기본 달력) */
     for(const ev of S.events.filter(e=>!e.googleId)){
       try{ if(await pushEventToGoogle(ev)) pushed++; }
       catch(err){ failed++; if(err.status === 401) throw err; }
@@ -1459,7 +1588,7 @@ async function calendarSync(){
     S.google.connected = true;
     S.google.lastSync = Date.now();
     persist(true);
-    toast(`동기화 완료 · 올림 ${pushed} · 받음 ${pulled}${failed ? ` · 실패 ${failed}` : ''}${holCount ? ` · 공휴일 ${holCount}일` : ''}`);
+    toast(`동기화 완료 · 올림 ${pushed} · 받음 ${pulled}${ids.length > 1 ? ` · 달력 ${ids.length}` : ''}${failed ? ` · 실패 ${failed}` : ''}${calErrors ? ` · 달력 ${calErrors}개 못 읽음` : ''}${holCount ? ` · 공휴일 ${holCount}일` : ''}`);
   }catch(err){
     googleError(err);
   }finally{
@@ -2020,8 +2149,12 @@ function renderMonthly(){
     const tag = dayTag(ds, hol);
     const cls = ['cell', wd===6?'sat':'', wd===0?'sun':'', hol?'hol':'', ds===todayISO()?'today':''].filter(Boolean).join(' ');
     const evs = eventsOn(ds);
-    const lines = evs.slice(0,3).map(e=>`<div class="evt ${e.source==='google'?'g':''} ${e.done?'done':''}">
-        <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`).join('');
+    const lines = evs.slice(0,3).map(e=>{
+      const slot = calSlot(e.calendarId);
+      const cls = ['evt', e.source==='google'?'g':'', e.done?'done':'', slot===null?'':'csec'].filter(Boolean).join(' ');
+      return `<div class="${cls}"${calInk(slot)}>
+        <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`;
+    }).join('');
     const circle = prefOn('pencilCircle') && evs.length;
     const pen = circle ? `<svg class="pen${day>9?' d2':''}" viewBox="0 0 30 24" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
     /* the grid keeps three lines; a fourth event is counted in the corner */
@@ -2148,6 +2281,17 @@ function renderOptions(){
     ).join('')}
   </div>`;
 }
+/* the connected account's calendars, under the sync row: tick · colour · name */
+function calRowsHTML(){
+  const list = calList();
+  if(!S.google || !S.google.connected || !list.length) return '';
+  return `<div class="callist">${list.map(c=>{
+    const slot = c.primary ? null : (c.colorIdx >= 0 ? c.colorIdx % CAL_SLOTS : null);
+    const dot = slot === null ? '<span class="cdot ink"></span>' : `<span class="cdot" style="background:var(--cal-c${slot})"></span>`;
+    const nm = c.primary ? '기본 달력' : (c.summary || '');
+    return `<label class="calrow" title="${esc(c.summary || nm)}"><input type="checkbox" data-act="cal-toggle" data-val="${esc(c.id)}" ${c.enabled?'checked':''}>${dot}<span class="cname">${esc(nm)}</span></label>`;
+  }).join('')}</div>`;
+}
 function renderMemo(){
   const tab = (S.memoTab==='note'||S.memoTab==='option') ? S.memoTab : 'check';
   if(tab==='option') return `${memoTabsHTML('option', 'memo-tab', true)}${renderOptions()}`;
@@ -2173,6 +2317,7 @@ function renderMemo(){
             <button class="sync-btn" data-act="sync">${syncBusy?'동기화 중…':(g.connected?'지금 동기화':'연결')}</button>
           </div>
           <label class="holrow"><input type="checkbox" data-act="holiday-toggle" ${g.holidays!==false?'checked':''}><span>공휴일 함께 표시</span></label>
+          ${calRowsHTML()}
         </div>
     </div>
   </div>`;
@@ -2250,6 +2395,37 @@ function renderInlineMemo(){
 function panelLabel(kind){ return kind === 'note' ? 'memo' : 'check'; }
 
 /* ---------- modal ---------- */
+/* one event row in the Day Modal: its calendar's ink, and a name hint when it is not
+   기본 달력; a read-only calendar shows the pen and the × but they do not act */
+function dayRowHTML(e){
+  const slot = calSlot(e.calendarId);
+  const ro = eventReadOnly(e);
+  const src = (e.source==='google' && slot===null) ? '<span class="src">G</span>' : '';
+  const nm = slot===null ? '' : `<span class="dcal">· ${esc(calName(e.calendarId))}</span>`;
+  return `<div class="ditem ${e.done?'done':''}${ro?' ro':''}">
+            <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" style="margin-top:2px"><i></i></div>
+            <div class="time">${e.time? fmtTime(e.time):'종일'}</div>
+            <div class="body"${calInk(slot)} data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${src}${nm}</div>
+            <button class="del" data-act="day-del" data-val="${e.id}" aria-label="삭제">×</button>
+          </div>${editEvent===e.id ? `<div class="dedit" data-stop="1">
+            <div class="time-wrap ${e.time?'':'is-empty'}">
+              <svg class="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.4V12l3.1 1.9"/></svg>
+              <input type="time" id="edittime" value="${e.time||''}" aria-label="시간">
+            </div>
+            <input class="grow" type="text" id="edittitle" value="${esc(e.title)}" placeholder="일정" aria-label="일정 제목">
+            <button class="btn primary" data-act="day-save" data-val="${e.id}">저장</button>
+            <button class="btn" data-act="day-cancel">취소</button>
+          </div>` : ''}`;
+}
+let dayHintTimer = null;
+function dayHint(msg){
+  const el = document.getElementById('dayhint');
+  if(!el) return;
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(dayHintTimer);
+  dayHintTimer = setTimeout(()=>{ const x = document.getElementById('dayhint'); if(x) x.hidden = true; }, 2800);
+}
 function renderModal(){
   const root = document.getElementById('modal-root');
   if(openDay){
@@ -2264,21 +2440,9 @@ function renderModal(){
           <button class="x" data-act="close-modal">×</button>
         </div>
         <div class="dlist">
-          ${evs.length? evs.map(e=>`<div class="ditem ${e.done?'done':''}">
-            <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" style="margin-top:2px"><i></i></div>
-            <div class="time">${e.time? fmtTime(e.time):'종일'}</div>
-            <div class="body" data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${e.source==='google'?'<span class="src">G</span>':''}</div>
-            <button class="del" data-act="day-del" data-val="${e.id}" aria-label="삭제">×</button>
-          </div>${editEvent===e.id ? `<div class="dedit" data-stop="1">
-            <div class="time-wrap ${e.time?'':'is-empty'}">
-              <svg class="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.4V12l3.1 1.9"/></svg>
-              <input type="time" id="edittime" value="${e.time||''}" aria-label="시간">
-            </div>
-            <input class="grow" type="text" id="edittitle" value="${esc(e.title)}" placeholder="일정" aria-label="일정 제목">
-            <button class="btn primary" data-act="day-save" data-val="${e.id}">저장</button>
-            <button class="btn" data-act="day-cancel">취소</button>
-          </div>` : ''}`).join('') : `<div class="empty">이 날의 일정이 없습니다.</div>`}
+          ${evs.length? evs.map(dayRowHTML).join('') : `<div class="empty">이 날의 일정이 없습니다.</div>`}
         </div>
+        <div class="dayhint" id="dayhint" hidden></div>
         <div class="addrow">
           <div class="time-wrap is-empty">
             <svg class="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.4V12l3.1 1.9"/></svg>
@@ -2443,6 +2607,8 @@ document.addEventListener('click', e=>{
     case 'close-modal': openDay = null; editEvent = null; renderModal(); break;
     /* inline edit of one event: tap the title, fix it, save */
     case 'day-edit': {
+      const ev = S.events.find(x=>x.id===val);
+      if(ev && eventReadOnly(ev)){ dayHint('읽기 전용 공유 달력 일정이에요'); break; }
       editEvent = val; renderModal();
       const ti = document.getElementById('edittitle');
       if(ti){ ti.focus(); try{ ti.setSelectionRange(ti.value.length, ti.value.length); }catch(err){} }
@@ -2471,6 +2637,7 @@ document.addEventListener('click', e=>{
     }
     case 'day-del': {
       const gone = S.events.find(x=>x.id===val);
+      if(gone && eventReadOnly(gone)){ dayHint('읽기 전용 공유 달력 일정이에요'); break; }
       S.events = S.events.filter(x=>x.id!==val);
       persist(true); renderModal(); render();
       deleteEventEverywhere(gone);          /* also removes it from Google Calendar */
@@ -2481,7 +2648,7 @@ document.addEventListener('click', e=>{
       const tt = document.getElementById('newtitle');
       const title = (tt.value||'').trim();
       if(!title){ tt.focus(); return; }
-      const ev = {id:uid(), date:openDay, time:ti.value||'', title, done:false, source:'local', googleId:null};
+      const ev = {id:uid(), date:openDay, time:ti.value||'', title, done:false, source:'local', googleId:null, calendarId:'primary'};
       S.events.push(ev);
       persist(true); ti.value=''; tt.value=''; renderModal(); render();
       if(S.google.connected && silentToken()){
@@ -2649,6 +2816,19 @@ document.addEventListener('change', e=>{
   if(hol){
     S.google.holidays = !!hol.checked;
     persist(true); render(); return;
+  }
+  /* a ticked calendar joins the sync; an unticked one gives its events back at once */
+  const calBox = e.target.closest('[data-act="cal-toggle"]');
+  if(calBox){
+    const c = calList().find(x=>x.id === calBox.dataset.val);
+    if(c){
+      c.enabled = !!calBox.checked;
+      if(!c.enabled) pruneCalendarEvents();
+      persist(true);
+      render();
+      if(c.enabled && !syncBusy) calendarSync();
+    }
+    return;
   }
   const scope = e.target.closest('[data-act="scope-toggle"]');
   if(scope){
