@@ -290,12 +290,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .calrow input[type=checkbox]:checked::after{content:'';width:6px;height:3px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(-45deg) translate(0,-1px)}
 .calrow .cdot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;background:var(--ink)}
 .calrow .cdot.ink{opacity:.62}
-/* a shared calendar's colour: the dot itself, tapped for the phone's RGB palette */
-.calrow .csw{-webkit-appearance:none;appearance:none;width:14px;height:14px;padding:0;margin:0;flex:0 0 auto;border:1px solid rgba(var(--ink-rgb),.3);border-radius:50%;background:none;cursor:pointer;overflow:hidden}
-.calrow .csw::-webkit-color-swatch-wrapper{padding:0}
-.calrow .csw::-webkit-color-swatch{border:0;border-radius:50%}
-.calrow .csw::-moz-color-swatch{border:0;border-radius:50%}
-.calrow .csw:hover{border-color:var(--ink)}
+/* a shared calendar's colour: the dot itself, tapped for the app's own colour
+   grid (never the phone's native picker) */
+.calrow .cdot.pick{-webkit-appearance:none;appearance:none;padding:0;margin:0;border:1px solid rgba(var(--ink-rgb),.28);background:var(--c);cursor:pointer;outline:1.5px solid transparent;outline-offset:2px;transition:border-color .15s,outline-color .15s}
+.calrow .cdot.pick:hover{border-color:rgba(var(--ink-rgb),.6)}
+.calrow .cdot.pick:focus-visible{outline-color:var(--ink)}
+.calrow .cdot.pick.on{outline-color:rgba(var(--ink-rgb),.72)}
 .calrow .cname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 /* empty editor: only a centered + */
 .mempty-editor{display:grid;place-items:center;min-height:min(56vh,440px)}
@@ -515,6 +515,15 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .palette-pop{position:fixed;right:calc(var(--pad) - 2px);bottom:calc(58px + env(safe-area-inset-bottom));z-index:46;background:var(--paper);border:1px solid var(--hair);padding:12px 14px;display:none;grid-template-columns:repeat(4,auto);gap:10px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
 .palette-pop.on{display:grid}
 .palette-pop .sw{width:18px;height:18px}
+/* a calendar's colour grid: paper, hairline and ink — eight hues across, five
+   tones down. No spectrum, no slider, no eyedropper, no native picker. */
+.calpop{position:fixed;left:0;top:0;z-index:56;display:none;grid-template-columns:repeat(8,20px);gap:7px;padding:11px;background:var(--paper);border:1px solid var(--hair);border-radius:2px;box-shadow:0 14px 34px rgba(0,0,0,.18);animation:fade .13s ease}
+.calpop.on{display:grid}
+.calpop .gsw{-webkit-appearance:none;appearance:none;position:relative;width:20px;height:20px;padding:0;margin:0;border:1px solid rgba(var(--ink-rgb),.22);border-radius:50%;background:var(--c);cursor:pointer;transition:transform .12s ease,border-color .12s ease}
+.calpop .gsw:hover{border-color:rgba(var(--ink-rgb),.55);transform:scale(1.09)}
+.calpop .gsw:focus-visible{outline:1.5px solid var(--ink);outline-offset:1.5px}
+.calpop .gsw.on{border-color:transparent}
+.calpop .gsw.on::after{content:'';position:absolute;left:50%;top:50%;width:8px;height:4px;border-left:1.6px solid rgba(255,255,255,.95);border-bottom:1.6px solid rgba(255,255,255,.95);transform:translate(-50%,-64%) rotate(-45deg)}
 
 /* ---------- responsive ---------- */
 @media (max-width:1024px){
@@ -651,6 +660,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 <div id="modal-root"></div>
 <div class="toast" id="toast"></div>
 <div class="palette-pop" id="palette-pop"></div>
+<div class="calpop" id="calpop" role="dialog" aria-label="달력 색"></div>
 <div class="ypop-scrim" id="ypop-scrim"></div>
 <div class="ypop-layer" id="ypop-layer">
   <div class="ypop" id="ypop" role="dialog" aria-label="연도 선택">
@@ -1425,6 +1435,50 @@ function calHexOf(c){
   }
   return '#4B648C';
 }
+/* ---------- a shared calendar's colour: the app's own colour grid ----------
+   8 hues across (coral · amber · olive · sage · steel · indigo · plum · wood)
+   by 5 tones down, muted at the top, deep at the bottom. Every one is a real
+   ink that reads on the planner's paper. No spectrum, no slider, no eyedropper. */
+const CAL_PALETTE = [
+  '#be8175', '#b18959', '#929455', '#669b85', '#7993b0', '#8a8eb6', '#ac83a9', '#a38c7a',
+  '#c16654', '#a6763d', '#81843f', '#508b73', '#5c83ae', '#767bb6', '#a86ba3', '#9b795f',
+  '#c34c34', '#9b6829', '#74772e', '#3e7f64', '#4675ac', '#656cba', '#a5559f', '#906b4e',
+  '#ac432e', '#895b24', '#666829', '#377058', '#3e6797', '#555db3', '#924b8c', '#805e45',
+  '#943a27', '#754f1f', '#585a23', '#2f604c', '#355982', '#484fa0', '#7d4178', '#6e513b'
+];
+let calPopAnchor = null;
+function closeCalPop(){
+  const pop = document.getElementById('calpop');
+  if(calPopAnchor) calPopAnchor.classList.remove('on');
+  calPopAnchor = null;
+  if(!pop) return;
+  pop.classList.remove('on');
+  pop.innerHTML = '';
+}
+function openCalColorPop(cid, anchor){
+  const c = calList().find(x=>x.id === cid);
+  const pop = document.getElementById('calpop');
+  if(!c || !pop || !anchor) return;
+  const cur = String(c.customColor || '').toLowerCase();
+  pop.innerHTML = CAL_PALETTE.map(h=>`<button type="button" class="gsw${h === cur ? ' on' : ''}" data-act="cal-color" data-val="${esc(cid)}" data-hex="${h}" style="--c:${h}" aria-label="${esc(calName(cid))} ${h}" title="${h}"></button>`).join('');
+  /* measured while invisible, then pinned beside its dot and kept whole inside
+     the viewport — a phone must never see it clipped or half off-screen */
+  pop.style.visibility = 'hidden';
+  pop.classList.add('on');
+  const w = pop.offsetWidth, h = pop.offsetHeight, r = anchor.getBoundingClientRect(), m = 8;
+  /* the pinned year bar owns the foot of the screen: the grid stops above it */
+  const bar = document.querySelector('.yearbar');
+  const barH = bar ? Math.max(0, window.innerHeight - bar.getBoundingClientRect().top) : 0;
+  const floor = window.innerHeight - barH - m;
+  const left = Math.max(m, Math.min(r.left + r.width/2 - w/2, window.innerWidth - w - m));
+  let top = r.bottom + 8;
+  if(top + h > floor) top = Math.max(m, Math.min(r.top - h - 8, floor - h));
+  pop.style.left = Math.round(left) + 'px';
+  pop.style.top = Math.round(top) + 'px';
+  pop.style.visibility = '';
+  calPopAnchor = anchor;
+  anchor.classList.add('on');
+}
 const calInk = cid => { const col = calColorOf(calById(cid)); return col ? ` style="color:${col}"` : ''; };
 function calName(cid){
   const c = calById(cid);
@@ -1903,6 +1957,7 @@ function render(){
     wrap.scrollLeft = act.offsetLeft - wrap.clientWidth/2 + act.offsetWidth/2;
   }
   document.getElementById('palette-pop').classList.toggle('on', false);
+  closeCalPop();
   routeFeedback();
 }
 
@@ -2353,11 +2408,11 @@ function calRowsHTML(){
   return `<div class="callist">${list.map((c,i)=>{
     const nm = c.primary ? '기본 달력' : (c.summary || '');
     const hex = calHexOf(c);
-    /* a shared/secondary calendar's dot IS an RGB picker (the phone's own palette);
-       기본 달력 keeps the theme ink and no picker */
+    /* a shared/secondary calendar's dot opens the app's own colour grid;
+       기본 달력 keeps the theme ink and no colour button */
     const dot = hex === null
       ? '<span class="cdot ink"></span>'
-      : `<input type="color" class="csw" data-act="cal-color" data-val="${esc(c.id)}" value="${hex}" style="background:${hex}" aria-label="${esc(nm)} 색" title="색 고르기">`;
+      : `<button type="button" class="cdot pick" data-act="cal-color-open" data-val="${esc(c.id)}" style="--c:${hex}" aria-label="${esc(nm)} 색" title="색 고르기" aria-haspopup="dialog"></button>`;
     return `<div class="calrow" title="${esc(c.summary || nm)}"><input type="checkbox" id="calt-${i}" data-act="cal-toggle" data-val="${esc(c.id)}" ${c.enabled?'checked':''}>${dot}<label class="cname" for="calt-${i}">${esc(nm)}</label></div>`;
   }).join('')}</div>`;
 }
@@ -2610,7 +2665,7 @@ document.addEventListener('click', e=>{
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
-  if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle'||act==='cal-color') return;
+  if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
     case 'theme':
@@ -2821,6 +2876,26 @@ document.addEventListener('click', e=>{
     }
     case 'backup-open': openBackup = true; renderModal(); break;
     case 'close-backup': openBackup = false; renderModal(); break;
+    /* the colour dot: open the grid under it, or close it when it is already open */
+    case 'cal-color-open': {
+      const pop = document.getElementById('calpop');
+      if(calPopAnchor === el && pop && pop.classList.contains('on')) closeCalPop();
+      else openCalColorPop(val, el);
+      break;
+    }
+    /* a swatch in the grid: keep it, close, and repaint the dot · its events ·
+       its pencil circles at once */
+    case 'cal-color': {
+      const c = calList().find(x=>x.id === val);
+      const hex = String(el.dataset.hex || '').toLowerCase();
+      closeCalPop();
+      if(c && /^#[0-9a-f]{6}$/.test(hex)){
+        c.customColor = hex;
+        persist(true);
+        render();
+      }
+      break;
+    }
     case 'acct-open': googleSwitchAccount(); break;
     case 'backup-run': docsBackup(); break;
     case 'backup-restore': docsRestore(); break;
@@ -2880,19 +2955,6 @@ document.addEventListener('change', e=>{
     }
     return;
   }
-  /* her own RGB colour for a shared calendar: the dot, its events and its
-     pencil loop all follow it at once */
-  const picker = e.target.closest('[data-act="cal-color"]');
-  if(picker){
-    const c = calList().find(x=>x.id === picker.dataset.val);
-    if(c){
-      const hex = String(picker.value || '').toLowerCase();
-      if(/^#[0-9a-f]{6}$/.test(hex)) c.customColor = hex; else c.customColor = null;
-      persist(true);
-      render();
-    }
-    return;
-  }
   const scope = e.target.closest('[data-act="scope-toggle"]');
   if(scope){
     S.backupScopes = backupScopeState();
@@ -2923,6 +2985,7 @@ document.addEventListener('keydown', e=>{
     e.preventDefault(); document.querySelector('[data-act="day-save"]')?.click(); return;
   }
   if(e.key==='Escape'){
+    if(document.getElementById('calpop').classList.contains('on')){ closeCalPop(); return; }
     if(editEvent){ editEvent = null; renderModal(); }
     else if(openDay){ openDay=null; renderModal(); }
     else if(openBackup){ openBackup=false; renderModal(); }
@@ -2942,6 +3005,11 @@ document.addEventListener('change', e=>{ if(e.target && (e.target.id==='newtime'
 
 /* palette fab and ⌂ are part of the bottom bar now; their clicks come through the
    delegated [data-act] handler above, so no per-node listeners are bound here */
+/* the colour grid is pinned beside its dot: any scroll or resize takes the dot
+   away from under it, so it closes rather than float loose */
+const closePopOnMove = ()=>{ if(calPopAnchor) closeCalPop(); };
+window.addEventListener('scroll', closePopOnMove, {capture:true, passive:true});
+window.addEventListener('resize', closePopOnMove);
 
 /* ---------------- year wheel ---------------- */
 /* a paper wheel just above the bottom bar: tap, drag (mouse/pen) or flick (touch)
@@ -3051,6 +3119,8 @@ ywheel.addEventListener('keydown', e=>{
 
 document.addEventListener('click', e=>{
   if(!e.target.closest('#fab') && !e.target.closest('#palette-pop')) document.getElementById('palette-pop').classList.remove('on');
+  const calpop = document.getElementById('calpop');
+  if(calpop.classList.contains('on') && !e.target.closest('#calpop') && !e.target.closest('[data-act="cal-color-open"]')) closeCalPop();
   if(ywheelOpen && !e.target.closest('#ypop') && !e.target.closest('[data-act="year-pick"]')) closeYearWheel();
 });
 
