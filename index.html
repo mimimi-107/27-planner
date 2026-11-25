@@ -453,7 +453,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* a calendar she can only read: the row stays visible, the pen and the × do not act */
 .ditem.ro .body{cursor:default}
 .ditem.ro .del{opacity:.12}
-.ditem .dcal{font-size:calc(9.5px*var(--fs-k));letter-spacing:.02em;opacity:.72;margin-left:6px;white-space:nowrap;vertical-align:1px}
+.ditem .dcal{font-size:calc(9.5px*var(--fs-k));letter-spacing:.02em;opacity:.72;margin-left:6px;white-space:nowrap;vertical-align:1px;display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 /* a one-line answer to a tap that cannot go through (read-only calendar etc.) */
 .dayhint{font-size:calc(11px*var(--fs-k));letter-spacing:.01em;color:var(--sun-ink);padding:8px 0 0}
 @media (hover:hover){.ditem:hover .del{opacity:.6}}
