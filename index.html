@@ -2399,7 +2399,7 @@ function backupDocText(){
 }
 
 function parseBackupDoc(raw){
-  const out = {events:[], memos:[], remembers:[]};
+  const out = {events:[], memos:[], remembers:[], sawRemember:false};
   const lines = String(raw || '').replace(/\r/g, '').split('\n');
   let sec = 0, month = 0, year = S.year, note = null, chk = null;
   const flush = ()=>{
@@ -2416,7 +2416,7 @@ function parseBackupDoc(raw){
     if(/^(?:\d+\.\s*)?월별\s*일정/.test(head)){ flush(); sec = 2; month = 0; continue; }
     if(/^(?:\d+\.\s*)?memo$/i.test(head)){ flush(); sec = 3; continue; }
     if(/^(?:\d+\.\s*)?check$/i.test(head)){ flush(); sec = 4; continue; }
-    if(/^(?:\d+\.\s*)?remember$/i.test(head)){ flush(); sec = 5; continue; }
+    if(/^(?:\d+\.\s*)?remember$/i.test(head)){ flush(); sec = 5; out.sawRemember = true; continue; }
     if(sec === 2){
       const mh = head.match(/^([A-Z][a-z]{2})\.?\s+(\d{4})$/);
       if(mh){
@@ -2581,8 +2581,10 @@ async function docsRestore(){
     const sc = backupScopeState();
     const incomingMemos = parsed.memos.filter(m=> memoKind(m)==='note' ? sc.memo : sc.check);
     const keepEvents = sc.schedule ? parsed.events : null;
-    const keepRems = sc.remember ? parsed.remembers : null;
-    if(!parsed.events.length && !parsed.memos.length && !parsed.remembers.length){
+    /* a Doc written before remember existed has no such section: restoring it must
+       not empty the days she has kept since */
+    const keepRems = (sc.remember && parsed.sawRemember) ? parsed.remembers : null;
+    if(!parsed.events.length && !parsed.memos.length && !(parsed.sawRemember && parsed.remembers.length)){
       toast('백업 문서에 복원할 내용이 없습니다');
       busy(false);
       return;
