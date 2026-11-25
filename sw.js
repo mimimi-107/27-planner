@@ -5,11 +5,13 @@
    straight to the network.
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
-const CACHE = 'mp27-v27';
-/* mp27-v27: search takes bare digits (20261225 · 261225 · 26.12.25 · 1225 · 202612),
-   and a date search now also prints that day's 공휴일·명절·절기 (or every one in that
-   month) under the quick-jump row. (sw.js changes on purpose: a client that already
-   took v27 re-installs and refills the same cache name.) */
+const CACHE = 'mp27-v28';
+/* mp27-v28: a 전화·메일·주소 written in a title, a check item or a memo is detected
+   (dotted token / pill) and opens a paper action sheet — 전화·문자·메일·네이버카카오구글애플
+   지도·복사·연락처(.vcf) 저장. 반복 일정은 이 날만 / 전체 반복으로 나눠 고치고 지웁니다
+   (skipDates). Google이 연결돼 있으면 일정이나 메모를 고칠 때 4초 뒤 조용히 Docs에
+   자동 백업합니다. (sw.js changes on purpose: a client that already took v28
+   re-installs and refills the same cache name.) */
 
 /* the whole app is these six files (the fonts live inside index.html) */
 const SHELL = [

@@ -549,6 +549,53 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .empty{font-size:calc(12px*var(--fs-k));opacity:.45;padding:18px 0}
 .empty-note{font-size:calc(11.5px*var(--fs-k));opacity:.5;margin-top:16px;line-height:1.6}
 
+/* ---------- detected 전화 · 메일 · 주소 ----------
+   A number she wrote in a title or an item is a dotted-underlined token on the
+   paper; a memo keeps them as a quiet pill row above the ruled sheet, because a
+   <textarea> cannot hold a button. Both open the same paper action sheet. */
+.tok{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;line-height:inherit;text-align:left;cursor:pointer;
+  text-decoration:underline;text-decoration-style:dotted;text-decoration-thickness:1px;text-underline-offset:3px;
+  text-decoration-color:rgba(var(--ink-rgb),.5);-webkit-tap-highlight-color:transparent;border-radius:2px}
+.tok:hover,.tok:focus-visible{background:var(--soft);text-decoration-style:solid}
+.dtokbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.dtok{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 9px 3px 7px;border:1px solid var(--dash);border-radius:999px;
+  font-family:var(--ui);font-size:calc(11px*var(--fs-k));letter-spacing:.01em;color:inherit;opacity:.72;background:transparent;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;transition:opacity .15s,border-color .15s}
+.dtok svg{width:calc(12px*var(--fs-k));height:calc(12px*var(--fs-k));flex:0 0 auto;opacity:.7}
+.dtok span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.dtok:hover,.dtok:focus-visible{opacity:1;border-color:var(--hair);background:var(--soft)}
+/* a checklist item at rest: its text reads like the title of an event, and a
+   tap opens the line for typing */
+.ctext.cview{display:block;cursor:text;white-space:pre-wrap;overflow-wrap:anywhere;min-height:1.55em}
+
+/* ---------- paper action sheet: 전화 · 문자 · 메일 · 지도 · 연락처 ---------- */
+.scrim.ascrim{z-index:80}
+.modal.amodal{width:min(430px,100%);padding:22px 22px 16px}
+.amodal .akind{font-family:var(--disp);font-style:italic;font-size:calc(10.5px*var(--fs-k));letter-spacing:.24em;opacity:.55}
+.amodal .aval{font-weight:600;font-size:calc(23px*var(--fs-k));line-height:1.3;letter-spacing:.005em;margin:4px 0 0;overflow-wrap:anywhere;word-break:keep-all}
+.amodal .afield{display:flex;align-items:center;gap:9px;margin:16px 0 0;padding-bottom:6px;border-bottom:1px solid var(--dash)}
+.amodal .afield .fl{flex:0 0 auto;font-family:var(--disp);font-style:italic;font-size:calc(10.5px*var(--fs-k));letter-spacing:.12em;opacity:.62}
+.amodal .afield input{flex:1 1 auto;min-width:0;height:26px;font-size:calc(13px*var(--fs-k));padding:0;background:transparent}
+.aacts{margin:16px 0 0;border-top:1px solid var(--hair)}
+.arow{display:flex;align-items:center;gap:11px;width:100%;padding:13px 2px;border:0;border-bottom:1px solid rgba(var(--ink-rgb),.16);
+  background:none;color:inherit;font-size:calc(13.5px*var(--fs-k));letter-spacing:.01em;text-align:left;text-decoration:none;cursor:pointer;
+  -webkit-tap-highlight-color:transparent}
+.arow svg{width:calc(16px*var(--fs-k));height:calc(16px*var(--fs-k));flex:0 0 auto;opacity:.62}
+.arow .al{flex:1 1 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arow .ag{font-size:calc(12px*var(--fs-k));opacity:.38}
+.arow:hover,.arow:focus-visible{background:var(--soft)}
+.arow.primary .al{font-weight:600}
+.arow.copied .al{opacity:.55}
+
+/* ---------- a series occurrence: 이 날만 · 전체 반복 ---------- */
+.rchoice{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:0 0 9px 25px;padding:2px 0 9px;animation:fade .14s ease}
+.rchoice .rcl{flex:1 0 100%;font-size:calc(11px*var(--fs-k));letter-spacing:.01em;opacity:.6}
+.rcb{font-family:var(--ui);font-size:calc(11.5px*var(--fs-k));line-height:1;padding:7px 11px;border:1px solid rgba(var(--ink-rgb),.36);border-radius:999px;opacity:.85;background:transparent;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rcb:hover,.rcb:focus-visible{background:var(--soft);opacity:1}
+.rcb.ghost{border-color:transparent;opacity:.5}
+/* ---------- Google Docs 자동 백업 status ---------- */
+.autostatus{font-size:calc(10.5px*var(--fs-k));letter-spacing:.02em;opacity:.55;margin-top:1px;padding:0 1px}
+
 /* docs preview */
 .doc-sheet{background:#fff;color:#202124;padding:38px 40px;border-radius:2px;font-family:'Liberation Sans',Arial,'Helvetica Neue','Noto Sans KR',sans-serif;font-size:12.5px;line-height:1.65;box-shadow:0 1px 3px rgba(0,0,0,.14),0 6px 18px rgba(0,0,0,.06);max-height:52dvh;overflow-y:auto}
 .doc-sheet *{font-family:inherit}
@@ -1034,7 +1081,7 @@ function initialState(){
     events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
     prefs:{pencilCircle:true, quotes:true, fontSize:'normal', lunar:true, sound:true, haptic:true},
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}, calendars:[]},
-    docId:null, lastBackup:null
+    docId:null, lastBackup:null, autoBackupAt:null
   };
 }
 
@@ -1119,7 +1166,16 @@ function migrateMemo(m){
   };
 }
 let saveTimer = null;
+/* what an auto-backup watches: 일정 · check · memo (and the year the Doc is
+   written for). A theme or a font switch never starts one. */
+let dataSig = null;
+function dataSignature(){
+  try{ return JSON.stringify([S.year, S.events || [], S.memos || []]); }catch(e){ return ''; }
+}
 function persist(now){
+  const sig = dataSignature();
+  if(dataSig === null) dataSig = sig;
+  else if(sig !== dataSig){ dataSig = sig; autoBackupSchedule(); }
   const write = ()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
   if(now) return write();
   clearTimeout(saveTimer); saveTimer = setTimeout(write, 250);
@@ -1147,6 +1203,10 @@ let searchQ = '';        // what is typed into the search sheet
 let searchModalOpen = false;
 let pendingOpenDay = null;   // a search hit that must open its day modal after the jump
 let syncBusy = false;
+let actionPop = null;        // {kind:'phone'|'email'|'address', value, name, email} — the paper action sheet
+let recurChoice = null;      // {id, date, mode:'edit'|'del'} — 이 날만 / 전체 반복, asked before touching a series
+let editSplit = null;        // the date an edit applies to when she chose 이 날만
+let checkEditId = null;      // the checklist item whose text field is open
 
 function go(hash){
   /* same-hash navigation does not fire hashchange — render directly */
@@ -1217,6 +1277,8 @@ function repeatFromGoogle(it){
 /* does this event land on this date? only dates on or after its own count */
 function occursOn(ev, ds){
   if(!ev || !ev.date || !ds) return false;
+  /* a 회차 she set aside with 이 날면 is not a date the series lands on */
+  if(Array.isArray(ev.skipDates) && ev.skipDates.indexOf(ds) >= 0) return false;
   const r = repeatOf(ev);
   if(r === 'none') return ev.date === ds;
   if(ds < ev.date) return false;
@@ -1256,13 +1318,18 @@ function nextOnOrAfter(ev, from){
   if(!ev || !ev.date) return null;
   const r = repeatOf(ev);
   if(r === 'none') return ev.date >= from ? ev.date : null;
-  if(from <= ev.date) return ev.date;
-  if(r === 'weekly'){
+  let ds;
+  if(from <= ev.date) ds = ev.date;
+  else if(r === 'weekly'){
     const diff = dayNum(from) - dayNum(ev.date);
-    return isoFromDay(dayNum(ev.date) + Math.ceil(diff/7)*7);
+    ds = isoFromDay(dayNum(ev.date) + Math.ceil(diff/7)*7);
+  }else{
+    ds = ev.date; let guard = 0;
+    while(ds && ds < from && guard++ < 500) ds = nextOccurrence(ev, ds);
   }
-  let ds = ev.date, guard = 0;
-  while(ds && ds < from && guard++ < 500) ds = nextOccurrence(ev, ds);
+  /* step over the dates she removed from the series one by one */
+  let skip = 0;
+  while(ds && Array.isArray(ev.skipDates) && ev.skipDates.indexOf(ds) >= 0 && skip++ < 300) ds = nextOccurrence(ev, ds);
   return ds;
 }
 function occDone(ev, ds){
@@ -1275,6 +1342,14 @@ function setOccDone(ev, ds){
   ev.doneDates = Object.assign({}, ev.doneDates||{});
   if(next) ev.doneDates[ds] = true;
   else delete ev.doneDates[ds];
+}
+/* 이 날만 — one date leaves the rule; the series keeps every other 회차 */
+function addSkipDate(ev, ds){
+  if(!ev || !ds) return;
+  const set = new Set(Array.isArray(ev.skipDates) ? ev.skipDates : []);
+  set.add(ds);
+  ev.skipDates = Array.from(set).sort();
+  if(ev.doneDates && ev.doneDates[ds]) delete ev.doneDates[ds];
 }
 /* one event as it reads on one date — a copy, so the series itself never moves */
 function occurrence(ev, ds){
@@ -1296,7 +1371,7 @@ function eventsInRange(from, to){
     }
     let ds = nextOnOrAfter(ev, from), guard = 0;
     while(ds && ds <= to && guard++ < 400){
-      out.push(occurrence(ev, ds));
+      if(!(Array.isArray(ev.skipDates) && ev.skipDates.indexOf(ds) >= 0)) out.push(occurrence(ev, ds));
       ds = nextOccurrence(ev, ds);
     }
   });
@@ -2152,7 +2227,8 @@ function backupScheduleRows(){
       if(!ds || ds.slice(0,4) !== String(year)) return;
     }else if(ds.slice(0,4) !== String(year)) return;
     const m = +ds.slice(5,7);
-    (rows[m] = rows[m] || []).push({date: ds, time: ev.time || '', title: ev.title || '', repeat: rep});
+    (rows[m] = rows[m] || []).push({date: ds, time: ev.time || '', title: ev.title || '', repeat: rep,
+      skipDates: (ev.skipDates||[]).filter(d=>String(d).slice(0,4) === String(year))});
   });
   Object.keys(rows).forEach(m=>rows[m].sort((a,b)=>a.date.localeCompare(b.date) || a.time.localeCompare(b.time)));
   return rows;
@@ -2175,7 +2251,10 @@ function backupDocText(){
       lines.push(`${MON[m-1].replace('.','')} ${S.year}`);
       rows[m].forEach(r=>{
         const tag = r.repeat !== 'none' ? ` (${repeatTag(r.repeat)})` : '';
-        lines.push(`· ${+r.date.slice(8,10)}일 ${r.time ? r.time + ' ' : ''}${r.title}${tag}`);
+        /* the 회차 she removed with 이 날만 travel with the series, so a restore
+           keeps them out of the month instead of bringing them back */
+        const skip = (r.skipDates && r.skipDates.length) ? ` [건너뜸 ${r.skipDates.join(',')}]` : '';
+        lines.push(`· ${+r.date.slice(8,10)}일 ${r.time ? r.time + ' ' : ''}${r.title}${tag}${skip}`);
       });
     });
     else lines.push('(없음)');
@@ -2234,6 +2313,14 @@ function parseBackupDoc(raw){
         const day = Number(me[1]);
         if(day >= 1 && day <= 31){
           let title = me[3].replace(/\s*\(Google\)$/, '').trim();
+          /* [건너뜸 2026-12-08,2026-12-15] — the 회차 removed from the series.
+             Read before the repeat tag, because it sits at the end of the line. */
+          let skipDates = [];
+          const sk = title.match(/\s*\[건너뜸\s*([^\]]*)\]\s*$/);
+          if(sk){
+            skipDates = sk[1].split(/[,\s]+/).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d));
+            title = title.slice(0, sk.index).trim();
+          }
           let repeat = 'none';
           const tag = title.match(/\s*\((매주|매월|매년)\)$/);
           if(tag){
@@ -2242,7 +2329,7 @@ function parseBackupDoc(raw){
           }
           out.events.push({
             id:uid(), date: iso(year, month, day), time: me[2] || '', title,
-            done:false, source:'local', googleId:null, calendarId:'primary', repeat, doneDates:{}
+            done:false, source:'local', googleId:null, calendarId:'primary', repeat, doneDates:{}, skipDates
           });
         }
       }
@@ -2393,13 +2480,68 @@ async function docsRestore(){
   }
 }
 
+/* ---------------- Google Docs: 조용한 자동 백업 ----------------
+   Every change to 일정 · check · memo starts a four-second timer. When it runs
+   and a Google token is already in hand, the same Doc is rewritten in the
+   background with the same scope boxes. It never opens a window and never
+   shows an alert: a dead token or a dropped network just leaves the last good
+   backup in place and waits for the next change. */
+const AUTO_BACKUP_MS = 4000;
+let autoBackupTimer = null, autoBackupBusy = false, autoBackupAgain = false;
+function autoBackupSchedule(){
+  if(!S.google || !S.google.connected) return;
+  clearTimeout(autoBackupTimer);
+  autoBackupTimer = setTimeout(()=>{ autoBackupRun(); }, AUTO_BACKUP_MS);
+}
+async function autoBackupRun(){
+  autoBackupTimer = null;
+  if(autoBackupBusy){ autoBackupAgain = true; return; }
+  if(!S.google || !S.google.connected) return;
+  if(!backupScopeAny()) return;
+  if(typeof navigator !== 'undefined' && navigator.onLine === false) return;
+  const token = silentToken();
+  if(!token) return;                    /* not signed in right now — stay quiet */
+  autoBackupBusy = true;
+  try{
+    const docId = await resolveBackupDoc(token, true);
+    if(!docId) return;
+    await writeDocBody(token, docId, backupDocText());
+    S.docId = docId;
+    S.lastBackup = Date.now();
+    S.autoBackupAt = Date.now();
+    persist(true);
+    paintAutoStatus();
+  }catch(err){
+    /* silent by design — an expired token, a 403 or a dropped network is not
+       something to put in front of her while she is writing */
+  }finally{
+    autoBackupBusy = false;
+    if(autoBackupAgain){ autoBackupAgain = false; autoBackupSchedule(); }
+  }
+}
+function autoStatusText(){
+  if(!S.google || !S.google.connected) return 'Google을 연결하면 자동 백업됩니다';
+  if(!S.autoBackupAt) return '자동 백업 켜짐 · 일정이나 메모를 고치면 저장됩니다';
+  return '자동 백업 · ' + timeAgo(S.autoBackupAt) + ' · Google Docs';
+}
+function paintAutoStatus(){
+  const el = document.getElementById('autostatus');
+  if(el) el.textContent = autoStatusText();
+}
+
 /* ---------------- icons ---------------- */
 const ICO = {
   year: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.2" y="4.4" width="17.6" height="15.4" rx="2.2"/><path d="M3.2 8.2h17.6" stroke-width="1.1"/><circle cx="8" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="11.6" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="15" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="18.2" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="18.2" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="18.2" r=".9" fill="currentColor" stroke="none"/></svg>`,
   memo: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3.4" y="4.2" width="17.2" height="15.6" rx="2.2"/><path d="M6.8 9h10.4M6.8 12h10.4M6.8 15h6.4" stroke-linecap="round"/></svg>`,
   back: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 5.5 8 12l6.5 6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
   home: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3.8 11.4 12 4.2l8.2 7.2"/><path d="M6.4 10.1v9.1h11.2v-9.1"/></svg>`,
-  doc: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14 3.5V8h4"/></svg>`
+  doc: `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14 3.5V8h4"/></svg>`,
+  phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.3 3.8h2.9l1.3 3.5-2 1.3a11.7 11.7 0 0 0 5.5 5.5l1.3-2 3.5 1.3v2.9a1.5 1.5 0 0 1-1.7 1.5C11.6 17.3 6.7 12.4 4.8 5.5A1.5 1.5 0 0 1 6.3 3.8Z"/></svg>`,
+  sms: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.4 5.4h15.2v10.4H11l-4.2 3.4v-3.4H4.4Z"/></svg>`,
+  mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.6" y="5.6" width="16.8" height="12.8" rx="1.6"/><path d="m4.6 7.4 7.4 5.4 7.4-5.4"/></svg>`,
+  pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.8c4.1-4.4 6.4-7.8 6.4-10.5a6.4 6.4 0 1 0-12.8 0c0 2.7 2.3 6.1 6.4 10.5Z"/><circle cx="12" cy="10.1" r="2.4"/></svg>`,
+  copy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="8.6" y="8.6" width="11" height="11" rx="1.4"/><path d="M15.4 8.6V6a1.4 1.4 0 0 0-1.4-1.4H6A1.4 1.4 0 0 0 4.6 6v8a1.4 1.4 0 0 0 1.4 1.4h2.6"/></svg>`,
+  card: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.6" y="5.4" width="16.8" height="13.2" rx="1.6"/><circle cx="9" cy="10.4" r="1.9"/><path d="M6.1 15.4c.7-1.3 1.7-1.9 2.9-1.9s2.2.6 2.9 1.9M14.2 10.2h3.8M14.2 13.4h3"/></svg>`
 };
 
 /* ---------------- render ---------------- */
@@ -2864,6 +3006,7 @@ function googleBlockHTML(){
   const acct = g.account || '';
   return `<div class="gsec"><div class="foot">
         <button class="backup" data-act="backup-open">${ICO.doc} Google Docs로 백업</button>
+        <div class="autostatus" id="autostatus">${esc(autoStatusText())}</div>
         <button class="acct" data-act="acct-open" aria-haspopup="dialog" aria-label="동기화 계정 선택">
           <span class="lab">동기화 계정</span>
           <span class="mail ${acct?'':'none'}">${acct?esc(acct):'Google 로그인'}</span>
@@ -2916,6 +3059,9 @@ function renderEditorEmpty(tab, act){
   </div>`;
 }
 function renderNote(memo, backAct){
+  /* a memo body is a <textarea>, so its numbers · mails · addresses wait as
+     quiet pills on the line above it — tapping one never moves the caret */
+  const toks = detectTokens(memo.text || '');
   return `<div class="editor">
     <div class="ehead">
       <button class="eback" data-act="${backAct||'memo-list'}" aria-label="목록">${ICO.back}</button>
@@ -2923,6 +3069,7 @@ function renderNote(memo, backAct){
       <span class="saved" id="saved">저장됨</span>
     </div>
     <div class="canvas">
+      <div class="dtokbar" id="dtokbar"${toks.length?'':' hidden'}>${toks.map(tokPillHTML).join('')}</div>
       <div class="ruled" style="--rh:32px"><textarea data-act="memo-text" data-memo="${memo.id}" spellcheck="false" placeholder="오늘의 기록…">${esc(memo.text||'')}</textarea></div>
     </div>
   </div>`;
@@ -2940,7 +3087,9 @@ function renderChecklist(memo, backAct){
     <div class="clist">
       ${items.map(it=>`<div class="crow ${it.done?'done':''}">
         <button class="cb ${it.done?'on':''}" data-act="check-toggle" data-val="${it.id}" data-memo="${memo.id}" aria-label="${it.done?'완료 취소':'완료'}"><i></i></button>
-        <input class="ctext" data-act="check-edit" data-val="${it.id}" data-memo="${memo.id}" value="${esc(it.text)}" aria-label="항목">
+        ${checkEditId===it.id
+          ? `<input class="ctext" data-act="check-edit" data-val="${it.id}" data-memo="${memo.id}" value="${esc(it.text)}" aria-label="항목">`
+          : `<span class="ctext cview" data-act="check-focus" data-val="${it.id}" data-memo="${memo.id}" aria-label="눌러서 고치기">${it.text ? linkify(it.text) : '&nbsp;'}</span>`}
         <button class="cdel" data-act="check-del" data-val="${it.id}" data-memo="${memo.id}" aria-label="삭제">×</button>
       </div>`).join('') || `<div class="empty">아래에 첫 항목을 적어보세요.</div>`}
     </div>
@@ -2979,6 +3128,179 @@ function renderInlineMemo(){
 function panelLabel(kind){ return kind === 'note' ? 'memo' : 'check'; }
 
 /* ---------- modal ---------- */
+/* =========================================================
+   전화 · 메일 · 주소 감지 → 종이 액션 시트
+   A title or an item she wrote may carry a number to call, a mail to write or a
+   place to open. These read them out of the text and hand them to one paper
+   sheet. Dates (2026-11-25) and times (14:00) never read as a phone number:
+   a Korean number starts with 0 or +82 and carries 3–4 digits + 4 digits.
+   ========================================================= */
+const PHONE_RE = /(^|[^\d])((?:\+82[\s.\-]?(?:0?\d{1,2})|0\d{1,2})[\s.\-]?\d{3,4}[\s.\-]?\d{4})(?!\d)/g;
+const EMAIL_RE = /(^|[^A-Za-z0-9._%+\-])([A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,})/g;
+const PIN_RE = /📍\s*([^\n]{2,60})/g;
+const ADDR_PROV = '(?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)';
+/* a Korean street address: optional 시·도 and 시·군·구 in front, then a road name
+   with a number (`테헤란로 152`) or a 동·읍·면 with a number (`역삼동 123-4`) */
+const ADDR_RE = new RegExp(
+  '(^|[^가-힣])' +
+  '((?:' + ADDR_PROV + '(?:특별시|광역시|특별자치시|특별자치도|도)?\\s*)?' +
+  '(?:[가-힣]{2,}(?:시|군|구)\\s*)*' +
+  '(?:[가-힣0-9·]{2,}(?:대로|로|길)\\s*\\d+(?:\\s*[-–]\\s*\\d+)?' +
+  '|[가-힣0-9·]{2,}(?:동|읍|면|리)\\s*\\d+(?:\\s*[-–]\\s*\\d+)?))', 'g');
+
+/* every phone · mail · address in a piece of text, as {start,end,kind,value}.
+   Later, shorter or weaker hits that sit inside a kept one are dropped. */
+function detectTokens(text){
+  const s = String(text == null ? '' : text);
+  const found = [];
+  const add = (start, end, kind, value, prio)=>{
+    const v = String(value || '').trim();
+    if(v) found.push({start, end, kind, value:v, prio});
+  };
+  let m;
+  EMAIL_RE.lastIndex = 0;
+  while((m = EMAIL_RE.exec(s))){
+    const start = m.index + m[1].length;
+    add(start, start + m[2].length, 'email', m[2], 4);
+    EMAIL_RE.lastIndex = start + m[2].length;
+  }
+  PHONE_RE.lastIndex = 0;
+  while((m = PHONE_RE.exec(s))){
+    const start = m.index + m[1].length;
+    add(start, start + m[2].length, 'phone', m[2], 4);
+    PHONE_RE.lastIndex = start + m[2].length;
+  }
+  PIN_RE.lastIndex = 0;
+  while((m = PIN_RE.exec(s))){
+    const v = m[1].replace(/[\s,.;:·]+$/, '');
+    add(m.index, m.index + m[0].length, 'address', v, 3);
+  }
+  ADDR_RE.lastIndex = 0;
+  while((m = ADDR_RE.exec(s))){
+    const start = m.index + m[1].length;
+    add(start, start + m[2].length, 'address', m[2].replace(/[\s,]+$/, ''), 2);
+    ADDR_RE.lastIndex = start + m[2].length;
+  }
+  found.sort((a,b)=> a.start - b.start || (b.end - b.start) - (a.end - a.start) || b.prio - a.prio);
+  const out = [];
+  let last = -1;
+  for(const t of found){ if(t.start < last) continue; out.push(t); last = t.end; }
+  return out;
+}
+function tokIcon(kind){
+  return kind === 'phone' ? ICO.phone : kind === 'email' ? ICO.mail : ICO.pin;
+}
+/* a title or an item, with its numbers · mails · addresses as dotted tokens */
+function linkify(text){
+  const s = String(text == null ? '' : text);
+  const toks = detectTokens(s);
+  if(!toks.length) return esc(s);
+  const mail = toks.find(t=>t.kind === 'email');
+  let html = '', at = 0;
+  toks.forEach(t=>{
+    html += esc(s.slice(at, t.start));
+    const extra = (t.kind !== 'email' && mail) ? ` data-email="${esc(mail.value)}"` : '';
+    html += `<button type="button" class="tok tok-${t.kind}" data-act="act-open" data-kind="${t.kind}" data-val="${esc(t.value)}"${extra} title="${esc(t.value)}">${esc(s.slice(t.start, t.end))}</button>`;
+    at = t.end;
+  });
+  return html + esc(s.slice(at));
+}
+/* a memo is a <textarea>, so its hits sit as quiet pills above the ruled sheet */
+function tokPillHTML(t){
+  return `<button type="button" class="dtok" data-act="act-open" data-kind="${t.kind}" data-val="${esc(t.value)}" title="${esc(t.value)}">${tokIcon(t.kind)}<span>${esc(t.value)}</span></button>`;
+}
+function openActionPop(kind, value, email){
+  const v = String(value || '').trim();
+  if(!v || !['phone','email','address'].includes(kind)) return;
+  actionPop = {kind, value:v, name:'', email: email || ''};
+  renderModal();
+}
+function closeActionPop(){ if(!actionPop) return; actionPop = null; renderModal(); }
+
+/* a vCard 3.0 file the phone's 연락처 app can import (UTF-8, CRLF) */
+function vcardText(a){
+  const v = x => String(x == null ? '' : x).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+  const fn = String(a.name || '').trim() || a.value;
+  const lines = ['BEGIN:VCARD', 'VERSION:3.0', `N:;${v(fn)};;;`, `FN:${v(fn)}`];
+  if(a.kind === 'phone') lines.push(`TEL;TYPE=CELL:${v(a.value)}`);
+  if(a.kind === 'email') lines.push(`EMAIL;TYPE=INTERNET:${v(a.value)}`);
+  if(a.kind === 'phone' && a.email) lines.push(`EMAIL;TYPE=INTERNET:${v(a.email)}`);
+  lines.push('END:VCARD');
+  return lines.join('\r\n') + '\r\n';
+}
+function downloadText(name, text, mime){
+  try{
+    const blob = new Blob([text], {type: mime + ';charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name; a.rel = 'noopener';
+    a.style.position = 'fixed'; a.style.left = '-9999px';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ try{ a.remove(); URL.revokeObjectURL(url); }catch(e){} }, 5000);
+    return true;
+  }catch(e){ return false; }
+}
+async function copyText(text){
+  try{
+    if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; }
+  }catch(e){}
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly','');
+    ta.style.position = 'fixed'; ta.style.left = '-9999px'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select(); ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  }catch(e){ return false; }
+}
+
+function renderActionModal(){
+  const a = actionPop;
+  const label = a.kind === 'phone' ? 'TEL' : a.kind === 'email' ? 'MAIL' : 'MAP';
+  const aria = a.kind === 'phone' ? '전화' : a.kind === 'email' ? '메일' : '주소';
+  const tel = String(a.value).replace(/[^\d+]/g, '');
+  const rows = [];
+  const link = (href, ico, text)=>`<a class="arow" href="${esc(href)}" data-act="act-close">${ico}<span class="al">${text}</span><span class="ag">↗</span></a>`;
+  const button = (act, ico, text, primary)=>`<button type="button" class="arow${primary?' primary':''}" data-act="${act}">${ico}<span class="al">${text}</span></button>`;
+  if(a.kind === 'phone'){
+    rows.push(link('tel:' + tel, ICO.phone, '전화 걸기'));
+    rows.push(link('sms:' + tel, ICO.sms, '문자 보내기'));
+    rows.push(button('act-copy', ICO.copy, '번호 복사'));
+    rows.push(button('act-save', ICO.card, '연락처로 저장 (.vcf)', true));
+  }else if(a.kind === 'email'){
+    rows.push(link('mailto:' + a.value, ICO.mail, '기본 메일 앱'));
+    rows.push(link('https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(a.value), ICO.mail, 'Gmail로 쓰기'));
+    rows.push(button('act-copy', ICO.copy, '이메일 복사'));
+    rows.push(button('act-save', ICO.card, '연락처로 저장 (.vcf)', true));
+  }else{
+    const q = encodeURIComponent(a.value);
+    rows.push(link('https://map.naver.com/p/search/' + q, ICO.pin, '네이버 지도'));
+    rows.push(link('https://map.kakao.com/link/search/' + q, ICO.pin, '카카오맵'));
+    rows.push(link('https://maps.google.com/?q=' + q, ICO.pin, '구글 지도'));
+    rows.push(link('https://maps.apple.com/?q=' + q, ICO.pin, '애플 지도'));
+    rows.push(button('act-copy', ICO.copy, '주소 복사'));
+  }
+  const nameField = (a.kind === 'phone' || a.kind === 'email')
+    ? `<div class="afield"><span class="fl">이름</span><input id="act-name" data-act="act-name" type="text" value="${esc(a.name||'')}" placeholder="연락처에 저장할 이름" aria-label="연락처 이름" autocomplete="off" enterkeyhint="done"></div>`
+    : '';
+  const note = (a.kind === 'phone' && a.email)
+    ? `<div class="empty-note" style="margin-top:10px">같은 곳에 적힌 메일도 함께 저장합니다 · ${esc(a.email)}</div>` : '';
+  return `<div class="scrim ascrim" data-act="act-close">
+    <div class="modal amodal" data-stop="1" role="dialog" aria-modal="true" aria-label="${aria}">
+      <div class="modal-h">
+        <div><span class="akind">${label}</span></div>
+        <button class="x" data-act="act-close" aria-label="닫기">×</button>
+      </div>
+      <div class="aval">${esc(a.value)}</div>
+      ${nameField}
+      <div class="aacts">${rows.join('')}</div>
+      ${note}
+    </div>
+  </div>`;
+}
+
 /* one event row in the Day Modal: its calendar's ink, and a name hint when it is not
    기본 달력; a read-only calendar shows the pen and the × but they do not act */
 function dayRowHTML(e){
@@ -2987,12 +3309,19 @@ function dayRowHTML(e){
   const src = (e.source==='google' && slot===null) ? '<span class="src">G</span>' : '';
   const nm = slot===null ? '' : `<span class="dcal">· ${esc(calName(e.calendarId))}</span>`;
   const rep = repeatLabel(e);
-  return `<div class="ditem ${e.done?'done':''}${ro?' ro':''}">
-            <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" data-date="${e.occDate||e.date}" style="margin-top:2px"><i></i></div>
+  const occ = e.occDate || e.date;
+  const rc = (recurChoice && recurChoice.id===e.id && recurChoice.date===occ) ? recurChoice.mode : null;
+  return `<div class="ditem ${e.done?'done':''}${ro?' ro':''}" data-row="${e.id}|${occ}">
+            <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" data-date="${occ}" style="margin-top:2px"><i></i></div>
             <div class="time">${e.time? fmtTime(e.time):'종일'}</div>
-            <div class="body"${calInk(e.calendarId)} data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${src}${nm}${rep?`<span class="drep">${rep}</span>`:''}</div>
-            <button class="del" data-act="day-del" data-val="${e.id}" aria-label="삭제">×</button>
-          </div>${editEvent===e.id ? `<div class="dedit" data-stop="1">
+            <div class="body"${calInk(e.calendarId)} data-act="day-edit" data-val="${e.id}" data-date="${occ}" title="눌러서 수정">${linkify(e.title)}${src}${nm}${rep?`<span class="drep">${rep}</span>`:''}</div>
+            <button class="del" data-act="day-del" data-val="${e.id}" data-date="${occ}" aria-label="삭제">×</button>
+          </div>${rc ? `<div class="rchoice" data-stop="1">
+            <span class="rcl">${esc(rep||'반복')} 일정 · ${rc==='del'?'이 회차만 지울까요, 반복 전체를 지울까요?':'이 회차만 고칠까요, 반복 전체를 고칠까요?'}</span>
+            <button class="rcb" data-act="recur-only" data-val="${e.id}" data-date="${occ}" data-mode="${rc}">이 날만</button>
+            <button class="rcb" data-act="recur-all" data-val="${e.id}" data-date="${occ}" data-mode="${rc}">전체 반복</button>
+            <button class="rcb ghost" data-act="recur-cancel">취소</button>
+          </div>` : ''}${editEvent===e.id ? `<div class="dedit" data-stop="1">
             <div class="time-wrap ${editTime?'':'is-empty'}">
               <svg class="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.4V12l3.1 1.9"/></svg>
               <button type="button" class="tbtn" id="edittime" data-act="time-open" data-target="edit" aria-haspopup="dialog" aria-label="시간">${editTime?fmtTime(editTime):'--:--'}</button>
@@ -3000,9 +3329,9 @@ function dayRowHTML(e){
             <input class="grow" type="text" id="edittitle" value="${esc(e.title)}" placeholder="일정" aria-label="일정 제목">
             <button class="btn primary" data-act="day-save" data-val="${e.id}">저장</button>
             <button class="btn" data-act="day-cancel">취소</button>
-            <div class="reprow" role="radiogroup" aria-label="반복">
+            ${editSplit ? `<div class="reprow" style="font-size:calc(10.5px*var(--fs-k));opacity:.55;letter-spacing:.02em">이 날만 따로 고칩니다 · 반복은 그대로</div>` : `<div class="reprow" role="radiogroup" aria-label="반복">
               ${REPEATS.map(([v,l])=>`<button class="rp" role="radio" aria-checked="${(editRepeat||repeatOf(e))===v}" data-act="edit-repeat" data-val="${v}">${l}</button>`).join('')}
-            </div>
+            </div>`}
           </div>` : ''}`;
 }
 let dayHintTimer = null;
@@ -3016,12 +3345,13 @@ function dayHint(msg){
 }
 function renderModal(){
   const root = document.getElementById('modal-root');
+  let html = '';
   if(openDay){
     const [y,m,d] = openDay.split('-').map(Number);
     const wd = dowMon(y,m,d);
     const evs = eventsOn(openDay);
     const hol = holidayOn(openDay);
-    root.innerHTML = `<div class="scrim" data-act="close-modal">
+    html = `<div class="scrim" data-act="close-modal">
       <div class="modal" data-stop="1">
         <div class="modal-h">
           <div><span class="d">${pad(d)}</span><span class="dw">${DOW[wd]} · ${MON[m-1].replace('.','')} ${y}</span>${hol?`<div class="dhol">${esc(hol)}</div>`:''}</div>
@@ -3046,12 +3376,13 @@ function renderModal(){
       </div>
     </div>`;
   } else if(openBackup){
-    root.innerHTML = renderBackupModal();
+    html = renderBackupModal();
   } else if(searchModalOpen){
-    root.innerHTML = renderSearchModal();
-  } else {
-    root.innerHTML = '';
+    html = renderSearchModal();
   }
+  /* the action sheet sits above whatever opened it (the day modal included) */
+  if(actionPop) html += renderActionModal();
+  root.innerHTML = html;
 }
 
 /* the search sheet: the same paper as the day modal, one ruled line to type on,
@@ -3172,8 +3503,8 @@ document.addEventListener('click', e=>{
   if(act==='open-day' && Date.now() - swipeAt < 450) return;
   /* Only the backdrop itself closes a modal — clicks on inputs or empty space
      inside the modal bubble up to the scrim and used to dismiss it. */
-  if((act==='close-modal'||act==='close-backup'||act==='search-close') && el.classList.contains('scrim') && e.target!==el) return;
-  if(act==='search'||act==='smodal-q'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
+  if((act==='close-modal'||act==='close-backup'||act==='search-close'||act==='act-close') && el.classList.contains('scrim') && e.target!==el) return;
+  if(act==='search'||act==='smodal-q'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new'||act==='act-name') return;
   if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
@@ -3217,12 +3548,89 @@ document.addEventListener('click', e=>{
       if(opening) uiClick();
       break;
     }
-    case 'open-day': openDay = val; editEvent = null; editRepeat = null; newRepeat = 'none'; newTime = ''; closeTimePop(); renderModal(); break;
-    case 'close-modal': openDay = null; editEvent = null; closeTimePop(); renderModal(); break;
-    /* inline edit of one event: tap the title, fix it, save */
+    case 'open-day': openDay = val; editEvent = null; editRepeat = null; newRepeat = 'none'; newTime = ''; recurChoice = null; editSplit = null; actionPop = null; closeTimePop(); renderModal(); break;
+    case 'close-modal': openDay = null; editEvent = null; recurChoice = null; editSplit = null; actionPop = null; closeTimePop(); renderModal(); break;
+    /* ---------- 전화 · 메일 · 주소 → 종이 액션 시트 ---------- */
+    case 'act-open': openActionPop(el.dataset.kind, val, el.dataset.email || ''); break;
+    case 'act-close': closeActionPop(); break;
+    case 'act-copy': {
+      if(!actionPop) break;
+      const text = actionPop.value, row = el;
+      copyText(text).then(ok=>{
+        if(!ok){ toast('복사하지 못했습니다'); return; }
+        toast('복사했습니다');
+        if(!row || !document.contains(row)) return;
+        row.classList.add('copied');
+        const lab = row.querySelector('.al');
+        if(lab){ const was = lab.textContent; lab.textContent = '복사됨'; setTimeout(()=>{ if(document.contains(lab)) lab.textContent = was; }, 1500); }
+      });
+      break;
+    }
+    case 'act-save': {
+      if(!actionPop) break;
+      const field = document.getElementById('act-name');
+      const a = Object.assign({}, actionPop, {name: field ? field.value : (actionPop.name || '')});
+      const base = String(a.name || '').trim() || a.value;
+      const safe = base.replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').slice(0, 40) || 'contact';
+      if(downloadText(safe + '.vcf', vcardText(a), 'text/vcard')) toast('연락처 파일을 만들었습니다 · ' + safe + '.vcf');
+      else toast('연락처 파일을 만들지 못했습니다');
+      break;
+    }
+    /* ---------- 반복 일정: 이 날만 / 전체 반복 ---------- */
+    case 'recur-only': {
+      const ev = S.events.find(x=>x.id===val);
+      const date = el.dataset.date || openDay;
+      recurChoice = null;
+      if(!ev || !date){ renderModal(); break; }
+      if(el.dataset.mode === 'del'){
+        addSkipDate(ev, date);
+        editEvent = null; editSplit = null;
+        persist(true); renderModal(); render();
+        toast('이 날만 지웠습니다');
+      }else{
+        editSplit = date; editEvent = val; editRepeat = 'none'; editTime = ev.time || '';
+        renderModal();
+        const ti = document.getElementById('edittitle');
+        if(ti){ ti.focus(); try{ ti.setSelectionRange(ti.value.length, ti.value.length); }catch(err){} }
+      }
+      break;
+    }
+    case 'recur-all': {
+      const ev = S.events.find(x=>x.id===val);
+      const date = el.dataset.date || openDay;
+      recurChoice = null;
+      if(!ev){ renderModal(); break; }
+      if(el.dataset.mode === 'del'){
+        S.events = S.events.filter(x=>x.id!==val);
+        editEvent = null; editSplit = null;
+        persist(true); renderModal(); render();
+        deleteEventEverywhere(ev);
+      }else{
+        editSplit = null; editEvent = val; editRepeat = repeatOf(ev); editTime = ev.time || '';
+        renderModal();
+        const ti = document.getElementById('edittitle');
+        if(ti){ ti.focus(); try{ ti.setSelectionRange(ti.value.length, ti.value.length); }catch(err){} }
+      }
+      break;
+    }
+    case 'recur-cancel': recurChoice = null; renderModal(); break;
+    /* a checklist line at rest: tapping its words opens it for typing */
+    case 'check-focus': {
+      checkEditId = val;
+      render();
+      const inp = document.querySelector(`input.ctext[data-val="${val}"]`);
+      if(inp){ inp.focus(); try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(err){} }
+      break;
+    }
+    /* inline edit of one event: tap the title, fix it, save — a series asks
+       first whether it is just this 회차 or the whole rule */
     case 'day-edit': {
       const ev = S.events.find(x=>x.id===val);
       if(ev && eventReadOnly(ev)){ dayHint('읽기 전용 공유 달력 일정이에요'); break; }
+      if(ev && repeatOf(ev) !== 'none' && !editSplit){
+        recurChoice = {id:val, date: el.dataset.date || openDay, mode:'edit'};
+        editEvent = null; renderModal(); break;
+      }
       editEvent = val; editRepeat = ev ? repeatOf(ev) : 'none'; editTime = ev ? (ev.time||'') : ''; renderModal();
       const ti = document.getElementById('edittitle');
       if(ti){ ti.focus(); try{ ti.setSelectionRange(ti.value.length, ti.value.length); }catch(err){} }
@@ -3234,6 +3642,21 @@ document.addEventListener('click', e=>{
       const title = ((tt && tt.value) || '').trim();
       if(!title){ if(tt) tt.focus(); return; }
       const time = editTime;
+      /* 이 날만: the series lets this date go, and a plain one-off event takes
+         its place — so the other 회차 never move */
+      if(editSplit){
+        const ds = editSplit;
+        addSkipDate(ev, ds);
+        const one = {id:uid(), date:ds, time, title, done:false, source:'local', googleId:null, calendarId:'primary', repeat:'none', doneDates:{}, skipDates:[]};
+        S.events.push(one);
+        editSplit = null; editEvent = null; editRepeat = null;
+        persist(true); renderModal(); render();
+        toast('이 날만 고쳤습니다');
+        if(S.google.connected && silentToken()){
+          pushEventToGoogle(one).then(ok=>{ if(ok){ persist(true); renderModal(); render(); } }).catch(err=>{ if(err.status === 401) clearToken(); });
+        }
+        break;
+      }
       const rep = editRepeat || repeatOf(ev);
       if(ev.title === title && ev.time === time && repeatOf(ev) === rep){ editEvent = null; editRepeat = null; renderModal(); return; }
       ev.title = title; ev.time = time; ev.repeat = rep;
@@ -3245,7 +3668,7 @@ document.addEventListener('click', e=>{
       }
       break;
     }
-    case 'day-cancel': editEvent = null; editRepeat = null; closeTimePop(); renderModal(); break;
+    case 'day-cancel': editEvent = null; editRepeat = null; editSplit = null; recurChoice = null; closeTimePop(); renderModal(); break;
     /* one tick per occurrence: a weekly series marks only the date it is on */
     case 'day-toggle': {
       const ev = S.events.find(x=>x.id===val);
@@ -3255,6 +3678,10 @@ document.addEventListener('click', e=>{
     case 'day-del': {
       const gone = S.events.find(x=>x.id===val);
       if(gone && eventReadOnly(gone)){ dayHint('읽기 전용 공유 달력 일정이에요'); break; }
+      if(gone && repeatOf(gone) !== 'none'){
+        recurChoice = {id:val, date: el.dataset.date || openDay, mode:'del'};
+        editEvent = null; editSplit = null; renderModal(); break;
+      }
       S.events = S.events.filter(x=>x.id!==val);
       persist(true); renderModal(); render();
       deleteEventEverywhere(gone);          /* also removes it from Google Calendar */
@@ -3264,7 +3691,7 @@ document.addEventListener('click', e=>{
       const tt = document.getElementById('newtitle');
       const title = (tt.value||'').trim();
       if(!title){ tt.focus(); return; }
-      const ev = {id:uid(), date:openDay, time:newTime, title, done:false, source:'local', googleId:null, calendarId:'primary', repeat:newRepeat, doneDates:{}};
+      const ev = {id:uid(), date:openDay, time:newTime, title, done:false, source:'local', googleId:null, calendarId:'primary', repeat:newRepeat, doneDates:{}, skipDates:[]};
       S.events.push(ev);
       newRepeat = 'none'; newTime = '';
       persist(true); tt.value=''; renderModal(); render();
@@ -3492,12 +3919,38 @@ document.addEventListener('input', e=>{
   else if(act==='memo-text'){
     const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
     m.text = el.value; m.updated = Date.now(); persist(); flashSaved();
+    paintMemoTokens(m.id);
   }
   else if(act==='check-edit'){
     const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
     const it = (m.items||[]).find(i=>i.id===el.dataset.val); if(!it) return;
     it.text = el.value; m.updated = Date.now(); persist(); flashSaved();
   }
+  else if(act==='act-name'){
+    if(actionPop) actionPop.name = el.value;
+  }
+});
+/* the memo's pills follow what is typed, without touching the textarea itself */
+function paintMemoTokens(id){
+  const bar = document.getElementById('dtokbar'); if(!bar) return;
+  const m = S.memos.find(x=>x.id===id); if(!m) return;
+  const toks = detectTokens(m.text || '');
+  bar.innerHTML = toks.map(tokPillHTML).join('');
+  bar.hidden = !toks.length;
+}
+/* a checklist line stops being an input when it loses focus; the text was
+   already saved on every keystroke, so this only puts the paper back */
+document.addEventListener('focusout', e=>{
+  const inp = e.target && e.target.closest ? e.target.closest('input[data-act="check-edit"]') : null;
+  if(!inp || !checkEditId) return;
+  const id = checkEditId;
+  setTimeout(()=>{
+    if(checkEditId !== id) return;
+    const live = document.querySelector(`input.ctext[data-val="${id}"]`);
+    if(live && document.activeElement === live) return;   /* still typing */
+    checkEditId = null;
+    render();
+  }, 0);
 });
 
 /* week-start and holiday sync are checkable inputs */
@@ -3556,10 +4009,16 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Enter' && document.activeElement && document.activeElement.id==='edittitle'){
     e.preventDefault(); document.querySelector('[data-act="day-save"]')?.click(); return;
   }
+  if(e.key==='Enter' && document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('ctext')){
+    e.preventDefault(); document.activeElement.blur(); return;
+  }
   if(e.key==='Escape'){
+    if(actionPop){ closeActionPop(); return; }
     if(searchModalOpen){ closeSearchUI(); return; }
     if(document.getElementById('calpop').classList.contains('on')){ closeCalPop(); return; }
-    if(editEvent){ editEvent = null; renderModal(); }
+    if(checkEditId){ checkEditId = null; render(); return; }
+    if(recurChoice){ recurChoice = null; editSplit = null; renderModal(); return; }
+    if(editEvent){ editEvent = null; editSplit = null; renderModal(); }
     else if(openDay){ openDay=null; renderModal(); }
     else if(openBackup){ openBackup=false; renderModal(); }
   }
@@ -3861,6 +4320,8 @@ if(!location.hash || location.hash === '#'){
   else { location.replace('#/cover'); }
 }
 setRoute();
+/* the 자동 백업 line under Google Docs로 백업 keeps its "방금 · 3분 전" reading */
+setInterval(paintAutoStatus, 30000);
 
 /* ---------- PWA: offline service worker ---------- */
 if('serviceWorker' in navigator){
