@@ -3687,6 +3687,7 @@ document.addEventListener('click', e=>{
         }
       }catch(err){}
       memoEditId = el.dataset.memo || val;
+      const keepY = window.scrollY, keepX = window.scrollX;
       render();
       const ta = document.querySelector(`textarea[data-act="memo-text"][data-memo="${memoEditId}"]`);
       if(ta){
@@ -3694,6 +3695,9 @@ document.addEventListener('click', e=>{
         const pos = caret == null ? ta.value.length : Math.max(0, Math.min(ta.value.length, caret));
         ta.focus();
         try{ ta.setSelectionRange(pos, pos); }catch(err){}
+        /* focusing the textarea would pull the sheet's top into view — put the
+           page back where the finger was, so only the underline changes */
+        if(window.scrollY !== keepY || window.scrollX !== keepX) window.scrollTo(keepX, keepY);
       }
       break;
     }
