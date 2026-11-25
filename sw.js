@@ -5,13 +5,12 @@
    straight to the network.
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
-const CACHE = 'mp27-v30';
-/* mp27-v30: 매년 돌아오는 날을 적는 remember 탭 — 달력 아래(그리고 ≡ 메뉴) check ·
-   memo · remember, 오른쪽에 option. 날짜는 3/15 · 03.15 · 0315 · 3월 15일 어느 쪽으로
-   적어도 되고, 양력/음력 알약으로 고른다. 음력은 2015–2040 KASI 표에서 그 해의 정확한
-   양력 날짜로 풀리고(음력 30일이 없는 달은 그 달 마지막 날, 2/29는 평년에 2/28),
-   달력 · 일 모달 · 검색 · Google Docs 백업(4. remember)에 함께 나온다.
-   (sw.js changes on purpose: a client that already took v29 re-installs and refills the
+const CACHE = 'mp27-v31';
+/* mp27-v31: remember 탭이 check · memo와 같은 세 칸(돋보기 검색 · ＋ new · 목록)이 되고, 적기·고치기는
+   Search와 같은 종이 Remember 팝업에서 합니다. 일 모달의 반복에 `N일마다`(repeat:'days' · repeatDays:N)가
+   붙어 RRULE:FREQ=DAILY;INTERVAL=N · Docs `(3일마다)`로 오갑니다. 폰에서 초점이 간 모든 입력 칸은
+   글씨 크기 `작게`에서도 16px 이상이라 iOS Safari가 화면을 확대하지 않습니다(액션 시트 이름 칸 포함).
+   (sw.js changes on purpose: a client that already took v30 re-installs and refills the
    same cache name.) */
 
 /* the whole app is these six files (the fonts live inside index.html) */
