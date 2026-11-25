@@ -539,19 +539,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
-/* ---------- 종이 질감 · 연필 동그라미 · option ---------- */
-#grain{
-  /* the grain has to reach past the home indicator and the status bar: a fixed
-     layer that stops at inset:0 left a bare strip above the safe area */
-  position:fixed;left:0;right:0;top:-60px;bottom:-60px;pointer-events:none;z-index:9999;opacity:0;
-  transition:opacity .4s ease;background-repeat:repeat;background-size:180px 180px;
-  mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncG type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncB type='linear' slope='2.0' intercept='-0.5'/%3E%3CfeFuncA type='linear' slope='0' intercept='1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-html.grain #grain{opacity:0.12}
-html.grain[data-theme="cream"] #grain{opacity:0.13}
-html.grain[data-theme="olive"] #grain{opacity:0.16;mix-blend-mode:overlay}
-html.grain[data-theme="navy"] #grain{opacity:0.2;mix-blend-mode:overlay}
+/* ---------- 연필 동그라미 · option ---------- */
 /* a date that holds at least one event gets its day number circled by hand */
 .dnum-n{position:relative;display:inline-flex;align-items:center;justify-content:center;overflow:visible}
 /* today reads as bold instead of carrying a dot; the heavier weight still
@@ -592,7 +580,6 @@ html.grain[data-theme="navy"] #grain{opacity:0.2;mix-blend-mode:overlay}
   </noscript>
 </div>
 <div id="modal-root"></div>
-<div id="grain" aria-hidden="true"></div>
 <div class="toast" id="toast"></div>
 <div class="palette-pop" id="palette-pop"></div>
 <div class="ypop-scrim" id="ypop-scrim"></div>
@@ -885,7 +872,7 @@ function initialState(){
     backupScopes:{schedule:true, memo:true, check:true},  /* what a Docs backup carries */
     lastMonth:todayMonth(),
     events:[], goals:[], memos:[], clearedSeedEvents:false, clearedSeedMemos:false,
-    prefs:{grain:true, sound:true, haptic:true},   /* 종이 질감 · 사운드 · 햅틱 */
+    prefs:{sound:true, haptic:true},   /* 사운드 · 햅틱 */
     google:{connected:false, lastSync:null, holidays:true, account:null, holCache:{}},
     docId:null, lastBackup:null
   };
@@ -938,7 +925,8 @@ function load(){
     }
     /* only the four kept themes are valid — anything else falls back to cream */
     st.theme = THEMES.some(t=>t.id===p.theme) ? p.theme : 'cream';
-    st.prefs = Object.assign({grain:true, sound:true, haptic:true}, p.prefs||{});
+    st.prefs = Object.assign({sound:true, haptic:true}, p.prefs||{});
+    delete st.prefs.grain;   /* the paper-grain option is gone; drop its old key */
     return st;
   }catch(e){ return initialState(); }
 }
@@ -1055,13 +1043,8 @@ function toast(msg){
 }
 const themeMeta = id => THEMES.find(t=>t.id===id) || THEMES[1];
 /* =========================================================
-   종이 질감 · 소리 · 진동
+   소리 · 진동
    ========================================================= */
-/* the grain is one fixed layer; the option tab just switches the class on <html> */
-function applyPrefs(){
-  const p = S.prefs || {};
-  document.documentElement.classList.toggle('grain', p.grain !== false);
-}
 const prefOn = id => ((S.prefs || {})[id] !== false);
 /* Every sound is synthesised here, so the app stays one offline file. Nothing is
    created before the page has been touched: a fresh load stays silent. */
@@ -1705,7 +1688,6 @@ let monthQuote = pickQuote();
 function render(){
   document.documentElement.dataset.theme = S.theme;
   syncPaper();
-  applyPrefs();
   if(R.view==='cover'){ app.innerHTML = renderCover(); }
   else { app.innerHTML = renderNav() + `<div class="page">${renderView()}</div>` + renderYearBar(); }
   paintFab();
@@ -1978,9 +1960,8 @@ function memoSideHTML(tab, memo, acts){
       <div class="mlist">${memoRowsHTML(tabMemos(tab), memo, acts.open, acts.del)}</div>
     </aside>`;
 }
-/* ---------- option tab (inside ≡) : 종이 질감 · 사운드 · 햅틱 ---------- */
+/* ---------- option tab (inside ≡) : 사운드 · 햅틱 ---------- */
 const PREF_ROWS = [
-  {id:'grain',  label:'종이 질감'},
   {id:'sound',  label:'사운드'},
   {id:'haptic', label:'햅틱'}
 ];
@@ -2342,9 +2323,9 @@ document.addEventListener('click', e=>{
     }
     case 'sync': calendarSync(); break;
     case 'pref': {
-      const p = Object.assign({grain:true, sound:true, haptic:true}, S.prefs||{});
+      const p = Object.assign({sound:true, haptic:true}, S.prefs||{});
       p[val] = p[val] === false;          /* flip this one switch */
-      S.prefs = p; persist(true); applyPrefs(); render();
+      S.prefs = p; persist(true); render();
       /* switching a feedback option on shows what it does right away */
       if(p[val]){ if(val==='sound') penClick(); if(val==='haptic') buzz(14); }
       break;
