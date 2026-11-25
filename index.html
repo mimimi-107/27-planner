@@ -285,11 +285,17 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 /* ---------- the connected account's calendars: checkbox · colour · name ---------- */
 .callist{display:flex;flex-direction:column;gap:1px;margin:-1px 0 0 18px;max-width:100%}
 .calrow{display:flex;align-items:center;gap:6px;padding:2px 0;font-size:calc(10.5px*var(--fs-k));letter-spacing:.01em;color:rgba(var(--ink-rgb),.62);cursor:pointer;min-width:0}
-.calrow input{-webkit-appearance:none;appearance:none;width:12px;height:12px;margin:0;border:1.2px solid rgba(var(--ink-rgb),.5);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
-.calrow input:checked{border-color:var(--ink)}
-.calrow input:checked::after{content:'';width:6px;height:3px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(-45deg) translate(0,-1px)}
-.calrow .cdot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--ink)}
+.calrow input[type=checkbox]{-webkit-appearance:none;appearance:none;width:12px;height:12px;margin:0;border:1.2px solid rgba(var(--ink-rgb),.5);display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+.calrow input[type=checkbox]:checked{border-color:var(--ink)}
+.calrow input[type=checkbox]:checked::after{content:'';width:6px;height:3px;border-left:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink);transform:rotate(-45deg) translate(0,-1px)}
+.calrow .cdot{width:14px;height:14px;border-radius:50%;flex:0 0 auto;background:var(--ink)}
 .calrow .cdot.ink{opacity:.62}
+/* a shared calendar's colour: the dot itself, tapped for the phone's RGB palette */
+.calrow .csw{-webkit-appearance:none;appearance:none;width:14px;height:14px;padding:0;margin:0;flex:0 0 auto;border:1px solid rgba(var(--ink-rgb),.3);border-radius:50%;background:none;cursor:pointer;overflow:hidden}
+.calrow .csw::-webkit-color-swatch-wrapper{padding:0}
+.calrow .csw::-webkit-color-swatch{border:0;border-radius:50%}
+.calrow .csw::-moz-color-swatch{border:0;border-radius:50%}
+.calrow .csw:hover{border-color:var(--ink)}
 .calrow .cname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 /* empty editor: only a centered + */
 .mempty-editor{display:grid;place-items:center;min-height:min(56vh,440px)}
@@ -596,6 +602,9 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .pen{position:absolute;left:50%;top:50%;width:calc(27px*var(--fs-k));height:calc(21.6px*var(--fs-k));transform:translate(-50%,-50%);overflow:visible;color:var(--pen);pointer-events:none}
 .pen.d2{width:calc(30px*var(--fs-k));height:calc(24px*var(--fs-k))}
 .pen path{fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+/* a day that carries a shared/secondary calendar's event is circled in that
+   calendar's ink, faded to the same soft pencil weight as the default loop */
+.pen.sec{opacity:.62}
 /* a circled day number pushes the holiday name clear of the loop (the oval runs
    13.5px / 15px out from the digits, so the label needs that much lead) */
 .dnum.circled .ltag{margin-left:calc(12px*var(--fs-k))}
@@ -620,6 +629,12 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .seg .sg[aria-checked="true"]{opacity:1;background:rgba(var(--ink-rgb),.14)}
 .seg .sg:hover{opacity:.92}
 @media (max-width:760px){.opts{margin-top:20px}.orow{padding:15px 0;font-size:calc(12.5px*var(--fs-k))}}
+/* the Google backup · account · calendar block lives under the six switches,
+   opened by one clean rule (the last switch drops its own dashed border) */
+.opts .orow:last-child{border-bottom:0}
+.gsec{margin-top:30px;max-width:430px;border-top:1px solid var(--hair);padding-top:18px}
+.gsec .foot{margin-top:0;border-top:0;padding-top:0}
+@media (max-width:760px){.gsec{margin-top:24px;padding-top:16px}}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -950,7 +965,9 @@ function load(){
       .map(c=>({id:String(c.id), summary:String(c.summary||''), primary:!!c.primary,
                 accessRole:c.accessRole || 'reader',
                 enabled: typeof c.enabled === 'boolean' ? c.enabled : !!c.primary,
-                colorIdx: Number.isInteger(c.colorIdx) ? c.colorIdx : -1}));
+                colorIdx: Number.isInteger(c.colorIdx) ? c.colorIdx : -1,
+                /* her own RGB pick for a shared calendar, if she made one */
+                customColor: /^#[0-9a-f]{6}$/i.test(String(c.customColor||'')) ? String(c.customColor).toLowerCase() : null}));
     st.docId = typeof p.docId === 'string' ? p.docId : null;
     st.memos = (p.memos||base.memos).map(migrateMemo);
     st.memoTab = (p.memoTab === 'note' || p.memoTab === 'option') ? p.memoTab : 'check';
@@ -1389,7 +1406,26 @@ function calSlot(cid){
   if(!c || c.primary || !(c.colorIdx >= 0)) return null;
   return c.colorIdx % CAL_SLOTS;
 }
-const calInk = slot => slot === null ? '' : ` style="color:var(--cal-c${slot})"`;
+/* the colour a secondary/shared calendar paints with: her own RGB pick
+   (customColor) first, then the theme's --cal-c slot; null = the theme's ink */
+function calColorOf(c){
+  if(!c || c.primary) return null;
+  if(c.customColor) return c.customColor;
+  if(c.colorIdx >= 0) return `var(--cal-c${c.colorIdx % CAL_SLOTS})`;
+  return null;
+}
+/* the same colour as a hex value, for the <input type=color> swatch */
+function calHexOf(c){
+  if(!c || c.primary) return null;
+  if(c.customColor) return c.customColor;
+  const vars = ['--cal-c' + (c.colorIdx >= 0 ? c.colorIdx % CAL_SLOTS : 0), '--ink'];
+  for(const v of vars){
+    const got = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    if(/^#[0-9a-fA-F]{6}$/.test(got)) return got;
+  }
+  return '#4B648C';
+}
+const calInk = cid => { const col = calColorOf(calById(cid)); return col ? ` style="color:${col}"` : ''; };
 function calName(cid){
   const c = calById(cid);
   return c ? (c.primary ? '기본 달력' : (c.summary || '')) : '';
@@ -1440,7 +1476,9 @@ async function loadCalendarList(token){
       accessRole: it.accessRole || 'reader',
       /* 기본 달력 starts on; a secondary or shared calendar waits for her tick */
       enabled: prev ? !!prev.enabled : primary,
-      colorIdx: prev && Number.isInteger(prev.colorIdx) ? prev.colorIdx : (primary ? -1 : (slot++) % CAL_SLOTS)
+      colorIdx: prev && Number.isInteger(prev.colorIdx) ? prev.colorIdx : (primary ? -1 : (slot++) % CAL_SLOTS),
+      /* her own RGB pick for this calendar survives every sync */
+      customColor: (prev && prev.customColor) || null
     });
   });
   S.google.calendars = next;
@@ -2150,13 +2188,16 @@ function renderMonthly(){
     const cls = ['cell', wd===6?'sat':'', wd===0?'sun':'', hol?'hol':'', ds===todayISO()?'today':''].filter(Boolean).join(' ');
     const evs = eventsOn(ds);
     const lines = evs.slice(0,3).map(e=>{
-      const slot = calSlot(e.calendarId);
-      const cls = ['evt', e.source==='google'?'g':'', e.done?'done':'', slot===null?'':'csec'].filter(Boolean).join(' ');
-      return `<div class="${cls}"${calInk(slot)}>
+      const ink = calColorOf(calById(e.calendarId));
+      const cls = ['evt', e.source==='google'?'g':'', e.done?'done':'', ink?'csec':''].filter(Boolean).join(' ');
+      return `<div class="${cls}"${calInk(e.calendarId)}>
         <span class="bul"></span>${e.time?`<span class="tm">${e.time}</span>`:''}<span class="t">${esc(e.title)}</span></div>`;
     }).join('');
     const circle = prefOn('pencilCircle') && evs.length;
-    const pen = circle ? `<svg class="pen${day>9?' d2':''}" viewBox="0 0 30 24" aria-hidden="true"><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
+    /* a secondary/shared calendar's event colours the loop, so a shared day stands
+       out at a glance; primary and local days keep the theme's own pencil */
+    const penInk = evs.reduce((hit,e)=> hit || calColorOf(calById(e.calendarId)), null);
+    const pen = circle ? `<svg class="pen${day>9?' d2':''}${penInk?' sec':''}" viewBox="0 0 30 24" aria-hidden="true"${penInk?` style="color:${penInk}"`:''}><path d="${PEN_PATHS[penPick(ds)]}"/></svg>` : '';
     /* the grid keeps three lines; a fourth event is counted in the corner */
     const more = evs.length > 3 ? `<div class="more">+${evs.length-3}</div>` : '';
     const dcls = circle ? (' circled' + (day>9 ? ' d2' : '')) : '';
@@ -2281,29 +2322,13 @@ function renderOptions(){
     ).join('')}
   </div>`;
 }
-/* the connected account's calendars, under the sync row: tick · colour · name */
-function calRowsHTML(){
-  const list = calList();
-  if(!S.google || !S.google.connected || !list.length) return '';
-  return `<div class="callist">${list.map(c=>{
-    const slot = c.primary ? null : (c.colorIdx >= 0 ? c.colorIdx % CAL_SLOTS : null);
-    const dot = slot === null ? '<span class="cdot ink"></span>' : `<span class="cdot" style="background:var(--cal-c${slot})"></span>`;
-    const nm = c.primary ? '기본 달력' : (c.summary || '');
-    return `<label class="calrow" title="${esc(c.summary || nm)}"><input type="checkbox" data-act="cal-toggle" data-val="${esc(c.id)}" ${c.enabled?'checked':''}>${dot}<span class="cname">${esc(nm)}</span></label>`;
-  }).join('')}</div>`;
-}
-function renderMemo(){
-  const tab = (S.memoTab==='note'||S.memoTab==='option') ? S.memoTab : 'check';
-  if(tab==='option') return `${memoTabsHTML('option', 'memo-tab', true)}${renderOptions()}`;
-  const memo = currentMemo();
+/* the Google block (backup · sync account · calendar sync · holidays · the
+   discovered calendars). It belongs to the option tab only: check and memo stay
+   their search bar, list and editor. */
+function googleBlockHTML(){
   const g = S.google || {};
   const acct = g.account || '';
-  return `
-  ${memoTabsHTML(tab, 'memo-tab', true)}
-  <div class="memo ${memo?'open':''}">
-    ${memoSideHTML(tab, memo, {new:'memo-new', open:'memo-open', del:'memo-del'})}
-    ${memo? (memoKind(memo)==='check'? renderChecklist(memo) : renderNote(memo)) : renderEditorEmpty(tab)}
-    <div class="foot">
+  return `<div class="gsec"><div class="foot">
         <button class="backup" data-act="backup-open">${ICO.doc} Google Docs로 백업</button>
         <button class="acct" data-act="acct-open" aria-haspopup="dialog" aria-label="동기화 계정 선택">
           <span class="lab">동기화 계정</span>
@@ -2319,7 +2344,32 @@ function renderMemo(){
           <label class="holrow"><input type="checkbox" data-act="holiday-toggle" ${g.holidays!==false?'checked':''}><span>공휴일 함께 표시</span></label>
           ${calRowsHTML()}
         </div>
-    </div>
+    </div></div>`;
+}
+/* the connected account's calendars, under the sync row: tick · colour · name */
+function calRowsHTML(){
+  const list = calList();
+  if(!S.google || !S.google.connected || !list.length) return '';
+  return `<div class="callist">${list.map((c,i)=>{
+    const nm = c.primary ? '기본 달력' : (c.summary || '');
+    const hex = calHexOf(c);
+    /* a shared/secondary calendar's dot IS an RGB picker (the phone's own palette);
+       기본 달력 keeps the theme ink and no picker */
+    const dot = hex === null
+      ? '<span class="cdot ink"></span>'
+      : `<input type="color" class="csw" data-act="cal-color" data-val="${esc(c.id)}" value="${hex}" style="background:${hex}" aria-label="${esc(nm)} 색" title="색 고르기">`;
+    return `<div class="calrow" title="${esc(c.summary || nm)}"><input type="checkbox" id="calt-${i}" data-act="cal-toggle" data-val="${esc(c.id)}" ${c.enabled?'checked':''}>${dot}<label class="cname" for="calt-${i}">${esc(nm)}</label></div>`;
+  }).join('')}</div>`;
+}
+function renderMemo(){
+  const tab = (S.memoTab==='note'||S.memoTab==='option') ? S.memoTab : 'check';
+  if(tab==='option') return `${memoTabsHTML('option', 'memo-tab', true)}${renderOptions()}${googleBlockHTML()}`;
+  const memo = currentMemo();
+  return `
+  ${memoTabsHTML(tab, 'memo-tab', true)}
+  <div class="memo ${memo?'open':''}">
+    ${memoSideHTML(tab, memo, {new:'memo-new', open:'memo-open', del:'memo-del'})}
+    ${memo? (memoKind(memo)==='check'? renderChecklist(memo) : renderNote(memo)) : renderEditorEmpty(tab)}
   </div>`;
 }
 /* nothing selected: a single centered ＋ that creates an item right away */
@@ -2405,7 +2455,7 @@ function dayRowHTML(e){
   return `<div class="ditem ${e.done?'done':''}${ro?' ro':''}">
             <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" style="margin-top:2px"><i></i></div>
             <div class="time">${e.time? fmtTime(e.time):'종일'}</div>
-            <div class="body"${calInk(slot)} data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${src}${nm}</div>
+            <div class="body"${calInk(e.calendarId)} data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${src}${nm}</div>
             <button class="del" data-act="day-del" data-val="${e.id}" aria-label="삭제">×</button>
           </div>${editEvent===e.id ? `<div class="dedit" data-stop="1">
             <div class="time-wrap ${e.time?'':'is-empty'}">
@@ -2560,7 +2610,7 @@ document.addEventListener('click', e=>{
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
   if(act==='search'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
-  if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
+  if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle'||act==='cal-color') return;
   if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
     case 'theme':
@@ -2827,6 +2877,19 @@ document.addEventListener('change', e=>{
       persist(true);
       render();
       if(c.enabled && !syncBusy) calendarSync();
+    }
+    return;
+  }
+  /* her own RGB colour for a shared calendar: the dot, its events and its
+     pencil loop all follow it at once */
+  const picker = e.target.closest('[data-act="cal-color"]');
+  if(picker){
+    const c = calList().find(x=>x.id === picker.dataset.val);
+    if(c){
+      const hex = String(picker.value || '').toLowerCase();
+      if(/^#[0-9a-f]{6}$/.test(hex)) c.customColor = hex; else c.customColor = null;
+      persist(true);
+      render();
     }
     return;
   }
