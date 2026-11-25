@@ -370,7 +370,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .minline .editor{border-top:0;margin-top:16px;padding-top:0;scroll-margin-top:calc(64px + env(safe-area-inset-top))}
 .minline .mempty-editor{min-height:min(30vh,220px)}
 .minline .canvas{min-height:0}
-.minline .ruled textarea{min-height:calc(var(--rh)*10)}
+.minline .ruled textarea,.minline .ruled .mview{min-height:calc(var(--rh)*10)}
 .minline .cbar{margin-top:10px}
 .ehead{display:flex;align-items:center;gap:12px;margin-bottom:4px;min-width:0}
 .eback{display:none}
@@ -385,10 +385,11 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .sheet{position:relative;border-top:0}
 .ruled{position:relative;min-height:calc(var(--rh)*16)}
 .ruled textarea{
-  position:relative;width:100%;height:100%;min-height:calc(var(--rh)*16);
+  position:relative;width:100%;height:auto;overflow:hidden;min-height:calc(var(--rh)*16);
   font-size:calc(var(--note-size)*var(--fs-k));line-height:var(--rh);padding:0;letter-spacing:.005em;
   resize:none;display:block;background:transparent;
 }
+.ruled .mview{font-size:calc(var(--note-size)*var(--fs-k));line-height:var(--rh)}
 
 /* checklist */
 .prog{font-size:calc(11px*var(--fs-k));letter-spacing:.05em;opacity:.6;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -550,20 +551,19 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
 .empty-note{font-size:calc(11.5px*var(--fs-k));opacity:.5;margin-top:16px;line-height:1.6}
 
 /* ---------- detected 전화 · 메일 · 주소 ----------
-   A number she wrote in a title or an item is a dotted-underlined token on the
-   paper; a memo keeps them as a quiet pill row above the ruled sheet, because a
-   <textarea> cannot hold a button. Both open the same paper action sheet. */
+   A number she wrote in a title, an item or a memo body is a dotted-underlined
+   token inside the sentence. A memo writes in a <textarea> while the pen is out,
+   and at rest shows the same text on the same ruled rhythm (div.mview), so the
+   tokens sit right on the paper. All of them open one paper action sheet. */
 .tok{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;line-height:inherit;text-align:left;cursor:pointer;
   text-decoration:underline;text-decoration-style:dotted;text-decoration-thickness:1px;text-underline-offset:3px;
   text-decoration-color:rgba(var(--ink-rgb),.5);-webkit-tap-highlight-color:transparent;border-radius:2px}
 .tok:hover,.tok:focus-visible{background:var(--soft);text-decoration-style:solid}
-.dtokbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
-.dtok{display:inline-flex;align-items:center;gap:5px;max-width:100%;padding:3px 9px 3px 7px;border:1px solid var(--dash);border-radius:999px;
-  font-family:var(--ui);font-size:calc(11px*var(--fs-k));letter-spacing:.01em;color:inherit;opacity:.72;background:transparent;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;transition:opacity .15s,border-color .15s}
-.dtok svg{width:calc(12px*var(--fs-k));height:calc(12px*var(--fs-k));flex:0 0 auto;opacity:.7}
-.dtok span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.dtok:hover,.dtok:focus-visible{opacity:1;border-color:var(--hair);background:var(--soft)}
+/* a memo at rest: the identical type on the identical rhythm as its <textarea>,
+   so putting the pen down or picking it up never moves the sheet */
+.mview{position:relative;display:block;min-height:calc(var(--rh)*16);padding:0;letter-spacing:.005em;
+  white-space:pre-wrap;overflow-wrap:break-word;cursor:text;-webkit-tap-highlight-color:transparent}
+.mview .mph{color:rgba(var(--ink-rgb),.32)}
 /* a checklist item at rest: its text reads like the title of an event, and a
    tap opens the line for typing */
 .ctext.cview{display:block;cursor:text;white-space:pre-wrap;overflow-wrap:anywhere;min-height:1.55em}
@@ -693,7 +693,7 @@ body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62
   .search{font-size:max(16px,calc(16px*var(--fs-k)))}
   .addrow input[type=text]{font-size:max(16px,calc(13px*var(--fs-k)))}
   .time-wrap .tbtn{font-size:max(13px,calc(12.5px*var(--fs-k)))}
-  .ruled textarea{font-size:max(16px,calc(var(--note-size)*var(--fs-k)))}
+  .ruled textarea,.ruled .mview{font-size:max(16px,calc(var(--note-size)*var(--fs-k)))}
   .yb-step{width:36px;height:32px}
   .yb-year{font-size:16px;min-width:54px}
   .yearbar{padding-top:6px;padding-bottom:calc(6px + env(safe-area-inset-bottom))}
@@ -1207,6 +1207,8 @@ let actionPop = null;        // {kind:'phone'|'email'|'address', value, name, em
 let recurChoice = null;      // {id, date, mode:'edit'|'del'} — 이 날만 / 전체 반복, asked before touching a series
 let editSplit = null;        // the date an edit applies to when she chose 이 날만
 let checkEditId = null;      // the checklist item whose text field is open
+let memoEditId = null;       // the memo whose <textarea> is open (null = reading the sheet)
+let pendingMemoEdit = null;  // a brand-new memo that must open with the caret in it
 
 function go(hash){
   /* same-hash navigation does not fire hashchange — render directly */
@@ -1218,6 +1220,8 @@ function setRoute(){
   R = parseRoute(); openDay = null; openBackup = false; searchModalOpen = false;
   /* a page turn closes whatever line was open for typing and any sheet on top */
   checkEditId = null; recurChoice = null; editSplit = null; actionPop = null;
+  memoEditId = (pendingMemoEdit && R.view==='memo' && R.memoId===pendingMemoEdit) ? pendingMemoEdit : null;
+  pendingMemoEdit = null;
   if(ywheelOpen) closeYearWheel();
   if(R.view==='cover') coverQuote = pickQuote();
   if(R.view==='monthly'){ S.lastMonth = R.month; monthQuote = pickQuote(); }
@@ -1238,6 +1242,11 @@ function setRoute(){
   if(R.view==='memo' && R.memoId && window.innerWidth <= 760){
     const ed = document.querySelector('.editor');
     if(ed) requestAnimationFrame(()=>ed.scrollIntoView({behavior:'smooth', block:'start'}));
+  }
+  /* a new memo opens with the pen already down */
+  if(memoEditId){
+    const ta = document.querySelector('textarea[data-act="memo-text"]');
+    if(ta){ ta.focus(); try{ ta.setSelectionRange(ta.value.length, ta.value.length); }catch(err){} fitMemo(ta); }
   }
 }
 /* the ≡ menu opens where it was left: same tab, same item (first visit = check) */
@@ -2568,6 +2577,7 @@ function render(){
   }
   document.getElementById('palette-pop').classList.toggle('on', false);
   closeCalPop();
+  fitMemo();
   routeFeedback();
 }
 
@@ -3061,9 +3071,13 @@ function renderEditorEmpty(tab, act){
   </div>`;
 }
 function renderNote(memo, backAct){
-  /* a memo body is a <textarea>, so its numbers · mails · addresses wait as
-     quiet pills on the line above it — tapping one never moves the caret */
-  const toks = detectTokens(memo.text || '');
+  /* At rest the memo is read on the same ruled sheet its <textarea> writes on:
+     one div with the identical font, size, rhythm and padding. Its numbers ·
+     mails · addresses are dotted-underlined tokens inside the sentence — a tap
+     on one opens the paper action sheet, a tap anywhere else turns the sheet
+     into the textarea in place (the caret lands where the pen touched). */
+  const body = memo.text || '';
+  const editing = memoEditId === memo.id;
   return `<div class="editor">
     <div class="ehead">
       <button class="eback" data-act="${backAct||'memo-list'}" aria-label="목록">${ICO.back}</button>
@@ -3071,8 +3085,9 @@ function renderNote(memo, backAct){
       <span class="saved" id="saved">저장됨</span>
     </div>
     <div class="canvas">
-      <div class="dtokbar" id="dtokbar"${toks.length?'':' hidden'}>${toks.map(tokPillHTML).join('')}</div>
-      <div class="ruled" style="--rh:32px"><textarea data-act="memo-text" data-memo="${memo.id}" spellcheck="false" placeholder="오늘의 기록…">${esc(memo.text||'')}</textarea></div>
+      <div class="ruled" style="--rh:32px">${editing
+        ? `<textarea data-act="memo-text" data-memo="${memo.id}" spellcheck="false" placeholder="오늘의 기록…">${esc(body)}</textarea>`
+        : `<div class="mview" data-act="memo-focus" data-memo="${memo.id}" aria-label="눌러서 고치기">${body ? linkify(body) : '<span class="mph">오늘의 기록…</span>'}</div>`}</div>
     </div>
   </div>`;
 }
@@ -3134,10 +3149,18 @@ function panelLabel(kind){ return kind === 'note' ? 'memo' : 'check'; }
    전화 · 메일 · 주소 감지 → 종이 액션 시트
    A title or an item she wrote may carry a number to call, a mail to write or a
    place to open. These read them out of the text and hand them to one paper
-   sheet. Dates (2026-11-25) and times (14:00) never read as a phone number:
-   a Korean number starts with 0 or +82 and carries 3–4 digits + 4 digits.
+   sheet. Dates (2026-11-25 · 20261225) and money (12,000원) never read as a
+   phone number: a Korean number starts with 0 (or 15xx · 16xx · 18xx for the
+   service lines) and a world number with +, and each has its own digit count.
    ========================================================= */
-const PHONE_RE = /(^|[^\d])((?:\+82[\s.\-]?(?:0?\d{1,2})|0\d{1,2})[\s.\-]?\d{3,4}[\s.\-]?\d{4})(?!\d)/g;
+/* +country, then 2–6 groups of digits with an optional - . space or bracket:
+   +82-10-1234-5678 · +821012345678 · +1 (415) 555-1234 · +81 3 1234 5678 */
+const INTL_RE = /(^|[^\d])(\+\d{1,3}(?:[\s.\-]?\(?\d{1,4}\)?){2,6})/g;
+/* a Korean number: 010-1234-5678 · 01012345678 · 02-123-4567 · 053)4448888 ·
+   (053) 444-8888 · (02)1234567 — the bracket may sit on either side */
+const KR_PHONE_RE = /(^|[^\d])(\(\s*0\d{1,2}\s*\)|0\d{1,2}\s*\)|0\d{1,2})[\s.\-]?(\d{3,4})[\s.\-]?(\d{4})(?!\d)/g;
+/* an 8-digit service line: 1588-1234 · 15881234 · 1899 1234 */
+const SVC_RE = /(^|[^\d])(1[5-8]\d{2}[\s.\-]?\d{4})(?!\d)/g;
 const EMAIL_RE = /(^|[^A-Za-z0-9._%+\-])([A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,})/g;
 const PIN_RE = /📍\s*([^\n]{2,60})/g;
 const ADDR_PROV = '(?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)';
@@ -3150,6 +3173,23 @@ const ADDR_RE = new RegExp(
   '(?:[가-힣0-9·]{2,}(?:대로|로|길)\\s*\\d+(?:\\s*[-–]\\s*\\d+)?' +
   '|[가-힣0-9·]{2,}(?:동|읍|면|리)\\s*\\d+(?:\\s*[-–]\\s*\\d+)?))', 'g');
 
+/* a phone number's digits, and the shape a dialer wants: only a leading + kept */
+function phoneDigits(raw){ return String(raw == null ? '' : raw).replace(/\D/g, ''); }
+function normPhone(raw){
+  const s = String(raw == null ? '' : raw).trim();
+  return (/^\+/.test(s) ? '+' : '') + s.replace(/\D/g, '');
+}
+/* 02 9–10 digits · 01x–09x 10–11 · 15xx·16xx·18xx straight 8 · +country 8–15 */
+function phoneOk(raw){
+  const s = String(raw == null ? '' : raw).trim();
+  const d = phoneDigits(s);
+  if(/^\+/.test(s)) return d.length >= 8 && d.length <= 15;
+  if(/^1[5-8]\d{2}/.test(d)) return d.length === 8;
+  if(!/^0/.test(d)) return false;
+  if(d.length < 9 || d.length > 11) return false;
+  if(d.slice(0,2) === '02') return d.length === 9 || d.length === 10;
+  return /^0[1-9]/.test(d);
+}
 /* every phone · mail · address in a piece of text, as {start,end,kind,value}.
    Later, shorter or weaker hits that sit inside a kept one are dropped. */
 function detectTokens(text){
@@ -3166,12 +3206,20 @@ function detectTokens(text){
     add(start, start + m[2].length, 'email', m[2], 4);
     EMAIL_RE.lastIndex = start + m[2].length;
   }
-  PHONE_RE.lastIndex = 0;
-  while((m = PHONE_RE.exec(s))){
-    const start = m.index + m[1].length;
-    add(start, start + m[2].length, 'phone', m[2], 4);
-    PHONE_RE.lastIndex = start + m[2].length;
-  }
+  /* international first: a +82 number also carries an 0-prefixed group */
+  [[INTL_RE, 5], [KR_PHONE_RE, 4], [SVC_RE, 4]].forEach(pair=>{
+    const re = pair[0], prio = pair[1];
+    re.lastIndex = 0;
+    let m;
+    while((m = re.exec(s))){
+      const raw = m[0].slice(m[1].length);
+      const start = m.index + m[1].length;
+      const end = start + raw.length;
+      const ok = phoneOk(raw);
+      if(ok) add(start, end, 'phone', raw, prio);
+      re.lastIndex = ok ? end : start + 1;
+    }
+  });
   PIN_RE.lastIndex = 0;
   while((m = PIN_RE.exec(s))){
     const v = m[1].replace(/[\s,.;:·]+$/, '');
@@ -3189,8 +3237,12 @@ function detectTokens(text){
   for(const t of found){ if(t.start < last) continue; out.push(t); last = t.end; }
   return out;
 }
-function tokIcon(kind){
-  return kind === 'phone' ? ICO.phone : kind === 'email' ? ICO.mail : ICO.pin;
+function fitMemo(ta){
+  const t = ta || document.querySelector('textarea[data-act="memo-text"]');
+  if(!t) return;
+  t.style.height = 'auto';
+  const h = t.scrollHeight;
+  if(h > 0) t.style.height = h + 'px';
 }
 /* a title or an item, with its numbers · mails · addresses as dotted tokens */
 function linkify(text){
@@ -3207,10 +3259,8 @@ function linkify(text){
   });
   return html + esc(s.slice(at));
 }
-/* a memo is a <textarea>, so its hits sit as quiet pills above the ruled sheet */
-function tokPillHTML(t){
-  return `<button type="button" class="dtok" data-act="act-open" data-kind="${t.kind}" data-val="${esc(t.value)}" title="${esc(t.value)}">${tokIcon(t.kind)}<span>${esc(t.value)}</span></button>`;
-}
+/* a memo is read as a div.mview on the ruled sheet, so its hits need no pill:
+   linkify() above puts the dotted underline right in the sentence */
 function openActionPop(kind, value, email){
   const v = String(value || '').trim();
   if(!v || !['phone','email','address'].includes(kind)) return;
@@ -3224,7 +3274,7 @@ function vcardText(a){
   const v = x => String(x == null ? '' : x).replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
   const fn = String(a.name || '').trim() || a.value;
   const lines = ['BEGIN:VCARD', 'VERSION:3.0', `N:;${v(fn)};;;`, `FN:${v(fn)}`];
-  if(a.kind === 'phone') lines.push(`TEL;TYPE=CELL:${v(a.value)}`);
+  if(a.kind === 'phone') lines.push(`TEL;TYPE=CELL:${v(normPhone(a.value))}`);
   if(a.kind === 'email') lines.push(`EMAIL;TYPE=INTERNET:${v(a.value)}`);
   if(a.kind === 'phone' && a.email) lines.push(`EMAIL;TYPE=INTERNET:${v(a.email)}`);
   lines.push('END:VCARD');
@@ -3262,7 +3312,7 @@ function renderActionModal(){
   const a = actionPop;
   const label = a.kind === 'phone' ? 'TEL' : a.kind === 'email' ? 'MAIL' : 'MAP';
   const aria = a.kind === 'phone' ? '전화' : a.kind === 'email' ? '메일' : '주소';
-  const tel = String(a.value).replace(/[^\d+]/g, '');
+  const tel = normPhone(a.value);
   const rows = [];
   const link = (href, ico, text)=>`<a class="arow" href="${esc(href)}" data-act="act-close">${ico}<span class="al">${text}</span><span class="ag">↗</span></a>`;
   const button = (act, ico, text, primary)=>`<button type="button" class="arow${primary?' primary':''}" data-act="${act}">${ico}<span class="al">${text}</span></button>`;
@@ -3557,7 +3607,7 @@ document.addEventListener('click', e=>{
     case 'act-close': closeActionPop(); break;
     case 'act-copy': {
       if(!actionPop) break;
-      const text = actionPop.value, row = el;
+      const text = actionPop.kind === 'phone' ? normPhone(actionPop.value) : actionPop.value, row = el;
       copyText(text).then(ok=>{
         if(!ok){ toast('복사하지 못했습니다'); return; }
         toast('복사했습니다');
@@ -3616,6 +3666,37 @@ document.addEventListener('click', e=>{
       break;
     }
     case 'recur-cancel': recurChoice = null; renderModal(); break;
+    /* a memo at rest: tapping a number · mail · address opens the action sheet
+       (its own data-act wins the closest() walk), tapping any other word puts
+       the pen down on that very character */
+    case 'memo-focus': {
+      let caret = null;
+      try{
+        let cr = null;
+        if(document.caretRangeFromPoint){
+          cr = document.caretRangeFromPoint(e.clientX, e.clientY);
+        }else if(document.caretPositionFromPoint){
+          const p = document.caretPositionFromPoint(e.clientX, e.clientY);
+          if(p) cr = {startContainer:p.offsetNode, startOffset:p.offset};
+        }
+        if(cr && el.contains(cr.startContainer)){
+          const pre = document.createRange();
+          pre.selectNodeContents(el);
+          pre.setEnd(cr.startContainer, cr.startOffset);
+          caret = pre.toString().length;
+        }
+      }catch(err){}
+      memoEditId = el.dataset.memo || val;
+      render();
+      const ta = document.querySelector(`textarea[data-act="memo-text"][data-memo="${memoEditId}"]`);
+      if(ta){
+        fitMemo(ta);
+        const pos = caret == null ? ta.value.length : Math.max(0, Math.min(ta.value.length, caret));
+        ta.focus();
+        try{ ta.setSelectionRange(pos, pos); }catch(err){}
+      }
+      break;
+    }
     /* a checklist line at rest: tapping its words opens it for typing */
     case 'check-focus': {
       checkEditId = val;
@@ -3730,7 +3811,7 @@ document.addEventListener('click', e=>{
     }
     case 'memo-tab': {
       const tab = val==='check' ? 'check' : (val==='option' ? 'option' : 'note');
-      S.memoTab = tab; S.menuTab = tab; persist(true);
+      S.memoTab = tab; S.menuTab = tab; persist(true); memoEditId = null;
       const m = R.memoId ? S.memos.find(x=>x.id===R.memoId) : null;
       if(!m || memoKind(m)!==tab) go('/memo'); else render();
       break;
@@ -3745,6 +3826,7 @@ document.addEventListener('click', e=>{
       S.memoTab = tab; S.menuTab = tab; S.memos.push(m);
       S.menuLast = Object.assign({check:null, note:null}, S.menuLast||{});
       S.menuLast[tab] = m.id;
+      if(tab === 'note') pendingMemoEdit = m.id;
       persist(true); go('/memo/'+m.id); break;
     }
     case 'check-toggle': {
@@ -3779,6 +3861,7 @@ document.addEventListener('click', e=>{
     case 'imemo-tab': {
       const tab = val==='check' ? 'check' : 'note';
       S.inlineTab = S.memoTab = S.menuTab = tab;
+      memoEditId = null;
       persist(true); render(); break;
     }
     case 'imemo-new': {
@@ -3788,12 +3871,19 @@ document.addEventListener('click', e=>{
       S.memos.push(m);
       S.inlineLast = Object.assign({check:null, note:null}, S.inlineLast||{});
       S.inlineLast[tab] = m.id;
+      /* a fresh memo starts with the caret in it */
+      if(tab === 'note') memoEditId = m.id;
       persist(true); render();
       revealInlineEditor();
+      if(memoEditId){
+        const ta = document.querySelector('textarea[data-act="memo-text"]');
+        if(ta){ ta.focus(); try{ ta.setSelectionRange(0,0); }catch(err){} fitMemo(ta); }
+      }
       break;
     }
     case 'imemo-open': {
       const m = S.memos.find(x=>x.id===val);
+      memoEditId = null;
       if(m){
         const tab = memoKind(m);
         S.inlineTab = S.memoTab = S.menuTab = tab;
@@ -3921,7 +4011,7 @@ document.addEventListener('input', e=>{
   else if(act==='memo-text'){
     const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
     m.text = el.value; m.updated = Date.now(); persist(); flashSaved();
-    paintMemoTokens(m.id);
+    fitMemo(el);
   }
   else if(act==='check-edit'){
     const m = S.memos.find(x=>x.id===el.dataset.memo); if(!m) return;
@@ -3932,14 +4022,6 @@ document.addEventListener('input', e=>{
     if(actionPop) actionPop.name = el.value;
   }
 });
-/* the memo's pills follow what is typed, without touching the textarea itself */
-function paintMemoTokens(id){
-  const bar = document.getElementById('dtokbar'); if(!bar) return;
-  const m = S.memos.find(x=>x.id===id); if(!m) return;
-  const toks = detectTokens(m.text || '');
-  bar.innerHTML = toks.map(tokPillHTML).join('');
-  bar.hidden = !toks.length;
-}
 /* a checklist line stops being an input when it loses focus; the text was
    already saved on every keystroke, so this only puts the paper back */
 document.addEventListener('focusout', e=>{
@@ -3951,6 +4033,29 @@ document.addEventListener('focusout', e=>{
     const live = document.querySelector(`input.ctext[data-val="${id}"]`);
     if(live && document.activeElement === live) return;   /* still typing */
     checkEditId = null;
+    render();
+  }, 0);
+});
+
+/* a memo puts the pen away when the finger leaves it: the body was saved on
+   every keystroke, so this only brings the underlined reading sheet back */
+document.addEventListener('focusout', e=>{
+  const t = e.target;
+  if(!t || !t.closest || !memoEditId) return;
+  const ta = t.closest('textarea[data-act="memo-text"]');
+  const ti = t.closest('input[data-act="memo-title"]');
+  if(!ta && !ti) return;
+  const id = memoEditId;
+  /* the title belongs to the same open sheet — moving between them keeps it */
+  const nxt = e.relatedTarget;
+  if(nxt && nxt.closest && nxt.closest('input[data-act="memo-title"]')) return;
+  setTimeout(()=>{
+    if(memoEditId !== id) return;
+    const live = document.querySelector(`textarea[data-act="memo-text"][data-memo="${id}"]`);
+    if(live && document.activeElement === live) return;
+    const a = document.activeElement;
+    if(a && a.closest && a.closest('input[data-act="memo-title"]')) return;
+    memoEditId = null;
     render();
   }, 0);
 });
