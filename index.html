@@ -37,6 +37,7 @@
   --sat:#9BB0C8; --sun:#C08E80; --sun-ink:#A9716A; --sat-ink:#6C88A8;
   --hair:rgba(var(--ink-rgb),.82);
   --dash:rgba(var(--ink-rgb),.26);
+  --line:rgba(var(--ink-rgb),.34);
   --soft:rgba(var(--ink-rgb),.055);
   --numh:24px; --rowh:27px;
   --pad:28px;
@@ -146,6 +147,51 @@ input::placeholder,textarea::placeholder{color:rgba(var(--ink-rgb),.32)}
 .wkstart input{-webkit-appearance:none;appearance:none;width:11px;height:11px;margin:0;border:1px solid rgba(var(--ink-rgb),.5);border-radius:50%;display:grid;place-items:center;cursor:pointer;transition:border-color .15s}
 .wkstart input:checked{border-color:var(--ink)}
 .wkstart input:checked::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--ink)}
+/* ---------- event search: a magnifier and a hairline, left of m / s ---------- */
+/* the two controls share one optical line with the big month number; the field
+   never grows past its share, so 01–12 · 검색 · m / s stay apart at every width */
+.mhead{position:relative}
+.mtools{display:flex;align-items:flex-start;gap:14px;flex:1 1 auto;justify-content:flex-end;min-width:0;padding-top:14px;margin-left:12px}
+.mtools .wkstart{padding-top:0}
+.msearch-wrap{flex:0 1 178px;min-width:0}
+.msearch{display:flex;align-items:center;gap:6px;min-width:0;border-bottom:1px solid var(--line);padding-bottom:4px;transition:border-color .16s}
+.msearch .mag{width:13px;height:13px;flex:0 0 auto;opacity:.5;transition:opacity .16s}
+.msearch input{flex:1 1 auto;min-width:0;width:100%;height:22px;padding:0;font-family:var(--ui);font-size:calc(12.5px*var(--fs-k));letter-spacing:.01em;line-height:1;background:transparent;border:0;outline:none}
+.msearch .sx{flex:0 0 auto;width:16px;height:16px;display:grid;place-items:center;font-size:calc(12px*var(--fs-k));line-height:1;opacity:.42}
+.msearch .sx:hover{opacity:.9}
+.msearch.on{border-bottom-color:rgba(var(--ink-rgb),.72)}
+.msearch.on .mag{opacity:.85}
+/* results: one sheet of paper under the header row, kept inside the page width */
+.sresults{position:absolute;top:calc(100% + 4px);right:0;z-index:36;width:min(430px,100%);max-height:min(58dvh,360px);overflow-y:auto;background:var(--paper);border:1px solid var(--hair);border-radius:2px;box-shadow:0 18px 40px rgba(0,0,0,.16);animation:fade .13s ease}
+.sres{display:flex;align-items:baseline;gap:6px;width:100%;padding:9px 12px;text-align:left;border-bottom:1px dotted var(--dash);font-size:calc(12.5px*var(--fs-k));line-height:1.25}
+.sres:last-child{border-bottom:0}
+.sres:hover{background:var(--soft)}
+.sres .sr-d{flex:0 0 auto;font-family:var(--disp);font-style:italic;font-weight:600;font-size:calc(12px*var(--fs-k));letter-spacing:.03em;font-variant-numeric:tabular-nums}
+.sres .sr-y{font-weight:400;opacity:.62;margin-right:2px}
+.sres .sr-w{flex:0 0 auto;font-size:calc(10px*var(--fs-k));opacity:.5}
+.sres .sr-t{flex:0 0 auto;font-size:calc(10.5px*var(--fs-k));opacity:.6;font-variant-numeric:tabular-nums}
+.sres .sr-b{width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.6;flex:0 0 auto;align-self:center}
+.sres .sr-l{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sres .sr-r{flex:0 0 auto;font-size:calc(9px*var(--fs-k));letter-spacing:.02em;opacity:.6;border:1px solid var(--dash);border-radius:999px;padding:0 5px;line-height:15px}
+.sres.sr-go{opacity:.8}
+.sres.sr-go .sr-gl{font-size:calc(11px*var(--fs-k));letter-spacing:.01em;opacity:.85}
+.sres .sr-a{margin-left:auto;font-size:calc(11px*var(--fs-k));opacity:.5;font-style:normal}
+.sr-empty{padding:14px 12px;font-size:calc(11.5px*var(--fs-k));opacity:.5}
+@media (max-width:760px){
+  .mtools{gap:10px;padding-top:10px;margin-left:8px}
+  .msearch-wrap{flex:1 1 auto;max-width:152px}
+  .msearch input{font-size:max(16px,calc(12.5px*var(--fs-k)));height:24px}
+  .msearch .mag{width:12px;height:12px}
+}
+
+/* ---------- repeat selector in the day modal ---------- */
+.reprow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:12px}
+.dedit .reprow{flex:1 0 100%;margin-top:8px}
+.rp{font-family:var(--ui);font-size:calc(11px*var(--fs-k));line-height:1;letter-spacing:.01em;padding:5px 10px;border:1px solid rgba(var(--ink-rgb),.24);border-radius:999px;color:var(--ink);opacity:.55;transition:opacity .15s,background .15s,border-color .15s}
+.rp:hover{opacity:.85}
+.rp[aria-checked="true"]{opacity:1;background:rgba(var(--ink-rgb),.13);border-color:rgba(var(--ink-rgb),.62)}
+.dedit{flex-wrap:wrap}
+.ditem .drep{font-size:calc(9px*var(--fs-k));letter-spacing:.02em;opacity:.6;border:1px solid var(--dash);border-radius:999px;padding:0 4px;margin-left:6px;vertical-align:1px}
 .led{width:6px;height:6px;border-radius:50%;background:rgba(var(--ink-rgb),.3);flex:0 0 auto}
 .led.on{background:#6FA37A;box-shadow:0 0 0 3px rgba(111,163,122,.18)}
 body[data-theme="olive"] .led.on{background:#3E6B48;box-shadow:0 0 0 3px rgba(62,107,72,.18)}
@@ -1060,6 +1106,11 @@ let R = parseRoute();
 let openDay = null;      // iso date of open day modal
 let openBackup = false;
 let editEvent = null;    // id of the event being edited inside the day modal
+let editRepeat = null;   // the repeat the edit form is showing (null = the event's own)
+let newRepeat = 'none';  // the repeat picked for the event about to be added
+let searchQ = '';        // what is typed into the monthly search field
+let searchOpen = false;
+let pendingOpenDay = null;   // a search hit that must open its day modal after the jump
 let syncBusy = false;
 
 function go(hash){
@@ -1084,6 +1135,8 @@ function setRoute(){
     }
   }
   render();
+  /* a search hit jumped here: open that day's modal once the month is on screen */
+  if(pendingOpenDay){ openDay = pendingOpenDay; pendingOpenDay = null; editEvent = null; editRepeat = null; renderModal(); }
   /* on a phone the list stays put and the editor opens underneath it — bring it into view */
   if(R.view==='memo' && R.memoId && window.innerWidth <= 760){
     const ed = document.querySelector('.editor');
@@ -1110,8 +1163,232 @@ function openMenu(){
 }
 
 /* ---------------- helpers ---------------- */
-function eventsOn(date){ return S.events.filter(e=>e.date===date).sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99')); }
+/* ---------------- recurring events ---------------- */
+/* an event carries repeat: 'none' | 'weekly' | 'monthly' | 'yearly' (default none).
+   One series keeps a single object; every date it lands on is an occurrence, and a
+   recurring occurrence is ticked through doneDates[date] so checking one week never
+   ticks the next. */
+const REPEATS = [['none','없음'],['weekly','매주'],['monthly','매월'],['yearly','매년']];
+const repeatOf = ev => { const r = ev && ev.repeat; return (r==='weekly'||r==='monthly'||r==='yearly') ? r : 'none'; };
+const repeatLabel = ev => { const r = repeatOf(ev); return r==='none' ? '' : (r==='weekly' ? '매주' : r==='monthly' ? '매월' : '매년'); };
+const repeatRRULE = ev => ({weekly:'RRULE:FREQ=WEEKLY', monthly:'RRULE:FREQ=MONTHLY', yearly:'RRULE:FREQ=YEARLY'}[repeatOf(ev)] || '');
+function repeatFromGoogle(it){
+  const rec = Array.isArray(it && it.recurrence) ? it.recurrence.join(' ') : '';
+  const m = rec.match(/FREQ=(DAILY|WEEKLY|MONTHLY|YEARLY)/i);
+  if(!m) return null;
+  const f = m[1].toUpperCase();
+  return f==='WEEKLY' ? 'weekly' : f==='MONTHLY' ? 'monthly' : f==='YEARLY' ? 'yearly' : null;
+}
+/* does this event land on this date? only dates on or after its own count */
+function occursOn(ev, ds){
+  if(!ev || !ev.date || !ds) return false;
+  const r = repeatOf(ev);
+  if(r === 'none') return ev.date === ds;
+  if(ds < ev.date) return false;
+  const ey = +ev.date.slice(0,4), em = +ev.date.slice(5,7), ed = +ev.date.slice(8,10);
+  const y = +ds.slice(0,4), m = +ds.slice(5,7), d = +ds.slice(8,10);
+  if(r === 'weekly') return (dayNum(ds) - dayNum(ev.date)) % 7 === 0;
+  if(r === 'monthly') return d === ed && (y*12 + m) >= (ey*12 + em);
+  return m === em && d === ed && y >= ey;
+}
+/* the next occurrence after ds; a monthly 29/30/31 skips the months that have no
+   such day (Feb 30 never exists), a yearly Feb 29 waits for the next leap year */
+function nextOccurrence(ev, ds){
+  const r = repeatOf(ev);
+  if(r === 'weekly') return isoFromDay(dayNum(ds) + 7);
+  if(r === 'monthly'){
+    const d = +ds.slice(8,10);
+    let y = +ds.slice(0,4), m = +ds.slice(5,7);
+    for(let i=0;i<12;i++){
+      m++; if(m>12){ m = 1; y++; }
+      if(d <= daysInMonth(y,m)) return iso(y,m,d);
+    }
+    return null;
+  }
+  if(r === 'yearly'){
+    const m = +ds.slice(5,7), d = +ds.slice(8,10);
+    let y = +ds.slice(0,4);
+    for(let i=0;i<4;i++){
+      y++;
+      if(d <= daysInMonth(y,m)) return iso(y,m,d);
+    }
+    return null;
+  }
+  return null;
+}
+/* the first occurrence on or after `from` (the event's own date when it is later) */
+function nextOnOrAfter(ev, from){
+  if(!ev || !ev.date) return null;
+  const r = repeatOf(ev);
+  if(r === 'none') return ev.date >= from ? ev.date : null;
+  if(from <= ev.date) return ev.date;
+  if(r === 'weekly'){
+    const diff = dayNum(from) - dayNum(ev.date);
+    return isoFromDay(dayNum(ev.date) + Math.ceil(diff/7)*7);
+  }
+  let ds = ev.date, guard = 0;
+  while(ds && ds < from && guard++ < 500) ds = nextOccurrence(ev, ds);
+  return ds;
+}
+function occDone(ev, ds){
+  if(repeatOf(ev) === 'none') return !!ev.done;
+  return !!((ev.doneDates||{})[ds]);
+}
+function setOccDone(ev, ds){
+  const next = !occDone(ev, ds);
+  if(repeatOf(ev) === 'none'){ ev.done = next; return; }
+  ev.doneDates = Object.assign({}, ev.doneDates||{});
+  if(next) ev.doneDates[ds] = true;
+  else delete ev.doneDates[ds];
+}
+/* one event as it reads on one date — a copy, so the series itself never moves */
+function occurrence(ev, ds){
+  return Object.assign({}, ev, {date: ds, occDate: ds, repeat: repeatOf(ev), done: occDone(ev, ds)});
+}
+function eventsOn(date){
+  const out = [];
+  (S.events||[]).forEach(ev=>{ if(occursOn(ev, date)) out.push(occurrence(ev, date)); });
+  return out.sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+}
 function monthEvents(y,m){ return S.events.filter(e=>e.date.startsWith(`${y}-${pad(m)}`)); }
+/* every occurrence that falls inside the month (recurring series expanded) */
+function monthOccurrences(y,m){ return eventsInRange(iso(y,m,1), iso(y,m,daysInMonth(y,m))); }
+function eventsInRange(from, to){
+  const out = [];
+  (S.events||[]).forEach(ev=>{
+    if(!ev || !ev.date) return;
+    if(repeatOf(ev) === 'none'){
+      if(ev.date >= from && ev.date <= to) out.push(occurrence(ev, ev.date));
+      return;
+    }
+    let ds = nextOnOrAfter(ev, from), guard = 0;
+    while(ds && ds <= to && guard++ < 400){
+      out.push(occurrence(ev, ds));
+      ds = nextOccurrence(ev, ds);
+    }
+  });
+  return out.sort((a,b)=>a.date.localeCompare(b.date) || (a.time||'99:99').localeCompare(b.time||'99:99'));
+}
+function hasOccurrenceOn(ds){
+  return (S.events||[]).some(ev=>occursOn(ev, ds));
+}
+
+/* ---------------- event search ---------------- */
+/* the box takes a title word or a date: 2027-01-15 · 2027.1.15 · 2027년 1월 15일 ·
+   1/15 · 1월 15일 · 2027-01 · 1월. A date query also gets a jump row, so any day or
+   month can be reached even when nothing is written on it. */
+const WDAY_KO = ['일','월','화','수','목','금','토'];
+function parseDateQuery(raw){
+  const s = String(raw||'').trim();
+  if(!s || s.length > 26) return null;
+  const full = s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?$/);
+  if(full){
+    const y = +full[1], m = +full[2], d = +full[3];
+    if(m < 1 || m > 12 || d < 1 || d > daysInMonth(y,m)) return null;
+    return {kind:'day', year:y, month:m, day:d};
+  }
+  const md = s.match(/^(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?$/);
+  if(md){
+    const m = +md[1], d = +md[2];
+    if(m < 1 || m > 12 || d < 1 || d > daysInMonth(S.year,m)) return null;
+    return {kind:'day', year:null, month:m, day:d};
+  }
+  const ym = s.match(/^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*월?$/);
+  if(ym){
+    const y = +ym[1], m = +ym[2];
+    if(m < 1 || m > 12) return null;
+    return {kind:'month', year:y, month:m};
+  }
+  const mo = s.match(/^(\d{1,2})\s*월$/);
+  if(mo){
+    const m = +mo[1];
+    if(m < 1 || m > 12) return null;
+    return {kind:'month', year:null, month:m};
+  }
+  return null;
+}
+/* title matches across every calendar, recurring occurrences expanded over
+   last year … the year after next */
+function keywordHits(raw){
+  const needle = String(raw||'').trim().toLowerCase();
+  if(!needle) return [];
+  const from = iso(S.year-1,1,1), to = iso(S.year+2,12,31);
+  const out = [];
+  (S.events||[]).forEach(ev=>{
+    if(!ev || !String(ev.title||'').toLowerCase().includes(needle)) return;
+    if(repeatOf(ev) === 'none'){ out.push(occurrence(ev, ev.date)); return; }
+    let ds = nextOnOrAfter(ev, from), guard = 0, any = false;
+    while(ds && ds <= to && guard++ < 400){
+      out.push(occurrence(ev, ds)); any = true;
+      ds = nextOccurrence(ev, ds);
+    }
+    if(!any) out.push(occurrence(ev, ev.date));
+  });
+  return out.sort((a,b)=>a.date.localeCompare(b.date) || (a.time||'99:99').localeCompare(b.time||'99:99'));
+}
+function searchHits(raw){
+  const q = String(raw||'').trim();
+  const dq = parseDateQuery(q);
+  if(dq && dq.kind === 'day'){
+    const y = dq.year == null ? S.year : dq.year;
+    const jumps = [{kind:'day', date: iso(y, dq.month, dq.day)}];
+    const hits = [];
+    const years = dq.year == null ? [y, y+1, y-1, y+2] : [y];
+    years.forEach(yy=>{
+      if(yy < 1900 || yy > 2200) return;
+      eventsOn(iso(yy, dq.month, dq.day)).forEach(o=>hits.push(o));
+    });
+    return {jumps, hits: hits.slice(0,60)};
+  }
+  if(dq){
+    const y = dq.year == null ? S.year : dq.year;
+    return {jumps:[{kind:'month', date: iso(y, dq.month, 1)}], hits: monthOccurrences(y, dq.month).slice(0,60)};
+  }
+  return {jumps:[], hits: keywordHits(q).slice(0,60)};
+}
+function searchResultsHTML(raw){
+  const q = String(raw||'').trim();
+  if(!q) return '';
+  const {jumps, hits} = searchHits(q);
+  const parts = [];
+  jumps.forEach(j=>{
+    const y = +j.date.slice(0,4), m = +j.date.slice(5,7), d = +j.date.slice(8,10);
+    if(j.kind === 'day'){
+      const wd = WDAY_KO[new Date(y, m-1, d).getDay()];
+      parts.push(`<button class="sres sr-go" data-act="search-go" data-jump="day" data-val="${j.date}"><span class="sr-gl"><span class="sr-d">${y}.${pad(m)}.${pad(d)}</span> (${wd})로 이동</span><span class="sr-a">↗</span></button>`);
+    }else{
+      parts.push(`<button class="sres sr-go" data-act="search-go" data-jump="month" data-val="${j.date}"><span class="sr-gl"><span class="sr-d">${y}. ${m}월</span>로 이동</span><span class="sr-a">↗</span></button>`);
+    }
+  });
+  hits.forEach(e=>{
+    const y = +e.date.slice(0,4), m = +e.date.slice(5,7), d = +e.date.slice(8,10);
+    const wd = WDAY_KO[new Date(y, m-1, d).getDay()];
+    const ink = calColorOf(calById(e.calendarId));
+    const rep = repeatLabel(e);
+    parts.push(`<button class="sres" data-act="search-go" data-jump="day" data-val="${e.date}">
+      <span class="sr-d">${y !== S.year ? `<span class="sr-y">${y}</span>` : ''}${pad(m)}.${pad(d)}</span>
+      <span class="sr-w">(${wd})</span>
+      ${e.time ? `<span class="sr-t">${e.time}</span>` : ''}
+      <span class="sr-b"${ink ? ` style="color:${ink}"` : ''}></span>
+      <span class="sr-l"${ink ? ` style="color:${ink}"` : ''}>${esc(e.title)}</span>
+      ${rep ? `<span class="sr-r">${rep}</span>` : ''}
+    </button>`);
+  });
+  if(!hits.length) parts.push(`<div class="sr-empty">${esc(q)}에 맞는 일정이 없습니다.</div>`);
+  return parts.join('');
+}
+function searchPanelHTML(){
+  const q = String(searchQ||'').trim();
+  return `<div class="sresults" id="evresults"${q ? '' : ' hidden'}>${q ? searchResultsHTML(q) : ''}</div>`;
+}
+function closeSearchUI(){
+  searchQ = ''; searchOpen = false;
+  const box = document.getElementById('evresults');
+  if(box){ box.hidden = true; box.innerHTML = ''; }
+  const w = document.getElementById('msearch'); if(w) w.classList.remove('on');
+  const inp = document.getElementById('evsearch'); if(inp) inp.value = '';
+  const cl = document.getElementById('evclear'); if(cl) cl.hidden = true;
+}
 function fmtTime(t){ if(!t) return ''; const [h,mi]=t.split(':'); const H=+h; const ap=H<12?'오전':'오후'; const hh=H%12===0?12:H%12; return `${ap} ${hh}:${mi}`; }
 function timeAgo(ts){
   if(!ts) return '';
@@ -1569,6 +1846,9 @@ function googleEventBody(e){
     body.start = {date: e.date};
     body.end = {date: nextDay(e.date)};
   }
+  /* an repeating event goes to Google as a series, so its rule travels with it */
+  const rr = repeatRRULE(e);
+  if(rr) body.recurrence = [rr];
   return body;
 }
 async function pushEventToGoogle(ev){
@@ -1655,15 +1935,28 @@ async function calendarSync(){
         if(!date) return;
         const time = start.dateTime ? start.dateTime.slice(11, 16) : '';
         const title = (it.summary || '(제목 없음)').trim();
-        let ev = S.events.find(e=>e.googleId === it.id && eventCalId(e) === cid);
+        const series = it.recurringEventId || null;      // this instance belongs to a series
+        const rep = repeatFromGoogle(it);
+        /* a series already kept as one repeating event covers every instance Google
+           lists for it — adopting the instances too would multiply the series */
+        let ev = series ? S.events.find(e=>e.googleId === series) : null;
+        if(ev){
+          if(rep) ev.repeat = rep;
+          ev.title = title; ev.calendarId = cid; ev.source = 'google';
+          pulled++; return;
+        }
+        ev = S.events.find(e=>e.googleId === it.id && eventCalId(e) === cid);
         if(!ev) ev = S.events.find(e=>e.googleId === it.id);
         if(!ev){
           ev = S.events.find(e=>!e.googleId && e.date === date && (e.time || '') === time && (e.title || '').trim() === title);
         }
         if(ev){
-          ev.googleId = it.id; ev.calendarId = cid; ev.date = date; ev.time = time; ev.title = title; ev.source = 'google';
+          /* an instance of a series adopts the series id, so the remaining instances
+             find their base event on the next pass instead of becoming copies */
+          ev.googleId = series || it.id; ev.calendarId = cid; ev.date = date; ev.time = time; ev.title = title; ev.source = 'google';
+          if(rep) ev.repeat = rep;
         }else{
-          S.events.push({id:uid(), date, time, title, done:false, source:'google', googleId: it.id, calendarId: cid});
+          S.events.push({id:uid(), date, time, title, done:false, source:'google', googleId: it.id, calendarId: cid, repeat: rep || 'none', doneDates:{}});
         }
         pulled++;
       });
@@ -1705,6 +1998,26 @@ function backupScopeAny(){
   const sc = backupScopeState();
   return BACKUP_SCOPES.some(x=>sc[x.id]);
 }
+/* the year's schedule as the Doc reads it: a recurring series appears once, at its
+   first occurrence inside the year, tagged with its rule — restoring it rebuilds the
+   series instead of a pile of copies */
+function backupScheduleRows(){
+  const year = S.year, rows = {};
+  (S.events||[]).forEach(ev=>{
+    if(!ev || !ev.date) return;
+    const rep = repeatOf(ev);
+    let ds = ev.date;
+    if(rep !== 'none'){
+      ds = nextOnOrAfter(ev, `${year}-01-01`);
+      if(!ds || ds.slice(0,4) !== String(year)) return;
+    }else if(ds.slice(0,4) !== String(year)) return;
+    const m = +ds.slice(5,7);
+    (rows[m] = rows[m] || []).push({date: ds, time: ev.time || '', title: ev.title || '', repeat: rep});
+  });
+  Object.keys(rows).forEach(m=>rows[m].sort((a,b)=>a.date.localeCompare(b.date) || a.time.localeCompare(b.time)));
+  return rows;
+}
+function repeatTag(rep){ return rep==='weekly' ? '매주' : rep==='monthly' ? '매월' : rep==='yearly' ? '매년' : ''; }
 function backupDocText(){
   const sc = backupScopeState();
   const lines = [];
@@ -1713,15 +2026,16 @@ function backupDocText(){
   lines.push('');
   if(sc.schedule){
     lines.push('1. 월별 일정');
-    let any = false;
-    for(let m=1; m<=12; m++){
-      const evs = monthEvents(S.year, m).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||'') || (a.time||'').localeCompare(b.time||''));
-      if(!evs.length) continue;
-      any = true;
+    const rows = backupScheduleRows();
+    const months = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+    if(months.length) months.forEach(m=>{
       lines.push(`${MON[m-1].replace('.','')} ${S.year}`);
-      evs.forEach(e=>lines.push(`· ${+e.date.slice(8,10)}일 ${e.time ? e.time + ' ' : ''}${e.title}`));
-    }
-    if(!any) lines.push('(없음)');
+      rows[m].forEach(r=>{
+        const tag = r.repeat !== 'none' ? ` (${repeatTag(r.repeat)})` : '';
+        lines.push(`· ${+r.date.slice(8,10)}일 ${r.time ? r.time + ' ' : ''}${r.title}${tag}`);
+      });
+    });
+    else lines.push('(없음)');
     lines.push('');
   }
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
@@ -1775,10 +2089,19 @@ function parseBackupDoc(raw){
       const me = line.match(/^\s*[·•]\s*(\d{1,2})일\s*(?:(\d{1,2}:\d{2})\s*)?(.+?)\s*$/);
       if(me && month){
         const day = Number(me[1]);
-        if(day >= 1 && day <= 31) out.events.push({
-          id:uid(), date: iso(year, month, day), time: me[2] || '',
-          title: me[3].replace(/\s*\(Google\)$/, ''), done:false, source:'local', googleId:null
-        });
+        if(day >= 1 && day <= 31){
+          let title = me[3].replace(/\s*\(Google\)$/, '').trim();
+          let repeat = 'none';
+          const tag = title.match(/\s*\((매주|매월|매년)\)$/);
+          if(tag){
+            repeat = tag[1] === '매주' ? 'weekly' : tag[1] === '매월' ? 'monthly' : 'yearly';
+            title = title.slice(0, tag.index).trim();
+          }
+          out.events.push({
+            id:uid(), date: iso(year, month, day), time: me[2] || '', title,
+            done:false, source:'local', googleId:null, calendarId:'primary', repeat, doneDates:{}
+          });
+        }
       }
       continue;
     }
@@ -2273,9 +2596,19 @@ function renderMonthly(){
   <div class="mcol">
   <div class="mhead">
     <div class="mnum">${pad(m)}</div>
-    <div class="wkstart" role="radiogroup" aria-label="주 시작 요일">
-      <label title="월요일 시작"><input type="radio" name="wkstart" value="m" data-act="wkstart" ${ws==='m'?'checked':''}><span>m</span></label>
-      <label title="일요일 시작"><input type="radio" name="wkstart" value="s" data-act="wkstart" ${ws==='s'?'checked':''}><span>s</span></label>
+    <div class="mtools">
+      <div class="msearch-wrap">
+        <div class="msearch${searchQ.trim()?' on':''}" id="msearch">
+          <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.6" cy="10.6" r="6.4"/><path d="M15.4 15.4 20 20"/></svg>
+          <input id="evsearch" type="text" data-act="evsearch" value="${esc(searchQ)}" placeholder="검색" aria-label="일정 검색" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+          <button class="sx" id="evclear" data-act="evsearch-clear" aria-label="검색 지우기"${searchQ?'':' hidden'}>×</button>
+        </div>
+        ${searchPanelHTML()}
+      </div>
+      <div class="wkstart" role="radiogroup" aria-label="주 시작 요일">
+        <label title="월요일 시작"><input type="radio" name="wkstart" value="m" data-act="wkstart" ${ws==='m'?'checked':''}><span>m</span></label>
+        <label title="일요일 시작"><input type="radio" name="wkstart" value="s" data-act="wkstart" ${ws==='s'?'checked':''}><span>s</span></label>
+      </div>
     </div>
   </div>
   <div class="dow">${head}</div>
@@ -2290,6 +2623,10 @@ function renderYearly(){
   const y = S.year;
   const head = [`<div class="yh corner"></div>`].concat(MON.map((mn,i)=>
     `<div class="yh" data-act="month" data-val="${i+1}"><b>${i+1}</b><span>${mn}</span></div>`)).join('');
+  /* recurring series reach months they did not start in, so the dots are read
+     from the expanded occurrences of each month */
+  const occByMonth = {};
+  for(let mm=1; mm<=12; mm++) occByMonth[mm] = new Set(monthOccurrences(y,mm).map(o=>o.date));
   const rows = [];
   for(let d=1; d<=31; d++){
     const hard = (d===10||d===20) ? ' hard' : '';
@@ -2299,7 +2636,7 @@ function renderYearly(){
       if(d>last){ row += `<div class="ycell yoff"></div>`; continue; }
       const wd = dowMon(y,m,d);
       const dot = wd===5? `<span class="wd sat"></span>` : wd===6? `<span class="wd sun"></span>` : '';
-      const has = monthEvents(y,m).some(e=>e.date===iso(y,m,d));
+      const has = occByMonth[m] && occByMonth[m].has(iso(y,m,d));
       row += `<div class="ycell${hard}" data-act="month" data-val="${m}">${dot}${has?'<span class="emk"></span>':''}</div>`;
     }
     rows.push(row);
@@ -2507,10 +2844,11 @@ function dayRowHTML(e){
   const ro = eventReadOnly(e);
   const src = (e.source==='google' && slot===null) ? '<span class="src">G</span>' : '';
   const nm = slot===null ? '' : `<span class="dcal">· ${esc(calName(e.calendarId))}</span>`;
+  const rep = repeatLabel(e);
   return `<div class="ditem ${e.done?'done':''}${ro?' ro':''}">
-            <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" style="margin-top:2px"><i></i></div>
+            <div class="cb ${e.done?'on':''}" data-act="day-toggle" data-val="${e.id}" data-date="${e.occDate||e.date}" style="margin-top:2px"><i></i></div>
             <div class="time">${e.time? fmtTime(e.time):'종일'}</div>
-            <div class="body"${calInk(e.calendarId)} data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${src}${nm}</div>
+            <div class="body"${calInk(e.calendarId)} data-act="day-edit" data-val="${e.id}" title="눌러서 수정">${esc(e.title)}${src}${nm}${rep?`<span class="drep">${rep}</span>`:''}</div>
             <button class="del" data-act="day-del" data-val="${e.id}" aria-label="삭제">×</button>
           </div>${editEvent===e.id ? `<div class="dedit" data-stop="1">
             <div class="time-wrap ${e.time?'':'is-empty'}">
@@ -2520,6 +2858,9 @@ function dayRowHTML(e){
             <input class="grow" type="text" id="edittitle" value="${esc(e.title)}" placeholder="일정" aria-label="일정 제목">
             <button class="btn primary" data-act="day-save" data-val="${e.id}">저장</button>
             <button class="btn" data-act="day-cancel">취소</button>
+            <div class="reprow" role="radiogroup" aria-label="반복">
+              ${REPEATS.map(([v,l])=>`<button class="rp" role="radio" aria-checked="${(editRepeat||repeatOf(e))===v}" data-act="edit-repeat" data-val="${v}">${l}</button>`).join('')}
+            </div>
           </div>` : ''}`;
 }
 let dayHintTimer = null;
@@ -2556,6 +2897,9 @@ function renderModal(){
           <input type="text" id="newtitle" placeholder="일정 입력" aria-label="일정">
           <button data-act="day-add">추가</button>
         </div>
+        <div class="reprow" id="newrep" role="radiogroup" aria-label="반복">
+          ${REPEATS.map(([v,l])=>`<button class="rp" role="radio" aria-checked="${newRepeat===v}" data-act="new-repeat" data-val="${v}">${l}</button>`).join('')}
+        </div>
         <div class="empty-note">${S.google.connected? '추가한 일정은 Google Calendar로도 전송됩니다 (양방향 동기화).' : 'Google Calendar를 연결하면 이 일정이 캘린더에도 저장됩니다.'}</div>
       </div>
     </div>`;
@@ -2571,14 +2915,15 @@ function renderBackupModal(){
   const anyScope = backupScopeAny();
   const notes = S.memos.filter(m=>memoKind(m)==='note').sort((a,b)=>b.updated-a.updated);
   const checks = S.memos.filter(m=>memoKind(m)==='check').sort((a,b)=>b.updated-a.updated);
-  const sectionSchedule = () => `
+  const sectionSchedule = () => {
+    const rows = backupScheduleRows();
+    const months = Object.keys(rows).map(Number).sort((a,b)=>a-b);
+    return `
         <h2>1. 월별 일정</h2>
-        ${[1,2,3,4,5,6,7,8,9,10,11,12].filter(m=>monthEvents(S.year,m).length).map(m=>{
-          const evs = monthEvents(S.year,m);
-          return `<h3>${MON[m-1]} ${S.year}</h3><ul>${evs.sort((a,b)=>a.date.localeCompare(b.date)).map(e=>`<li>${+e.date.slice(8,10)}일 ${e.time?'· '+e.time+' ':''}${esc(e.title)}</li>`).join('')}</ul>`;
-        }).join('') || '<div class="mono">(일정 없음)</div>'}
-        ${(()=>{ const empty = [1,2,3,4,5,6,7,8,9,10,11,12].filter(m=>!monthEvents(S.year,m).length);
+        ${months.map(m=>`<h3>${MON[m-1]} ${S.year}</h3><ul>${rows[m].map(r=>`<li>${+r.date.slice(8,10)}일 ${r.time?'· '+r.time+' ':''}${esc(r.title)}${r.repeat!=='none'?` (${repeatTag(r.repeat)})`:''}</li>`).join('')}</ul>`).join('') || '<div class="mono">(일정 없음)</div>'}
+        ${(()=>{ const empty = [1,2,3,4,5,6,7,8,9,10,11,12].filter(m=>!rows[m]);
           return empty.length ? `<div class="mono" style="opacity:.55">일정 없는 달: ${empty.map(m=>MON[m-1].replace('.','')).join(' · ')}</div>` : ''; })()}`;
+  };
   return `<div class="scrim" data-act="close-backup">
     <div class="modal wide" data-stop="1">
       <div class="modal-h">
@@ -2656,6 +3001,8 @@ document.addEventListener('touchend', e=>{
 }, {capture:true, passive:true});
 document.addEventListener('touchcancel', ()=>{ swipeStart = null; }, {capture:true, passive:true});
 document.addEventListener('click', e=>{
+  /* anything outside the search field closes its results */
+  if(searchOpen && !e.target.closest('.msearch-wrap')) closeSearchUI();
   const el = e.target.closest('[data-act]');
   if(!el) return;
   const act = el.dataset.act, val = el.dataset.val;
@@ -2664,7 +3011,7 @@ document.addEventListener('click', e=>{
   /* Only the backdrop itself closes a modal — clicks on inputs or empty space
      inside the modal bubble up to the scrim and used to dismiss it. */
   if((act==='close-modal'||act==='close-backup') && el.classList.contains('scrim') && e.target!==el) return;
-  if(act==='search'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
+  if(act==='search'||act==='evsearch'||act==='memo-title'||act==='memo-text'||act==='check-edit'||act==='check-new') return;
   if(act==='wkstart'||act==='holiday-toggle'||act==='scope-toggle') return;
   if(CLICK_ACTS.has(act)) uiClick();
   switch(act){
@@ -2708,13 +3055,13 @@ document.addEventListener('click', e=>{
       if(opening) uiClick();
       break;
     }
-    case 'open-day': openDay = val; editEvent = null; renderModal(); break;
+    case 'open-day': openDay = val; editEvent = null; editRepeat = null; newRepeat = 'none'; renderModal(); break;
     case 'close-modal': openDay = null; editEvent = null; renderModal(); break;
     /* inline edit of one event: tap the title, fix it, save */
     case 'day-edit': {
       const ev = S.events.find(x=>x.id===val);
       if(ev && eventReadOnly(ev)){ dayHint('읽기 전용 공유 달력 일정이에요'); break; }
-      editEvent = val; renderModal();
+      editEvent = val; editRepeat = ev ? repeatOf(ev) : 'none'; renderModal();
       const ti = document.getElementById('edittitle');
       if(ti){ ti.focus(); try{ ti.setSelectionRange(ti.value.length, ti.value.length); }catch(err){} }
       break;
@@ -2726,18 +3073,22 @@ document.addEventListener('click', e=>{
       const title = ((tt && tt.value) || '').trim();
       if(!title){ if(tt) tt.focus(); return; }
       const time = (ti && ti.value) || '';
-      if(ev.title === title && ev.time === time){ editEvent = null; renderModal(); return; }
-      ev.title = title; ev.time = time;
-      persist(true); editEvent = null; renderModal(); render();
+      const rep = editRepeat || repeatOf(ev);
+      if(ev.title === title && ev.time === time && repeatOf(ev) === rep){ editEvent = null; editRepeat = null; renderModal(); return; }
+      ev.title = title; ev.time = time; ev.repeat = rep;
+      if(rep === 'none') ev.doneDates = {};
+      persist(true); editEvent = null; editRepeat = null; renderModal(); render();
       toast('일정을 수정했습니다');
       if(S.google.connected && ev.googleId){
         patchEventOnGoogle(ev).catch(err=>{ if(err.status === 401) clearToken(); });
       }
       break;
     }
-    case 'day-cancel': editEvent = null; renderModal(); break;
+    case 'day-cancel': editEvent = null; editRepeat = null; renderModal(); break;
+    /* one tick per occurrence: a weekly series marks only the date it is on */
     case 'day-toggle': {
-      const ev = S.events.find(x=>x.id===val); if(ev){ ev.done = !ev.done; persist(); renderModal(); render(); }
+      const ev = S.events.find(x=>x.id===val);
+      if(ev){ setOccDone(ev, el.dataset.date || openDay || ev.date); persist(); renderModal(); render(); }
       break;
     }
     case 'day-del': {
@@ -2753,8 +3104,9 @@ document.addEventListener('click', e=>{
       const tt = document.getElementById('newtitle');
       const title = (tt.value||'').trim();
       if(!title){ tt.focus(); return; }
-      const ev = {id:uid(), date:openDay, time:ti.value||'', title, done:false, source:'local', googleId:null, calendarId:'primary'};
+      const ev = {id:uid(), date:openDay, time:ti.value||'', title, done:false, source:'local', googleId:null, calendarId:'primary', repeat:newRepeat, doneDates:{}};
       S.events.push(ev);
+      newRepeat = 'none';
       persist(true); ti.value=''; tt.value=''; renderModal(); render();
       if(S.google.connected && silentToken()){
         pushEventToGoogle(ev)
@@ -2896,6 +3248,36 @@ document.addEventListener('click', e=>{
       }
       break;
     }
+    /* the repeat pills of the add row and the edit form repaint in place, so the
+       title already typed stays where it is */
+    case 'new-repeat': {
+      newRepeat = (val==='weekly'||val==='monthly'||val==='yearly') ? val : 'none';
+      const box = document.getElementById('newrep');
+      if(box) box.querySelectorAll('.rp').forEach(b=>b.setAttribute('aria-checked', String(b.dataset.val===newRepeat)));
+      break;
+    }
+    case 'edit-repeat': {
+      editRepeat = (val==='weekly'||val==='monthly'||val==='yearly') ? val : 'none';
+      const box = el.closest('.reprow');
+      if(box) box.querySelectorAll('.rp').forEach(b=>b.setAttribute('aria-checked', String(b.dataset.val===editRepeat)));
+      break;
+    }
+    /* a search hit: turn to that month and open its day (a month jump stays on the grid) */
+    case 'search-go': {
+      const ds = val;
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(ds)) break;
+      const y = +ds.slice(0,4), m = +ds.slice(5,7);
+      const jump = el.dataset.jump || 'day';
+      closeSearchUI();
+      S.year = Math.min(YEAR_MAX, Math.max(YEAR_MIN, y));
+      S.lastMonth = m;
+      persist(true);
+      pendingOpenDay = jump === 'day' ? ds : null;
+      editEvent = null; editRepeat = null; newRepeat = 'none';
+      go('/monthly/' + m);
+      break;
+    }
+    case 'evsearch-clear': { closeSearchUI(); const inp = document.getElementById('evsearch'); if(inp) inp.focus(); break; }
     case 'acct-open': googleSwitchAccount(); break;
     case 'backup-run': docsBackup(); break;
     case 'backup-restore': docsRestore(); break;
@@ -2912,6 +3294,20 @@ document.addEventListener('input', e=>{
       const txt = row.dataset.q || row.textContent.toLowerCase();
       row.style.display = txt.includes(q)? '' : 'none';
     });
+  }
+  else if(act==='evsearch'){
+    searchQ = el.value;
+    searchOpen = true;
+    const box = document.getElementById('evresults');
+    const wrap = document.getElementById('msearch');
+    const cl = document.getElementById('evclear');
+    if(box){
+      box.innerHTML = searchResultsHTML(searchQ);
+      box.hidden = !String(searchQ).trim();
+      box.scrollTop = 0;
+    }
+    if(wrap) wrap.classList.toggle('on', !!String(searchQ).trim());
+    if(cl) cl.hidden = !searchQ;
   }
   else if(act==='memo-title'){
     const m = S.memos.find(x=>x.id===el.dataset.val); if(!m) return;
@@ -2985,6 +3381,7 @@ document.addEventListener('keydown', e=>{
     e.preventDefault(); document.querySelector('[data-act="day-save"]')?.click(); return;
   }
   if(e.key==='Escape'){
+    if(searchOpen || searchQ){ closeSearchUI(); return; }
     if(document.getElementById('calpop').classList.contains('on')){ closeCalPop(); return; }
     if(editEvent){ editEvent = null; renderModal(); }
     else if(openDay){ openDay=null; renderModal(); }
