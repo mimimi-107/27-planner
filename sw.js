@@ -5,7 +5,7 @@
    straight to the network.
    Bump CACHE when the shell changes so old copies are dropped.
    ========================================================= */
-const CACHE = 'mp27-v33';
+const CACHE = 'mp27-v34';
 /* mp27-v31: remember 탭이 check · memo와 같은 세 칸(돋보기 검색 · ＋ new · 목록)이 되고, 적기·고치기는
    Search와 같은 종이 Remember 팝업에서 합니다. 일 모달의 반복에 `N일마다`(repeat:'days' · repeatDays:N)가
    붙어 RRULE:FREQ=DAILY;INTERVAL=N · Docs `(3일마다)`로 오갑니다. 폰에서 초점이 간 모든 입력 칸은
@@ -18,6 +18,15 @@ const CACHE = 'mp27-v33';
    `음력 · 절기` 바로 아래 `기념일 · 데이` 스위치(prefs.observances)로 끄고 켜며, 끄면
    달력·일 모달·검색에서 모두 사라지고 법정 공휴일은 그대로 남습니다.
    (sw.js changes on purpose: a client that already took v31 re-installs and refills the
+   same cache name.) */
+/* mp27-v34: `d-day` 탭이 check · memo · remember와 같은 세 칸(돋보기 검색 · ＋ new ·
+   목록)으로 들어오고, 적기·고치기는 Search와 같은 종이 D-day 팝업에서 합니다 —
+   날짜는 2026.12.20 · 2026-12-20 · 20261220 · 26.12.20으로 받고, `0일부터 (D-day)`와
+   `1일부터 (D+1)` 두 가지로 세며, `상단 큰 숫자 옆에 표시`를 켠 하루만 큰 달 숫자
+   옆에 `D-24 · 제주 여행`처럼 앉습니다. 오늘 달이 아닐 때만 하단 `< 2026 >` 옆에
+   작은 `today`가 나타나 그 달로 돌아오고, d-day는 달력 칸 · 일 모달 · 검색 ·
+   Docs 백업(`5. d-day`)에도 함께 실립니다.
+   (sw.js changes on purpose: a client that already took v33 re-installs and refills the
    same cache name.) */
 /* mp27-v33: 구글 `대한민국의 휴일` 캘린더가 같이 보내는 기념일(섣달 그믐날 · 식목일 ·
    크리스마스 이브 · 어버이날 …)을 붉은 공휴일로 칠하지 않습니다 — description이
