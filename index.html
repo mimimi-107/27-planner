@@ -1125,6 +1125,43 @@ p.121 종이 위의 여백은 비어 있는 것이 아니라 선택의 공간.
 /* Same for the five sample memos/checklists: a new install starts with none, and a browser
    that already holds them drops the untouched ones once (load()). */
 const SEED_MEMO_SIGS = seedMemos().map(m => [m.id, m.kind, m.title].join('|'));
+/* ---------- what Google's 대한민국의 휴일 calendar may call a red day (#2736)
+   That calendar carries two kinds of events: the real 공휴일 (description 공휴일 — the
+   English feed writes Public holiday) and 기념일 such as 섣달 그믐날 · 식목일 ·
+   크리스마스 이브 (description 기념일 / Observance). Only the first colours a day
+   like a Sunday; a 기념일 stays in the quiet 기념일 · 데이 ink, or nowhere. */
+const HOL_DESC_PUBLIC = /공휴일|public\s*holiday/i;
+const HOL_DESC_OBSERV = /기념일|observance/i;
+/* a name that is a 기념일 even when the feed leaves the description empty */
+const HOL_OBS_NAME = /섣달\s*그믐|이브|데이|기념일|의\s*날|어버이|스승|식목|국군|한식|단오|칠석|백중|4[·.]19|5[·.]18/;
+function holNameIsObservance(name){ return HOL_OBS_NAME.test(String(name || '')); }
+/* is this Google event a public holiday, or an observance wearing the same calendar? */
+function isPublicHolidayItem(it){
+  const desc = String((it && it.description) || '');
+  if(HOL_DESC_PUBLIC.test(desc)) return true;      /* 공휴일 · Public holiday */
+  if(HOL_DESC_OBSERV.test(desc)) return false;     /* 기념일 · Observance */
+  return !holNameIsObservance((it && it.summary) || '');   /* no description — judge the name */
+}
+/* a cached label joins two events of a day with ·; keep only the holiday parts */
+function holCleanLabel(label){
+  return String(label || '').split('·').map(s=>s.trim())
+    .filter(s=>s && !holNameIsObservance(s)).join('·');
+}
+/* an older build kept 기념일 names (섣달 그믐날 …) as holidays in the cache; drop them */
+function cleanHolCache(cache){
+  let changed = false;
+  Object.keys(cache || {}).forEach(y=>{
+    const map = cache[y];
+    if(!map || typeof map !== 'object'){ delete cache[y]; changed = true; return; }
+    Object.keys(map).forEach(ds=>{
+      const kept = holCleanLabel(map[ds]);
+      if(kept === map[ds]) return;
+      changed = true;
+      if(kept) map[ds] = kept; else delete map[ds];
+    });
+  });
+  return changed;
+}
 /* today on this device, kept inside the range the year wheel can show */
 function todayYear(){ const y = new Date().getFullYear(); return Math.min(2040, Math.max(2015, y)); }
 function todayMonth(){ return new Date().getMonth() + 1; }
@@ -1157,6 +1194,11 @@ function load(){
     const st = Object.assign(base, p);
     st.google = Object.assign({connected:false,lastSync:null,holidays:true,account:null,holCache:{},calendars:[]}, p.google||{});
     st.google.holCache = Object.assign({}, (p.google && p.google.holCache) || {});
+    /* #2736 — a cache written before this build can hold Google's 기념일 names; a
+       given day keeps only what the feed actually called a 공휴일 */
+    if(cleanHolCache(st.google.holCache)){
+      try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){}
+    }
     /* the calendars this account showed last time — kept as they were, so the ticks
        and colours she chose survive every sync */
     st.google.calendars = (Array.isArray(p.google && p.google.calendars) ? p.google.calendars : [])
@@ -1649,7 +1691,8 @@ function searchHits(raw){
    24절기 — searched straight from the built-in tables */
 function builtinHolidayOn(ds){
   const live = (S.google && S.google.holCache && S.google.holCache[ds.slice(0,4)]) || null;
-  return (live && live[ds]) || HOLIDAYS[ds] || null;
+  /* the verified table wins: Google's secondary label never renames 설날 연휴 (#2736) */
+  return HOLIDAYS[ds] || (live && live[ds]) || null;
 }
 function labelHits(raw){
   const needle = String(raw||'').trim().toLowerCase();
@@ -2285,6 +2328,9 @@ async function loadGoogleHolidays(token, year){
     if(it.status === 'cancelled') return;
     const start = it.start && it.start.date;
     if(!start) return;
+    /* #2736 — 섣달 그믐날 · 식목일 · 크리스마스 이브 are 기념일 in the same feed and
+       must not paint a day red (or overwrite 설날 연휴 on a shared date) */
+    if(!isPublicHolidayItem(it)) return;
     const name = (it.summary || '공휴일').replace(/\s+/g, ' ').trim();
     const stop = (it.end && it.end.date) || nextDay(start);
     const d = new Date(start + 'T00:00:00');
@@ -2889,7 +2935,8 @@ const weekStartMode = () => (S.weekStart === 's' ? 's' : 'm');
 function holidayOn(ds){
   if(!S.google || S.google.holidays === false) return null;
   const live = (S.google.holCache || {})[ds.slice(0,4)];   /* from Google's 공휴일 calendar */
-  return (live && live[ds]) || HOLIDAYS[ds] || null;
+  /* the verified table wins: Google's secondary label never renames 설날 연휴 (#2736) */
+  return HOLIDAYS[ds] || (live && live[ds]) || null;
 }
 /* narrow screens get a shorter holiday label */
 const HOL_SHORT = {'설날 연휴':'연휴','추석 연휴':'연휴','부처님오신날':'부처님','지방선거일':'선거일','기독탄신일':'성탄'};
