@@ -3795,7 +3795,7 @@ function renderDdayModal(){
         <button class="x" data-act="dd-close" aria-label="닫기">×</button>
       </div>
       <div class="ddline${m.bad === 'date' ? ' bad' : ''}">
-        <input class="dddate" id="dd-date" data-act="dd-date" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" enterkeyhint="next" value="${esc(m.date)}" placeholder="2026.12.20" aria-label="디데이 날짜">
+        <input class="dddate" id="dd-date" data-act="dd-date" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" enterkeyhint="next" value="${esc(m.date)}" placeholder="2026.12.20" aria-label="디데이 날짜">
       </div>
       <div class="ddline${m.bad === 'title' ? ' bad' : ''}">
         <input class="ddtitle" id="dd-title" data-act="dd-title-input" type="text" value="${esc(m.title)}" placeholder="디데이 이름" aria-label="디데이 이름" enterkeyhint="done">
